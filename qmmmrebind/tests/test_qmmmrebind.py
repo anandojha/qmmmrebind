@@ -10,3 +10,22 @@ import sys
 def test_qmmmrebind_imported():
     """Sample test, will always pass so long as import statement worked"""
     assert "qmmmrebind" in sys.modules
+
+def test_len_list_to_dict():
+    """Test the list to dict function"""
+    test_list = ["a", "b", "c", "d"]
+    ret = qmmmrebind.functions.list_to_dict(test_list)
+    assert len(ret) == 2
+
+def test_key_list_to_dict():
+    """Test the list to dict function"""
+    test_list = ["a", "b", "c", "d"]
+    ret = qmmmrebind.functions.list_to_dict(test_list)
+    assert ret["a"] == "b"
+
+def test_find_word_in_file():
+    """Test if a word is in a file"""
+    filename = "tests/data/test_input_file.dat"
+    word = "ucsd"
+    ret = qmmmrebind.functions.search_in_file(filename=filename, word=word)
+    assert ret[0][1] == 3
