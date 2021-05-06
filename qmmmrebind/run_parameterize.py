@@ -80,6 +80,22 @@ params_host.run_host_mm()
 params_host.write_reparameterised_host_xml()
 params_host.run_host_mm_qm()
 ########################################################################################################################################################################################################
-os.system("rm -rf __pycache__")
+system_host = HostAmberXMLAmber(system_pdb = "host.pdb", system_xml = "host.xml", sim_output = "sim_output.pdb", sim_steps = 1000, charge_parameter_file = "host_qm_surround_charges.txt", system_qm_pdb = "host_qm.pdb", bond_parameter_file = "host_qm_bonds.txt", angle_parameter_file = "host_qm_angles.txt", system_qm_params_file = "host_qm_params.txt", reparameterised_intermediate_system_xml_file = "host_intermediate_reparameterised.xml", system_xml_non_bonded_file = "host_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "host_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "host_reparameterised.xml", non_reparameterised_system_xml_file = "host.xml", prmtop_system_non_params = "host_non_params.prmtop", inpcrd_system_non_params = "host_non_params.inpcrd", prmtop_system_params = "host_params.prmtop", inpcrd_system_params = "host_params.inpcrd", load_topology = "openmm")
 ########################################################################################################################################################################################################
-
+system_guest = GuestAmberXMLAmber(system_pdb = "guest_init_II.pdb", system_mol2 = "guest.mol2", system_in = "guest.in", charge = 1, system_frcmod = "guest.frcmod", prmtop_system = "guest.prmtop", inpcrd_system = "guest.inpcrd", system_leap = "guest.leap", system_xml = "guest_init.xml",  system_smi =  "guest.smi",  system_sdf =  "guest.sdf", charge_parameter_file = "guest_charges.txt", system_qm_pdb = "guest_init_II.pdb", bond_parameter_file = "guest_bonds.txt", angle_parameter_file = "guest_angles.txt", system_qm_params_file = "guest_qm_params.txt", reparameterised_intermediate_system_xml_file = "guest_intermediate_reparameterised.xml", system_xml_non_bonded_file = "guest_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "guest_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "guest_reparameterised.xml", non_reparameterised_system_xml_file = "guest_init.xml", prmtop_system_non_params = "guest_non_params.prmtop", inpcrd_system_non_params = "guest_non_params.inpcrd", prmtop_system_params = "guest_params.prmtop", inpcrd_system_params = "guest_params.inpcrd", load_topology = "openmm")
+########################################################################################################################################################################################################
+#system_guest.generate_xml_from_pdb_sdf()
+system_guest.generate_xml_from_pdb_smi()
+#system_guest.generate_xml_antechamber()
+system_guest.write_system_params()
+system_guest.write_reparameterised_system_xml()
+system_guest.save_amber_params()
+system_guest.analyze_diff_energies()
+########################################################################################################################################################################################################
+system_host.serialize_system()
+system_host.write_system_params()
+system_host.write_reparameterised_system_xml()
+system_host.save_amber_params()
+system_host.analyze_diff_energies()
+########################################################################################################################################################################################################
+os.system("rm -rf __pycache__")
