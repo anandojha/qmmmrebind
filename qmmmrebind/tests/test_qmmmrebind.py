@@ -6,6 +6,7 @@ Unit and regression test for the qmmmrebind package.
 import qmmmrebind
 import pytest
 import sys
+from .utils import get_data_filename
 
 def test_qmmmrebind_imported():
     """Sample test, will always pass so long as import statement worked"""
@@ -25,7 +26,7 @@ def test_key_list_to_dict():
 
 def test_find_word_in_file():
     """Test if a word is in a file"""
-    filename = "tests/data/test_input_file.dat"
+    filename = get_data_filename("test_input_file.dat") 
     word = "ucsd"
-    ret = qmmmrebind.functions.search_in_file(filename=filename, word=word)
-    assert ret[0][1] == 3
+    ret = qmmmrebind.functions.search_in_file(file=filename, word=word)
+    assert ret[0][0] == 3
