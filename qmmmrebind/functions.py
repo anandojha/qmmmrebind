@@ -175,7 +175,7 @@ def uniq(input_):
             output.append(x)
     return output
 ########################################################################################################################################################################################################
-def search_in_file(file: str, word: str): -> list
+def search_in_file(file: str, word: str) -> list:
     """Search for the given string in file and return lines containing that string along with line numbers"""
     line_number = 0
     list_of_results = []
