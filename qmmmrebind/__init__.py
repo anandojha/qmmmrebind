@@ -4,7 +4,7 @@ QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Repara
 """
 
 # Add imports here
-from . import functions, parameterize, qmmm_functions
+from . import parameterize, qmmm_functions
 
 # Handle versioneer
 from ._version import get_versions

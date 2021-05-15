@@ -1,11 +1,14 @@
 import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
+import matplotlib.pyplot as plt
 from operator import itemgetter
 import openforcefield.topology
 from mendeleev import element
 from simtk.openmm import app
+from scipy import optimize
 import subprocess as sp
 from sys import stdout
+import openforcefield
 import pandas as pd
 import numpy as np
 import statistics
@@ -19,8 +22,6 @@ import math
 import sys
 import re
 import os
-####################################################################################################################################################################################
-sys.setrecursionlimit(10000)
 ####################################################################################################################################################################################
 element_list = [['1 ', 'H ', 'Hydrogen'], ['2 ', 'He', 'Helium'], ['3 ', 'Li', 'Lithium'], ['4 ', 'Be', 'Beryllium'], ['5 ', 'B ', 'Boron'], ['6 ', 'C ', 'Carbon'], ['7 ', 'N ', 'Nitrogen'], ['8 ', 'O ', 'Oxygen'], ['9 ', 'F ', 'Fluorine'], ['10', 'Ne', 'Neon'], ['11', 'Na', 'Sodium'], ['12', 'Mg', 'Magnesium'], ['13', 'Al', 'Aluminum'], ['14', 'Si', 'Silicon'], ['15', 'P ', 'Phosphorus'], ['16', 'S ', 'Sulfur'], ['17', 'Cl', 'Chlorine'], ['18', 'Ar', 'Argon'], ['19', 'K ', 'Potassium'], ['20', 'Ca', 'Calcium'], ['21', 'Sc', 'Scandium'], ['22', 'Ti', 'Titanium'], ['23', 'V ', 'Vanadium'], ['24', 'Cr', 'Chromium'], ['25', 'Mn', 'Manganese'], ['26', 'Fe', 'Iron'], ['27', 'Co', 'Cobalt'], ['28', 'Ni', 'Nickel'], ['29', 'Cu', 'Copper'], ['30', 'Zn', 'Zinc'], ['31', 'Ga', 'Gallium'], ['32', 'Ge', 'Germanium'], ['33', 'As', 'Arsenic'], ['34', 'Se', 'Selenium'], ['35', 'Br', 'Bromine'], ['36', 'Kr', 'Krypton'], ['37', 'Rb', 'Rubidium'], ['38', 'Sr', 'Strontium'], ['39', 'Y ', 'Yttrium'], ['40', 'Zr', 'Zirconium'], ['41', 'Nb', 'Niobium'], ['42', 'Mo', 'Molybdenum'], ['43', 'Tc', 'Technetium'], ['44', 'Ru', 'Ruthenium'], ['45', 'Rh', 'Rhodium'], ['46', 'Pd', 'Palladium'], ['47', 'Ag', 'Silver'], ['48', 'Cd', 'Cadmium'], ['49', 'In', 'Indium'], ['50', 'Sn', 'Tin'], ['51', 'Sb', 'Antimony'], ['52', 'Te', 'Tellurium'], ['53', 'I ', 'Iodine'], ['54', 'Xe', 'Xenon'], ['55', 'Cs', 'Cesium'], ['56', 'Ba', 'Barium'], ['57', 'La', 'Lanthanum'], ['58', 'Ce', 'Cerium'], ['59', 'Pr', 'Praseodymium'], ['60', 'Nd', 'Neodymium'], ['61', 'Pm', 'Promethium'], ['62', 'Sm', 'Samarium'], ['63', 'Eu', 'Europium'], ['64', 'Gd', 'Gadolinium'], ['65', 'Tb', 'Terbium'], ['66', 'Dy', 'Dysprosium'], ['67', 'Ho', 'Holmium'], ['68', 'Er', 'Erbium'], ['69', 'Tm', 'Thulium'], ['70', 'Yb', 'Ytterbium'], ['71', 'Lu', 'Lutetium'], ['72', 'Hf', 'Hafnium'], ['73', 'Ta', 'Tantalum'], ['74', 'W ', 'Tungsten'], ['75', 'Re', 'Rhenium'], ['76', 'Os', 'Osmium'], ['77', 'Ir', 'Iridium'], ['78', 'Pt', 'Platinum'], ['79', 'Au', 'Gold'], ['80', 'Hg', 'Mercury'], ['81', 'Tl', 'Thallium'], ['82', 'Pb', 'Lead'], ['83', 'Bi', 'Bismuth'], ['84', 'Po', 'Polonium'], ['85', 'At', 'Astatine'], ['86', 'Rn', 'Radon'], ['87', 'Fr', 'Francium'], ['88', 'Ra', 'Radium'], ['89', 'Ac', 'Actinium'], ['90', 'Th', 'Thorium'], ['91', 'Pa', 'Protactinium'], ['92', 'U ', 'Uranium'], ['93', 'Np', 'Neptunium'], ['94', 'Pu', 'Plutonium'], ['95', 'Am', 'Americium'], ['96', 'Cm', 'Curium'], ['97', 'Bk', 'Berkelium'], ['98', 'Cf', 'Californium'], ['99', 'Es', 'Einsteinium']]
 ####################################################################################################################################################################################
@@ -1070,597 +1071,6 @@ class ParameterizeGuest:
         np.savetxt(self.proper_dihedral_file, proper_dihedrals, fmt='%s')
         #return(proper_dihedrals)
 ####################################################################################################################################################################################
-class OffXMLGuest:
-    
-    def __init__(self, guest_pdb, sdf_file, xml_off_file, atom_names_file, torsion_off_file, lj_file, charge):
-        self.guest_pdb = guest_pdb
-        self.sdf_file = sdf_file
-        self.xml_off_file = xml_off_file
-        self.atom_names_file = atom_names_file
-        self.torsion_off_file = torsion_off_file
-        self.lj_file = lj_file
-        self.charge = charge
-
-    def generate_off_xml_amber(self):
-        """
-        This function generates an openforcefield xml file from the pdb file through antechamber.
-        """
-        mol2_file = self.guest_pdb[:-4] + ".mol2"
-        in_file = self.guest_pdb[:-4] + ".in"
-        frcmod_file = self.guest_pdb[:-4] + ".frcmod"
-        leap_file = self.guest_pdb[:-4] + ".leap"
-        prmtop_file = self.guest_pdb[:-4] + ".prmtop"
-        inpcrd_file = self.guest_pdb[:-4] + ".inpcrd"
-        babel_command = "babel -ipdb " + self.guest_pdb + " -omol2 " + mol2_file
-        os.system(babel_command)
-        antechamber_command = "antechamber -i " + mol2_file + " -fi mol2 -o " + in_file + " -fo prepi -c bcc -nc " + str(self.charge)
-        os.system(antechamber_command)
-        os.system("rm -rf *ANTECHAMBER* *sqm* PREP.INF NEWPDB.PDB ATOMTYPE.INF")
-        parmchk2_command = "parmchk2 -i " + in_file + " -o " + frcmod_file + " -f prepi -a Y"
-        os.system(parmchk2_command)
-        os.system("rm -rf *ANTECHAMBER*")
-        line_0 = " "
-        line_1 = "loadamberprep " + in_file
-        line_2 = "loadamberparams " + frcmod_file
-        line_3 = "source leaprc.gaff"
-        line_4 = "pdb = loadpdb " + self.guest_pdb
-        line_5 = "saveamberparm pdb " + prmtop_file + " " + inpcrd_file
-        line_6 = "quit"
-        with open(leap_file, 'w') as f:
-            f.write(line_0 + "\n")
-            f.write(line_1 + "\n")
-            f.write(line_2 + "\n")
-            f.write(line_3 + "\n")
-            f.write(line_4 + "\n")
-            f.write(line_5 + "\n")
-            f.write(line_6 + "\n")
-        leap_command = "tleap -f " + leap_file
-        os.system(leap_command)
-        os.system("rm -rf leap.log")
-        prmtop = simtk.openmm.app.AmberPrmtopFile(prmtop_file)
-        system = prmtop.createSystem(nonbondedMethod = simtk.openmm.app.NoCutoff, constraints = None)
-        with open(self.xml_off_file, "w+") as out:
-            out.write(simtk.openmm.XmlSerializer.serializeSystem(system))
-            
-    def get_torsion_off(self):
-        """
-        This function saves the torsional parameters from the openforcefield file into a text file
-        """
-        xml_off = open(self.xml_off_file, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<Torsions>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "</Torsions>" in xml_off_lines[i]:
-                to_end = int(i)        
-        torsion_params = xml_off_lines[to_begin + 1:to_end]
-        for i in range(len(torsion_params)):
-            torsion_params[i] = torsion_params[i].strip()
-            torsion_params[i] = torsion_params[i].replace("p1","class1")
-            torsion_params[i] = torsion_params[i].replace("p2","class2")
-            torsion_params[i] = torsion_params[i].replace("p3","class3")
-            torsion_params[i] = torsion_params[i].replace("p4","class4")
-            torsion_params[i] = torsion_params[i].replace("Torsion","Proper")
-        k_list_off = []
-        for i in range(len(torsion_params)):
-            k_list_off.append(float(re.findall('\d*\.?\d+',torsion_params[i])[0]))
-        k_list_off = [round(num, 10) for num in k_list_off]
-        #print(k_list_off)
-        class1 = []
-        for i in range(len(torsion_params)):
-            class1.append(int(re.findall('\d*\.?\d+',torsion_params[i])[2]))
-        #print(class1)
-        class2 = []
-        for i in range(len(torsion_params)):
-            class2.append(int(re.findall('\d*\.?\d+',torsion_params[i])[4]))
-        #print(class2)
-        class3 = []
-        for i in range(len(torsion_params)):
-            class3.append(int(re.findall('\d*\.?\d+',torsion_params[i])[6]))
-        #print(class3)
-        class4 = []
-        for i in range(len(torsion_params)):
-            class4.append(int(re.findall('\d*\.?\d+',torsion_params[i])[8]))
-        #print(class4)
-        periodicity = []
-        for i in range(len(torsion_params)):
-            periodicity.append(int(re.findall('\d*\.?\d+',torsion_params[i])[9]))
-        #print(periodicity)
-        phase = []
-        for i in range(len(torsion_params)):
-            phase.append(float(re.findall('\d*\.?\d+',torsion_params[i])[10]))
-        phase = [round(num, 8) for num in phase]
-        #print(phase)
-        data_tuples = list(zip(k_list_off, class1, class2, class3, class4, periodicity, phase))
-        df_tor = pd.DataFrame(data_tuples, columns=['k','class1','class2','class3','class4','periodicity','phase'])
-        #print(df_tor.head())
-        class_1_list = df_tor["class1"].to_list()
-        class_2_list = df_tor["class2"].to_list()
-        class_3_list = df_tor["class3"].to_list()
-        class_4_list = df_tor["class4"].to_list()
-        df_atoms = pd.read_csv(self.atom_names_file, header = None, delimiter = r"\s+")
-        df_atoms.columns = ["atom"]
-        class_1_atoms = []
-        for i in class_1_list:
-            class_1_atoms.append(df_atoms['atom'].iloc[i])
-        class_2_atoms = []
-        for i in class_2_list:
-            class_2_atoms.append(df_atoms['atom'].iloc[i])
-        class_3_atoms = []
-        for i in class_3_list:
-            class_3_atoms.append(df_atoms['atom'].iloc[i])
-        class_4_atoms = []
-        for i in class_4_list:
-            class_4_atoms.append(df_atoms['atom'].iloc[i])
-        data_tuples = list(zip(class_1_atoms, class_2_atoms, class_3_atoms, class_4_atoms))
-        df_tor_atoms = pd.DataFrame(data_tuples, columns=['class1_atoms','class2_atoms','class3_atoms','class4_atoms'])
-        #print(df_tor_atoms.head())
-        frames = [df_tor, df_tor_atoms]  
-        df_concat = pd.concat(frames, axis = 1)
-        #print(df_concat.head())
-        df_concat.to_csv (self.torsion_off_file, index = False, header = False,sep = ' ')
-        #print(df_tor)  
-        
-    def get_lj_off(self):
-        """
-        This function saves the torsional parameters from the openforcefield file into a text file
-        """       
-        # Non-Bonded Parameters from OFF file
-        with open (self.xml_off_file, "r") as f:
-            lines = f.readlines()
-        for i in range(len(lines)):
-            if "<Particles>" in lines[i]:
-                to_begin = int(i)
-            if "</Particles>" in lines[i]:
-                to_end = int(i)        
-        lj_params = lines[to_begin + 1:to_end]    
-        for i in range(len(lj_params)):
-            lj_params[i] = lj_params[i].strip()
-        epsilon_list_off = []
-        for i in range(len(lj_params)):
-            epsilon_list_off.append(float(re.findall('\d*\.?\d+',lj_params[i])[0]))
-        epsilon_list_off = [round(num, 6) for num in epsilon_list_off]
-        #print(epsilon_list_off)
-        charge_list_off = []
-        for i in range(len(lj_params)):
-            charge_list_off.append(float(re.findall('\d*\.?\d+',lj_params[i])[1]))
-        charge_list_off = [round(num, 6) for num in charge_list_off]
-        #print(charge_list_off)
-        sigma_list_off = []
-        for i in range(len(lj_params)):
-            sigma_list_off.append(float(re.findall('\d*\.?\d+',lj_params[i])[2]))
-        sigma_list_off = [round(num, 6) for num in sigma_list_off]
-        #print(sigma_list_off)    
-        data_tuples = list(zip(charge_list_off,epsilon_list_off,sigma_list_off))
-        df_lj = pd.DataFrame(data_tuples, columns=['Charge','Epsilon','Sigma'])
-        df_lj.to_csv (self.lj_file, index = False, header=False,sep=' ')
-        #print(df_lj)  
-####################################################################################################################################################################################
-class XMLGuest:
-    
-    def __init__(self, charge_parameter_file, atom_charge_file, xml_file, guest_pdb, bond_parameter_file, angle_parameter_file, torsion_off_file, lj_file, coulomb14scale, lj14scale, residue_name):
-        self.charge_parameter_file = charge_parameter_file
-        self.atom_charge_file = atom_charge_file
-        self.guest_pdb = guest_pdb
-        self.bond_parameter_file = bond_parameter_file
-        self.angle_parameter_file = angle_parameter_file
-        self.torsion_off_file = torsion_off_file
-        self.lj_file = lj_file
-        self.coulomb14scale = coulomb14scale
-        self.lj14scale = lj14scale
-        self.residue_name = residue_name
-        self.xml_file = xml_file
-        
-    def get_qm_charges(self):
-        """
-        This function saves the charges in the list format obtained from the gaussian log file.
-        """
-        df_charges = pd.read_csv(self.charge_parameter_file, header = None, delimiter = r"\s+")
-        df_charges.columns = ["atom", "charges"]
-        qm_charges = df_charges["charges"].values.tolist()
-        qm_charges = [round(num, 6) for num in qm_charges]
-        #print(qm_charges)
-        np.savetxt(self.atom_charge_file, qm_charges, fmt='%s')   
-        
-    def write_xml(self):
-        """ 
-        This function writes a xml forcefield file.
-        """
-        qm_charges = np.loadtxt(self.atom_charge_file)  
-        #Getting the name_list
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.guest_pdb)
-        df = ppdb.df["ATOM"]["element_symbol"]
-        atom_list = df.values.tolist()
-        #print(atom_list)
-        list_atom_range = []
-        for i in range(df.shape[0]):
-            list_atom_range.append(i)
-        list_atom_name_number = [atom_list[i] + str(list_atom_range[i] + 1) for i in range(len(list_atom_range))] 
-        #print(list_atom_name_number)
-        #print(atom_list)
-        #print(list_atom_range)
-        mass_number_list = []
-        for i in atom_list:
-            mass_number_list.append(element(i).mass)
-        #print(mass_number_list) 
-        name_list = []
-        for i in list_atom_range:
-            name_list.append("ffxml_" + str(i + 1))
-        #print(name_list) 
-        # Non-Bonded Parameters OFF file
-        df = pd.read_csv(self.lj_file, header = None, delimiter = r"\s+")
-        df.columns = ['Charge','Epsilon','Sigma']
-        #print(df.head())
-        charge_list_off = df["Charge"].values.tolist()
-        charge_list_off = [round(num, 6) for num in charge_list_off]
-        #print(charge_list_off)
-        epsilon_list_off = df["Epsilon"].values.tolist()
-        epsilon_list_off = [round(num, 6) for num in epsilon_list_off]
-        #print(epsilon_list_off)
-        sigma_list_off = df["Sigma"].values.tolist()
-        sigma_list_off = [round(num, 6) for num in sigma_list_off]
-        #print(sigma_list_off)
-        # Bond Parameters from QM files
-        df = pd.read_csv(self.bond_parameter_file, header = None, delimiter = r"\s+")
-        df.columns = ["bond", "k_bond", "bond_length", "bond_1", "bond_2"]
-        #print(df.head())
-        bond_1_list = df["bond_1"].values.tolist()
-        bond_1_list = [x - 1 for x in bond_1_list]
-        bond_2_list = df["bond_2"].values.tolist()
-        bond_2_list = [x - 1 for x in bond_2_list]
-        #print(bond_1_list)
-        #print(bond_2_list)
-        k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i* 1000.00 for i in k_bond_list]
-        k_bond_list = [round(num, 10) for num in k_bond_list]
-        #print(k_bond_list)
-        bond_length_list = df["bond_length"].values.tolist()
-        bond_length_list = [i/10.00 for i in bond_length_list]
-        bond_length_list = [round(num, 6) for num in bond_length_list]
-        #print(bond_length_list)
-        bond_names_list = df["bond"].values.tolist()
-        #print(bond_names_list)
-        bond_1_names_list = []
-        for i in range(len(bond_names_list)):
-            bond_1_names_list.append(bond_names_list[i].partition('-')[0])
-        #print(bond_1_names_list)
-        bond_2_names_list = []
-        for i in range(len(bond_names_list)):
-            bond_2_names_list.append(bond_names_list[i].partition('-')[2])     
-        #print(bond_2_names_list)
-        # Angle Parameters from QM files
-        df = pd.read_csv(self.angle_parameter_file, header = None, delimiter = r"\s+")
-        df.columns = ["angle", "k_angle", "angle_degrees", "angle_1", "angle_2", "angle_3"]
-        #print(df.head())
-        angle_names_list = df["angle"].values.tolist()
-        #print(angle_names_list)
-        angle_1_names_list = []
-        for i in range(len(angle_names_list)):
-            angle_1_names_list.append(angle_names_list[i].partition('-')[0])
-        #print(angle_1_names_list)
-        angle_int_names_list = []
-        for i in range(len(angle_names_list)):
-            angle_int_names_list.append(angle_names_list[i].partition('-')[2])
-        #print(angle_int_names_list)
-        angle_2_names_list = []
-        for i in range(len(angle_int_names_list)):
-            angle_2_names_list.append(angle_int_names_list[i].partition('-')[0])           
-        #print(angle_2_names_list)
-        angle_3_names_list = []
-        for i in range(len(angle_int_names_list)):
-            angle_3_names_list.append(angle_int_names_list[i].partition('-')[2])         
-        #print(angle_3_names_list)
-        k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [round(num, 6) for num in k_angle_list]
-        #print(k_angle_list)
-        angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [(i * math.pi)/180.00 for i in angle_list]
-        angle_list = [round(num, 6) for num in angle_list]
-        #print(angle_list)
-        # Torsion Parameters OFF file
-        df = pd.read_csv(self.torsion_off_file, header = None, delimiter = r"\s+")
-        df.columns = ['k','class1','class2','class3','class4','periodicity','phase','class1_atoms','class2_atoms','class3_atoms','class4_atoms']
-        #print(df.head(20))
-        k_list_off = df["k"].values.tolist()
-        k_list_off = [round(num, 6) for num in k_list_off]
-        #print(k_list_off)
-        class1_list_off = df["class1_atoms"].values.tolist()
-        #print(class1_list_off)
-        class2_list_off = df["class2_atoms"].values.tolist()
-        #print(class2_list_off)
-        class3_list_off = df["class3_atoms"].values.tolist()
-        #print(class3_list_off)
-        class4_list_off = df["class4_atoms"].values.tolist()
-        #print(class4_list_off)
-        periodicity_list_off = df["periodicity"].values.tolist()
-        #print(periodicity_list_off)
-        phase_list_off = df["phase"].values.tolist()
-        phase_list_off = [round(num, 6) for num in phase_list_off]
-        #print(phase_list_off)
-        # Writing the xml forcefield file
-        xml = open(self.xml_file, "w")
-        xml.write("<?xml version=" + '"' + "1.0" + '"' + " " + "?>" "\n")
-        xml.write("<ForceField>" + "\n")
-        xml.write("<AtomTypes>" + "\n")
-        for i in range(len(list_atom_range)):
-            xml.write("<Type" + " " 
-                            + "class=" + '"' + list_atom_name_number[i] + '"' + " " 
-                            + "element=" + '"' + atom_list[i] + '"' + " " 
-                            + "mass=" + '"' + str(mass_number_list[i]) + '"' + " " 
-                            + "name=" + '"' + name_list[i] + '"' 
-                            + "/>"  + "\n")
-        xml.write("</AtomTypes>" + "\n")
-        xml.write("<Residues>" + "\n")
-        xml.write("<Residue name=" + '"' + self.residue_name + '"' + ">" + "\n")
-        for i in range(len(list_atom_range)):
-            xml.write("<Atom" + " " 
-                            + "name=" + '"' + list_atom_name_number[i] + '"' + " " 
-                            + "type=" + '"' + name_list[i] + '"' 
-                            + "/>"  + "\n")
-        for i in range(len(bond_1_list)):
-            xml.write("<Bond" + " " 
-                           + "from=" + '"' + str(bond_1_list[i]) + '"' + " " 
-                           + "to=" + '"' + str(bond_2_list[i]) + '"' 
-                           + "/>"  + "\n")
-        xml.write("</Residue>" + "\n")
-        xml.write("</Residues>" + "\n")
-        xml.write("<HarmonicBondForce>" + "\n")
-        for i in range(len(bond_names_list)):
-            xml.write("<Bond" + " " 
-                           + "class1=" + '"' + bond_1_names_list[i] + '"' + " " 
-                           + "class2=" + '"' + bond_2_names_list[i] + '"' + " " 
-                           + "k=" + '"' + str(k_bond_list[i]) + '"' + " " 
-                           + "length=" + '"' + str(bond_length_list[i]) + '"' 
-                           + "/>"  + "\n")
-        xml.write("</HarmonicBondForce>" + "\n")
-        xml.write("<HarmonicAngleForce>" + "\n")
-        for i in range(len(angle_names_list)):
-            xml.write("<Angle" + " " 
-                           + "angle=" + '"' + str(angle_list[i]) + '"' + " " 
-                           + "class1=" + '"' + angle_1_names_list[i] + '"' + " " 
-                           + "class2=" + '"' + angle_2_names_list[i] + '"' + " " 
-                           + "class3=" + '"' + angle_3_names_list[i] + '"' + " " 
-                           + "k=" + '"' + str(k_angle_list[i]) + '"' 
-                           + "/>"  + "\n")
-        xml.write("</HarmonicAngleForce>" + "\n")
-        xml.write("<PeriodicTorsionForce>" + "\n")
-        for i in range(len(k_list_off)):
-            xml.write("<Proper" + " " 
-                           + "k=" + '"' + str(k_list_off[i]) + '"' + " " 
-                           + "class1=" + '"' + str(class1_list_off[i]) + '"' + " " 
-                           + "class2=" + '"' + str(class2_list_off[i]) + '"' + " " 
-                           + "class3=" + '"' + str(class3_list_off[i]) + '"' + " " 
-                           + "class4=" + '"' + str(class4_list_off[i]) + '"' + " " 
-                           + "periodicity=" + '"' + str(periodicity_list_off[i]) + '"' + " "                                              
-                           + "phase=" + '"' + str(phase_list_off[i]) + '"' 
-                           + "/>"  + "\n")                   
-        xml.write("</PeriodicTorsionForce>" + "\n")
-        xml.write("<NonbondedForce" + " " 
-                       + "coulomb14scale=" + '"' + self.coulomb14scale + '"' + " " 
-                       + "lj14scale=" + '"' + self.lj14scale + '"' 
-                       + ">" + "\n")
-        for i in range(len(charge_list_off)):
-            xml.write("<Atom" + " " 
-                           + "charge=" + '"' + str(qm_charges[i]) + '"' + " " 
-                           + "epsilon=" + '"' + str(epsilon_list_off[i]) + '"' + " " 
-                           + "sigma=" + '"' + str(sigma_list_off[i]) + '"' + " "   
-                           + "type=" + '"' + name_list[i] + '"' 
-                           + "/>"  + "\n")
-        xml.write("</NonbondedForce>" + "\n")
-        xml.write("</ForceField>" )
-        xml.close()
-####################################################################################################################################################################################
-class ConnectPdbGuest:
-
-    def __init__(self, xyz_file, bond_parameter_file, conect_file, guest_pdb, conect_guest_pdb, xml_file, sim_output, sim_steps):
-        self.xyz_file = xyz_file
-        self.bond_parameter_file = bond_parameter_file
-        self.conect_file = conect_file
-        self.guest_pdb = guest_pdb
-        self.conect_guest_pdb = conect_guest_pdb
-        self.xml_file = xml_file
-        self.sim_output = sim_output
-        self.sim_steps = sim_steps
-        
-    def create_conect(self):
-        """
-        This function saves a pdb file of the system with connect information.
-        """    
-        df_xyz = pd.read_csv(self.xyz_file, header = None, skiprows = 2, delimiter = r"\s+")
-        df_xyz.columns = ["element", "x_coord", "y_coord", "z_coord"]
-        no_atoms = df_xyz.shape[0]
-        #print(no_atoms)
-        df_bonds = pd.read_csv(self.bond_parameter_file, header = None, delimiter = r"\s+")
-        df_bonds.columns = ["bond", "k_bond", "bond_length", "bond_1", "bond_2"]
-        bond1 = df_bonds["bond_1"].values.tolist()
-        bond2 = df_bonds["bond_2"].values.tolist()
-        bond_list_list = []
-        for i in range(len(bond1)):
-            args = (bond1[i],bond2[i])
-            bond_list_list.append(args)
-        #print(bond_list_list)
-        list_list_connect = []
-        for i in range(no_atoms):
-            atom_index = i + 1
-            list_connect = []
-            for j in bond_list_list:
-                if j[0] == atom_index or j[1] == atom_index:
-                    list_connect.append(j)
-            list_list_connect.append(list_connect)
-        #print(list_list_connect)
-        connect_list = []
-        for i in list_list_connect:
-            if len(i) > 1:
-                connect_list.append(i)        
-        #print(connect_list)
-        connect_list_merged = []
-        for i in range(len(connect_list)):
-            merged = [k for z in connect_list[i] for k in z]
-            connect_list_merged.append(merged)
-        #print(connect_list_merged)
-        connect_list_merged_sorted = []
-        for i in range(len(connect_list_merged)):
-            sorted_list = sorted(connect_list_merged[i],key = connect_list_merged[i].count,reverse = True)
-            connect_list_merged_sorted.append(sorted_list)
-        #print(connect_list_merged_sorted)
-        connect_list_merged_sorted_unique = []
-        for i in range(len(connect_list_merged_sorted)):
-            unique_list = uniq(connect_list_merged_sorted[i])
-            connect_list_merged_sorted_unique.append(unique_list)
-        #print(connect_list_merged_sorted_unique)
-        len_list = []
-        for i in range(len(connect_list_merged_sorted_unique)):
-            len_list.append(len(connect_list_merged_sorted_unique[i]))
-        max_len = max(len_list)    
-        for i in range(len(connect_list_merged_sorted_unique)):
-            if len(connect_list_merged_sorted_unique[i]) < max_len:
-                diff = max_len - len(connect_list_merged_sorted_unique[i])
-                for j in range(diff):
-                    connect_list_merged_sorted_unique[i].append("X")            
-        #print(connect_list_merged_sorted_unique)
-        f = open(self.conect_file, 'w')
-        for i in range(len(connect_list_merged_sorted_unique)):
-            string_line = '    '.join([str(elem) for elem in connect_list_merged_sorted_unique[i]]) 
-            f.write("CONECT" + "    " + string_line + "\n")
-        f.close()
-        conect = open(self.conect_file, 'r')
-        conect_lines = conect.readlines()
-        for i in range(len(conect_lines)): 
-            words = conect_lines[i].split()
-            if len(words) == 6 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 5 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 4 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 3 :
-                conect_lines[i] = '{:>0} {:>4} {:>4}'.format(*words)  
-            if len(words) == 2:
-                conect_lines[i] = '{:>0} {:>4}'.format(*words)  
-        f = open(self.conect_file, 'w')
-        for i in range(len(conect_lines)):
-            f.write(conect_lines[i] + "\n")
-        f.close()
-        conect = open(self.conect_file, 'r')
-        conect_lines = conect.readlines()
-        for i in range(len(conect_lines)): 
-            conect_lines[i] = conect_lines[i].replace("X", "")
-        f = open(self.conect_file, 'w')
-        for i in range(len(conect_lines)):
-            f.write(conect_lines[i])
-        f.close()
-        readFile = open(self.guest_pdb)
-        pdblines = readFile.readlines()
-        readFile.close()
-        w = open(self.conect_guest_pdb,'w')
-        w.writelines([item for item in pdblines[:-1]])
-        w.close()
-        conect = open(self.conect_file, 'r')
-        conect_lines = conect.readlines()
-        with open (self.conect_guest_pdb, "a") as f:
-            for i in conect_lines:
-                f.write(i)
-        with open (self.conect_guest_pdb, "a") as f:
-            f.write("END")
-            
-    def run_openmm(self):
-        """
-        This function runs a test openmm MD simulation for the given guest pdb file 
-        with the given guest xml file.
-        """            
-        pdb = simtk.openmm.app.PDBFile(self.conect_guest_pdb)
-        forcefield = simtk.openmm.app.ForceField(self.xml_file)
-        system = forcefield.createSystem(pdb.topology)
-        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-        simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
-        simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
-        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.sim_output, self.sim_steps/10))
-        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))
-        simulation.step(self.sim_steps)
-        command = "rm -rf " + str(self.sim_output)
-        os.system(command)
-####################################################################################################################################################################################
-class TorsionDriveSims:
-    """
-    This class creates a directory where all dihedrals of the molecule undergo TorsionDrive simulations
-    """
-    def __init__(self, xyz_file, memory, charge, multiplicity, functional, basis_set, psi_input_file, dihedral_text_file, proper_dihedral_file, tor_dir, dihedral_interval, engine, xml_file, conect_guest_pdb, atom_names_file):    
-        self.xyz_file = xyz_file
-        self.memory = memory
-        self.charge = charge
-        self.multiplicity = multiplicity
-        self.functional = functional
-        self.basis_set = basis_set
-        self.psi_input_file = psi_input_file
-        self.dihedral_text_file = dihedral_text_file
-        self.proper_dihedral_file = proper_dihedral_file
-        self.tor_dir = tor_dir
-        self.dihedral_interval = dihedral_interval
-        self.engine = engine
-        self.xml_file = xml_file
-        self.conect_guest_pdb = conect_guest_pdb
-        self.atom_names_file = atom_names_file
-        
-    def create_tor_dir(self):
-        xyz_lines = open(self.xyz_file, 'r').readlines()[2:]
-        with open(self.psi_input_file, "w") as f: 
-            f.write("memory" + " " + str(self.memory)  + " " + "GB" + "\n") 
-            f.write("molecule" + " " + "{" + "\n")
-            f.write(str(self.charge) + " " + str(self.multiplicity) + "\n")
-            for line in xyz_lines:
-                f.write(line)
-            f.write("}" + "\n")
-            f.write("set"  + " " + "{" + "basis" + " " + self.basis_set + "}" + "\n")
-            f.write("gradient" + "(" + "'" + self.functional + "'"")""\n")
-        df_dihedrals = pd.read_csv(self.proper_dihedral_file, header = None, delimiter = r"\s+")
-        df_dihedrals.columns = ["atom_1", "atom_2", "atom_3", "atom_4"]
-        dihedrals_list_list = []
-        for i in range(len(df_dihedrals)):
-            dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
-        os.system("rm -rf " + self.tor_dir)
-        os.system("mkdir " + self.tor_dir)
-        parent_cwd = os.getcwd()
-        shutil.move(parent_cwd + "/" + self.psi_input_file, parent_cwd + "/" + self.tor_dir + "/" + self.psi_input_file)
-        os.chdir(parent_cwd + "/" + self.tor_dir)
-        torsion_drive_dir = os.getcwd()
-        for i in range(len(dihedrals_list_list)):
-            dir_name = "torsion_drive" + "_" + str(i)
-            os.system("rm -rf " + dir_name)
-            os.system("mkdir "  + dir_name)
-            os.chdir (torsion_drive_dir + "/" + dir_name)
-            with open(self.dihedral_text_file, "w") as f: 
-                f.write("# dihedral definition by atom indices starting from 1" + "\n")
-                f.write("# i     j     k     l" + "\n")
-                i = dihedrals_list_list[i][0]
-                j = dihedrals_list_list[i][1]
-                k = dihedrals_list_list[i][2]
-                l = dihedrals_list_list[i][3]
-                f.write(" " +  "{:< 6d}".format(i) + "{:< 6d}".format(j) + "{:< 6d}".format(k) + "{:< 6d}".format(l) +  "\n")
-                shutil.copy (torsion_drive_dir + "/" + self.psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + self.psi_input_file)
-                shutil.copy (parent_cwd + "/" + self.xml_file, torsion_drive_dir + "/" + dir_name + "/" + self.xml_file)
-                shutil.copy (parent_cwd + "/" + self.conect_guest_pdb, torsion_drive_dir + "/" + dir_name + "/" + self.conect_guest_pdb)
-                shutil.copy (parent_cwd + "/" + self.atom_names_file, torsion_drive_dir + "/" + dir_name + "/" + self.atom_names_file)
-                os.chdir(torsion_drive_dir)   
-        os.system("rm -rf "  + self.psi_input_file)
-        os.chdir(parent_cwd)  
-
-    def run_torsion_drive(self):
-        df_dihedrals = pd.read_csv(self.proper_dihedral_file, header = None, delimiter = r"\s+")
-        num_folders = len(df_dihedrals)
-        parent_cwd = os.getcwd()
-        for i in range(num_folders):
-            dir_ = "torsion_drive" + "_" + str(i)
-            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + dir_)
-            if self.engine == "psi4":
-                torsion_command = "torsiondrive-launch" + " " + self.psi_input_file + " " + self.dihedral_text_file + " " + "-g" + " " + str(self.dihedral_interval) + " " + "-e" + " " + self.engine + " " + "-v"
-            if self.engine == "openmm":
-                torsion_command = "torsiondrive-launch" + " " + self.conect_guest_pdb + " " + self.dihedral_text_file + " " + "-g" + " " + str(self.dihedral_interval) + " " + "-e" + " " + self.engine + " " + "-v"
-            os.system(torsion_command)
-            print(torsion_command)
-            os.chdir(parent_cwd)  
-####################################################################################################################################################################################
 class PrepareGaussianHost:
     
     def __init__(self, host_qm_pdb, n_processors, memory, charge, multiplicity, functional, basis_set, optimisation, frequency, add_keywords_I, add_keywords_II, add_keywords_III, gauss_out_file, fchk_out_file):
@@ -2075,834 +1485,6 @@ class ParameterizeHost:
         data_tuples = list(zip(atom_list,charge_list_value))
         df_charge = pd.DataFrame(data_tuples, columns=['Atom','Charge'])
         df_charge.to_csv (self.charge_parameter_file, index = False, header = False, sep = ' ')
-
-    def write_host_params(self):
-        """
-        This function saves the parameters obtained from the QM log files in a text file. 
-        """
-        # Charges from QM files
-        df_charges = pd.read_csv(self.charge_parameter_file, header = None, delimiter = r"\s+")
-        df_charges.columns = ["atom", "charges"]
-        qm_charges = df_charges["charges"].values.tolist()
-        qm_charges = [round(num, 6) for num in qm_charges]
-        #print(qm_charges)
-        # Bond Parameters from QM files
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_qm_pdb)
-        atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
-        #print(atom_name_list)
-        df = pd.read_csv(self.bond_parameter_file, header = None, delimiter = r"\s+")
-        df.columns = ["bond", "k_bond", "bond_length", "bond_1", "bond_2"]
-        #print(df.head())
-        bond_1_list = df["bond_1"].values.tolist()
-        bond_1_list = [x - 1 + min(atom_name_list) for x in bond_1_list]
-        bond_2_list = df["bond_2"].values.tolist()
-        bond_2_list = [x - 1 + min(atom_name_list) for x in bond_2_list]
-        #print(bond_1_list)
-        #print(bond_2_list)
-        k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i* 1000.00 for i in k_bond_list]
-        k_bond_list = [round(num, 10) for num in k_bond_list]
-        #print(k_bond_list)
-        bond_length_list = df["bond_length"].values.tolist()
-        bond_length_list = [i/10.00 for i in bond_length_list]
-        bond_length_list = [round(num, 6) for num in bond_length_list]
-        #print(bond_length_list)
-        # Angle Parameters from QM files
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_qm_pdb)
-        atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
-        #print(atom_name_list)
-        df = pd.read_csv(self.angle_parameter_file, header = None, delimiter = r"\s+")
-        df.columns = ["angle", "k_angle", "angle_degrees", "angle_1", "angle_2", "angle_3"]
-        #print(df.head())
-        angle_1_list = df["angle_1"].values.tolist()
-        angle_1_list = [x - 1 + min(atom_name_list) for x in angle_1_list]
-        #print(angle_1_list)
-        angle_2_list = df["angle_2"].values.tolist()
-        angle_2_list = [x - 1 + min(atom_name_list) for x in angle_2_list]
-        #print(angle_2_list)
-        angle_3_list = df["angle_3"].values.tolist()
-        angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
-        #print(angle_3_list)
-        k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [round(num, 6) for num in k_angle_list]
-        #print(k_angle_list)
-        angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [(i * math.pi)/180.00 for i in angle_list]
-        angle_list = [round(num, 6) for num in angle_list]
-        #print(angle_list)
-        xml = open(self.host_qm_params_file, "w")
-        xml.write("Begin writing the Bond Parameters" + "\n")
-        for i in range(len(k_bond_list)):
-            xml.write("<Bond"  + " " 
-                               + "class1=" + '"' + str(bond_1_list[i]) + '"' + " " 
-                               + "class2=" + '"' + str(bond_2_list[i]) + '"' + " " 
-                               + "k=" + '"' + str(k_bond_list[i]) + '"' + " " 
-                               + "length=" + '"' + str(bond_length_list[i]) + '"' 
-                               + "/>"  + "\n")  
-        xml.write("Finish writing the Bond Parameters" + "\n")
-        xml.write("Begin writing the Angle Parameters" + "\n")
-        for i in range(len(k_angle_list)):
-            xml.write("<Angle" + " " 
-                               + "angle=" + '"' + str(angle_list[i]) + '"' + " " 
-                               + "class1=" + '"' + str(angle_1_list[i]) + '"' + " " 
-                               + "class2=" + '"' + str(angle_2_list[i]) + '"' + " " 
-                               + "class3=" + '"' + str(angle_3_list[i]) + '"' + " " 
-                               + "k=" + '"' + str(k_angle_list[i]) + '"' 
-                               + "/>"  + "\n")
-        xml.write("Finish writing the Angle Parameters" + "\n")    
-        xml.write("Begin writing the Charge Parameters" + "\n")
-        for i in range(len(qm_charges)):
-            xml.write("<Atom" + " " 
-                              + "charge=" + '"' + str(qm_charges[i]) + '"' + " " 
-                              + "epsilon=" + '"' + str(0.00) + '"' + " " 
-                              + "sigma=" + '"' + str(0.00) + '"' + " "   
-                              + "type=" + '"' + "host_" + str(atom_name_list[i]) + '"' 
-                              + "/>"  + "\n")
-        xml.write("Finish writing the Charge Parameters" + "\n")    
-        xml.close()
-
-    def serialise_host(self):
-        pdb = simtk.openmm.app.PDBFile(self.host_pdb)
-        forcefield = simtk.openmm.app.ForceField(self.ffxml)
-        system = forcefield.createSystem(pdb.topology)
-        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-        simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
-        simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
-        state = simulation.context.getState(getEnergy=True)
-        energy = state.getPotentialEnergy()
-        print("The potential energy of the system is ", energy)
-        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.sim_output, self.sim_steps/10))
-        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))
-        simulation.step(self.sim_steps)
-        command = "rm -rf " + str(self.sim_output)
-        os.system(command)
-        with open(self.host_xml, 'w') as f:
-            f.write(simtk.openmm.XmlSerializer.serialize(system))
-            
-    def create_host_xml(self):
-        """ 
-        This function takes in the GAFF file and generates an xml forcefield file.
-        """
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_pdb)
-        atom_numbers  = ppdb.df["ATOM"]["atom_number"].values.tolist()
-        atom_numbers = [str(i) for i in atom_numbers]
-        df_atom_names = pd.DataFrame(atom_numbers,columns=['atom_name'])
-        res_name_list = [self.host_residue_name] * df_atom_names.shape[0]
-        df_res_name = pd.DataFrame(res_name_list,columns=['residue_name'])
-        res_number_list = ["1"] * df_atom_names.shape[0]
-        df_res_number = pd.DataFrame(res_number_list,columns=['residue_number'])
-        ppdb.df["ATOM"]["atom_name"] = df_atom_names["atom_name"]
-        ppdb.df["ATOM"]["residue_name"] = df_res_name["residue_name"]
-        ppdb.df["ATOM"]["residue_number"] = df_res_number["residue_number"]
-        #print(ppdb.df["ATOM"].head())
-        ppdb.to_pdb(path = self.host_singular_file)
-        intermediate_pdb_file = self.host_singular_file[:-3] + "_intermediate.pdb"
-        with open(self.host_singular_file, 'r') as f1, open(intermediate_pdb_file, 'w') as f2:
-            for line in f1.readlines():
-                if not (line.startswith('CONECT')):
-                    f2.write(line)
-        command = "rm -rf " + self.host_singular_file
-        os.system(command)
-        command = "mv " + intermediate_pdb_file + " " + self.host_singular_file
-        os.system(command)
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_singular_file)
-        #print(ppdb.df["ATOM"].tail())
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "</PeriodicBoxVectors>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "<Constraints/>" in xml_off_lines[i]:
-                to_end = int(i)   
-        atom_masses = xml_off_lines[to_begin + 2 : to_end - 1]
-        list_atom_masses = []
-        for i in range(len(atom_masses)):
-            list_atom_masses.append(float(re.findall('\d*\.?\d+',atom_masses[i])[0]))
-        #print(list_atom_masses)
-        #print(len(list_atom_masses))
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_singular_file)
-        element_symbol = ppdb.df["ATOM"]["element_symbol"].values.tolist()
-        #print(element_symbol)
-        #print(len(element_symbol))
-        class_list = ppdb.df["ATOM"]["atom_name"].values.tolist()
-        #print(class_list)
-        #print(len(class_list))
-        name_list = ["host_" + i for i in class_list]
-        #print(name_list)
-        #print(len(name_list))
-        #Bond Parameters
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<Bonds>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "</Bonds>" in xml_off_lines[i]:
-                to_end = int(i)  
-        bond_params = xml_off_lines[to_begin + 1:to_end]
-        for i in range(len(bond_params)):
-            bond_params[i] = bond_params[i].strip()
-            bond_params[i] = bond_params[i].replace("p1","class1")
-            bond_params[i] = bond_params[i].replace("p2","class2")
-            bond_params[i] = bond_params[i].replace("d=","length=") 
-        k_list_bonds_off = []
-        for i in range(len(bond_params)):
-            k_list_bonds_off.append(float(re.findall('\d*\.?\d+',bond_params[i])[1]))
-        k_list_bonds_off = [round(num, 10) for num in k_list_bonds_off]
-        #print(k_list_bonds_off)
-        #print(len(k_list_bonds_off))
-        class1_bonds = []
-        for i in range(len(bond_params)):
-            class1_bonds.append(int(re.findall('\d*\.?\d+',bond_params[i])[3]))
-        #print(class1_bonds)
-        #print(len(class1_bonds))
-        class2_bonds = []
-        for i in range(len(bond_params)):
-            class2_bonds.append(int(re.findall('\d*\.?\d+',bond_params[i])[5]))
-        #print(class2_bonds)
-        #print(len(class2_bonds))
-        bond_list_off = []
-        for i in range(len(bond_params)):
-            bond_list_off.append(float(re.findall('\d*\.?\d+',bond_params[i])[0]))
-        bond_list_off = [round(num, 10) for num in bond_list_off]
-        #print(bond_list_off)
-        #print(len(bond_list_off))
-        data_tuples = list(zip(bond_list_off, class1_bonds, class2_bonds, k_list_bonds_off))
-        df_bond = pd.DataFrame(data_tuples, columns=['bond','class1','class2','k'])
-        #print(df_bond.head())
-        class_1_list_bonds = df_bond["class1"].to_list()
-        class_2_list_bonds = df_bond["class2"].to_list()
-        df_atoms = pd.DataFrame(class_list,columns=['atom'])
-        class_1_atoms_bonds = []
-        for i in class_1_list_bonds:
-            class_1_atoms_bonds.append(df_atoms['atom'].iloc[i])
-        class_2_atoms_bonds = []
-        for i in class_2_list_bonds:
-            class_2_atoms_bonds.append(df_atoms['atom'].iloc[i])
-        data_tuples = list(zip(class_1_atoms_bonds, class_2_atoms_bonds))
-        df_bond_atoms = pd.DataFrame(data_tuples, columns=['class1_atoms','class2_atoms'])
-        #print(df_bond_atoms.head()
-        frames = [df_bond, df_bond_atoms]  
-        df_concat_bonds = pd.concat(frames, axis = 1)   
-        #print(df_concat_bonds.tail())
-        k_list_bonds_off = df_concat_bonds["k"].values.tolist()
-        k_list_bonds_off = [round(num, 6) for num in k_list_bonds_off]
-        #print(k_list_bonds_off)
-        #print(len(k_list_bonds_off))
-        class1_bond_list_off = df_concat_bonds["class1_atoms"].values.tolist()
-        #print(class1_bond_list_off)
-        #print(len(class1_bond_list_off))
-        class2_bond_list_off = df_concat_bonds["class2_atoms"].values.tolist()
-        #print(class2_bond_list_off)
-        #print(len(class2_bond_list_off))
-        bond_list_off = df_concat_bonds["bond"].values.tolist()
-        bond_list_off = [round(num, 6) for num in bond_list_off]
-        #print(bond_list_off)
-        #print(len(bond_list_off))
-        #Angle Parameters
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<Angles>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "</Angles>" in xml_off_lines[i]:
-                to_end = int(i)  
-        angle_params = xml_off_lines[to_begin + 1:to_end]
-        for i in range(len(angle_params)):
-            angle_params[i] = angle_params[i].strip()
-            angle_params[i] = angle_params[i].replace("p1","class1")
-            angle_params[i] = angle_params[i].replace("p2","class2")
-            angle_params[i] = angle_params[i].replace("p3","class3")
-            angle_params[i] = angle_params[i].replace("a=","angle=")  
-        k_list_angles_off = []
-        for i in range(len(angle_params)):
-            k_list_angles_off.append(float(re.findall('\d*\.?\d+',angle_params[i])[1]))
-        k_list_angles_off = [round(num, 10) for num in k_list_angles_off]
-        #print(k_list_angles_off)
-        #print(len(k_list_angles_off))
-        class1_angles = []
-        for i in range(len(angle_params)):
-            class1_angles.append(int(re.findall('\d*\.?\d+',angle_params[i])[3]))
-        #print(class1_angles)
-        class2_angles = []
-        for i in range(len(angle_params)):
-            class2_angles.append(int(re.findall('\d*\.?\d+',angle_params[i])[5]))
-        #print(class2_angles)
-        class3_angles = []
-        for i in range(len(angle_params)):
-            class3_angles.append(int(re.findall('\d*\.?\d+',angle_params[i])[7]))
-        #print(class3_angles)
-        angle_list_off = []
-        for i in range(len(angle_params)):
-            angle_list_off.append(float(re.findall('\d*\.?\d+',angle_params[i])[0]))
-        angle_list_off = [round(num, 10) for num in angle_list_off]
-        #print(angle_list_off)
-        data_tuples = list(zip(angle_list_off, class1_angles, class2_angles, class3_angles, k_list_angles_off))
-        df_angle = pd.DataFrame(data_tuples, columns=['angle','class1','class2','class3','k'])
-        #print(df_angle.head())
-        class_1_list_angles = df_angle["class1"].to_list()
-        class_2_list_angles = df_angle["class2"].to_list()
-        class_3_list_angles = df_angle["class3"].to_list()
-        df_atoms = pd.DataFrame(class_list,columns=['atom'])
-        class_1_atoms_angles = []
-        for i in class_1_list_angles:
-            class_1_atoms_angles.append(df_atoms['atom'].iloc[i])
-        class_2_atoms_angles = []
-        for i in class_2_list_angles:
-            class_2_atoms_angles.append(df_atoms['atom'].iloc[i])
-        class_3_atoms_angles = []
-        for i in class_3_list_angles:
-            class_3_atoms_angles.append(df_atoms['atom'].iloc[i])
-        data_tuples = list(zip(class_1_atoms_angles, class_2_atoms_angles, class_3_atoms_angles))
-        df_angle_atoms = pd.DataFrame(data_tuples, columns=['class1_atoms','class2_atoms','class3_atoms'])
-        #print(df_angle_atoms.head())
-        frames = [df_angle, df_angle_atoms]  
-        df_concat_angles = pd.concat(frames, axis = 1)   
-        #print(df_concat_angles.tail())
-        k_list_angles_off = df_concat_angles["k"].values.tolist()
-        k_list_angles_off = [round(num, 6) for num in k_list_angles_off]
-        #print(k_list_angles_off)
-        #print(len(k_list_angles_off))
-        class1_angle_list_off = df_concat_angles["class1_atoms"].values.tolist()
-        #print(class1_angle_list_off)
-        #print(len(class1_angle_list_off))
-        class2_angle_list_off = df_concat_angles["class2_atoms"].values.tolist()
-        #print(class2_angle_list_off)
-        #print(len(class2_angle_list_off))
-        class3_angle_list_off = df_concat_angles["class3_atoms"].values.tolist()
-        #print(class3_angle_list_off)
-        #print(len(class3_angle_list_off))
-        angle_list_off = df_concat_angles["angle"].values.tolist()
-        angle_list_off = [round(num, 6) for num in angle_list_off]
-        #print(angle_list_off)
-        #print(len(angle_list_off))
-        #Torsion Parameters
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<Torsions>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "</Torsions>" in xml_off_lines[i]:
-                to_end = int(i)  
-        torsion_params = xml_off_lines[to_begin + 1:to_end]
-        for i in range(len(torsion_params)):
-            torsion_params[i] = torsion_params[i].strip()
-            torsion_params[i] = torsion_params[i].replace("p1","class1")
-            torsion_params[i] = torsion_params[i].replace("p2","class2")
-            torsion_params[i] = torsion_params[i].replace("p3","class3")
-            torsion_params[i] = torsion_params[i].replace("p4","class4")
-            torsion_params[i] = torsion_params[i].replace("Torsion","Proper")  
-        k_list_torsions_off = []
-        for i in range(len(torsion_params)):
-            k_list_torsions_off.append(float(re.findall('\d*\.?\d+',torsion_params[i])[0]))
-        k_list_torsions_off = [round(num, 10) for num in k_list_torsions_off]
-        #print(k_list_torsions_off)
-        class1_torsions = []
-        for i in range(len(torsion_params)):
-            class1_torsions.append(int(re.findall('\d*\.?\d+',torsion_params[i])[2]))
-        #print(class1_torsions)
-        class2_torsions = []
-        for i in range(len(torsion_params)):
-            class2_torsions.append(int(re.findall('\d*\.?\d+',torsion_params[i])[4]))
-        #print(class2_torsions)
-        class3_torsions = []
-        for i in range(len(torsion_params)):
-            class3_torsions.append(int(re.findall('\d*\.?\d+',torsion_params[i])[6]))
-        #print(class3_torsions)
-        class4_torsions = []
-        for i in range(len(torsion_params)):
-            class4_torsions.append(int(re.findall('\d*\.?\d+',torsion_params[i])[8]))
-        #print(class4_torsions)
-        periodicity_torsions = []
-        for i in range(len(torsion_params)):
-            periodicity_torsions.append(int(re.findall('\d*\.?\d+',torsion_params[i])[9]))
-        #print(periodicity_torsions)
-        phase_torsions = []
-        for i in range(len(torsion_params)):
-            phase_torsions.append(float(re.findall('\d*\.?\d+',torsion_params[i])[10]))
-        phase_torsions = [round(num, 8) for num in phase_torsions]
-        #print(phase_torsions)
-        data_tuples = list(zip(k_list_torsions_off, class1_torsions, class2_torsions, class3_torsions, class4_torsions, periodicity_torsions, phase_torsions))
-        df_tor = pd.DataFrame(data_tuples, columns=['k','class1','class2','class3','class4','periodicity','phase'])
-        #print(df_tor.head())
-        class_1_list_torsions = df_tor["class1"].to_list()
-        class_2_list_torsions = df_tor["class2"].to_list()
-        class_3_list_torsions = df_tor["class3"].to_list()
-        class_4_list_torsions = df_tor["class4"].to_list()
-        df_atoms = pd.DataFrame(class_list, columns=['atom'])
-        class_1_atoms_torsions = []
-        for i in class_1_list_torsions:
-            class_1_atoms_torsions.append(df_atoms['atom'].iloc[i])
-        class_2_atoms_torsions = []
-        for i in class_2_list_torsions:
-            class_2_atoms_torsions.append(df_atoms['atom'].iloc[i])
-        class_3_atoms_torsions = []
-        for i in class_3_list_torsions:
-            class_3_atoms_torsions.append(df_atoms['atom'].iloc[i])
-        class_4_atoms_torsions = []
-        for i in class_4_list_torsions:
-            class_4_atoms_torsions.append(df_atoms['atom'].iloc[i])
-        data_tuples = list(zip(class_1_atoms_torsions, class_2_atoms_torsions, class_3_atoms_torsions, class_4_atoms_torsions))
-        df_tor_atoms = pd.DataFrame(data_tuples, columns=['class1_atoms','class2_atoms','class3_atoms','class4_atoms'])
-        #print(df_tor_atoms.head())
-        frames = [df_tor, df_tor_atoms]  
-        df_concat = pd.concat(frames, axis = 1)   
-        #print(df_concat.tail())
-        k_list_torsions_off = df_concat["k"].values.tolist()
-        k_list_torsions_off = [round(num, 6) for num in k_list_torsions_off]
-        #print(k_list_torsions_off)
-        #print(len(k_list_torsions_off))
-        class1_torsion_list_off = df_concat["class1_atoms"].values.tolist()
-        #print(class1_torsion_list_off)
-        #print(len(class1_torsion_list_off))
-        class2_torsion_list_off = df_concat["class2_atoms"].values.tolist()
-        #print(class2_torsion_list_off)
-        #print(len(class2_torsion_list_off))
-        class3_torsion_list_off = df_concat["class3_atoms"].values.tolist()
-        #print(class3_torsion_list_off)
-        #print(len(class3_torsion_list_off))
-        class4_torsion_list_off = df_concat["class4_atoms"].values.tolist()
-        #print(class4_torsion_list_off)
-        #print(len(class4_torsion_list_off))
-        periodicity_torsion_list_off = df_concat["periodicity"].values.tolist()
-        #print(periodicity_torsion_list_off)
-        #print(len(periodicity_torsion_list_off))
-        phase_torsion_list_off = df_concat["phase"].values.tolist()
-        phase_torsion_list_off = [round(num, 6) for num in phase_torsion_list_off]
-        #print(phase_torsion_list_off)
-        #print(len(phase_torsion_list_off))
-        #NonBond Parameters
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<GlobalParameters/>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "<Exceptions>" in xml_off_lines[i]:
-                to_end = int(i)  
-        nonbond_params = xml_off_lines[to_begin + 4 : to_end - 1]
-        for i in range(len(nonbond_params)):
-            nonbond_params[i] = nonbond_params[i].strip()
-            nonbond_params[i] = nonbond_params[i].replace("sig","sigma")
-            nonbond_params[i] = nonbond_params[i].replace("q=","charge=")
-            nonbond_params[i] = nonbond_params[i].replace("eps","epsilon") 
-        epsilon = []
-        for i in range(len(nonbond_params)):
-            epsilon.append(float(re.findall('[-+]?\d*\.\d+|\d+',nonbond_params[i])[0]))
-        epsilon = [round(num, 10) for num in epsilon]
-        #print(epsilon)
-        #print(len(epsilon))
-        charge = []
-        for i in range(len(nonbond_params)):
-            charge.append(float(re.findall('[-+]?\d*\.\d+|\d+',nonbond_params[i])[1]))
-        charge = [round(num, 10) for num in charge]
-        #print(charge)
-        #print(len(charge))
-        sigma = []
-        for i in range(len(nonbond_params)):
-            sigma.append(float(re.findall('[-+]?\d*\.\d+|\d+',nonbond_params[i])[2]))
-        sigma = [round(num, 10) for num in sigma]
-        #print(sigma)
-        #print(len(sigma))
-        #Create connect information   
-        ppdb = PandasPdb()
-        ppdb.read_pdb(self.host_singular_file)
-        no_atoms = ppdb.df["ATOM"].shape[0]
-        class1_bond_list_connect_off = [int(i) for i in class1_bond_list_off]
-        class2_bond_list_connect_off = [int(i) for i in class2_bond_list_off]
-        bond_list_list = []
-        for i in range(len(class1_bond_list_connect_off)):
-            args = (class1_bond_list_connect_off[i],class2_bond_list_connect_off[i])
-            bond_list_list.append(args)
-        #print(bond_list_list)
-        list_list_connect = []
-        for i in range(no_atoms):
-            atom_index = i + 1
-            list_connect = []
-            for j in bond_list_list:
-                if j[0] == atom_index or j[1] == atom_index:
-                    list_connect.append(j)
-            list_list_connect.append(list_connect)
-        #print(list_list_connect)
-        connect_list = []
-        for i in list_list_connect:
-            if len(i) > 1:
-                connect_list.append(i)        
-        #print(connect_list)
-        connect_list_merged = []
-        for i in range(len(connect_list)):
-            merged = [k for z in connect_list[i] for k in z]
-            connect_list_merged.append(merged)
-        #print(connect_list_merged)
-        connect_list_merged_sorted = []
-        for i in range(len(connect_list_merged)):
-            sorted_list = sorted(connect_list_merged[i],key = connect_list_merged[i].count,reverse = True)
-            connect_list_merged_sorted.append(sorted_list)
-        #print(connect_list_merged_sorted)
-        connect_list_merged_sorted_unique = []
-        for i in range(len(connect_list_merged_sorted)):
-            unique_list = uniq(connect_list_merged_sorted[i])
-            connect_list_merged_sorted_unique.append(unique_list)
-        #print(connect_list_merged_sorted_unique)
-        len_list = []
-        for i in range(len(connect_list_merged_sorted_unique)):
-            len_list.append(len(connect_list_merged_sorted_unique[i]))
-        max_len = max(len_list)    
-        for i in range(len(connect_list_merged_sorted_unique)):
-            if len(connect_list_merged_sorted_unique[i]) < max_len:
-                diff = max_len - len(connect_list_merged_sorted_unique[i])
-                for j in range(diff):
-                    connect_list_merged_sorted_unique[i].append("X")            
-        #print(connect_list_merged_sorted_unique)
-        f = open(self.conect_pdb_txt, 'w')
-        for i in range(len(connect_list_merged_sorted_unique)):
-            string_line = '    '.join([str(elem) for elem in connect_list_merged_sorted_unique[i]]) 
-            f.write("CONECT" + "    " + string_line + "\n")
-        f.close()
-        conect = open(self.conect_pdb_txt, 'r')
-        conect_lines = conect.readlines()
-        for i in range(len(conect_lines)): 
-            words = conect_lines[i].split()
-            if len(words) == 6 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 5 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 4 :
-                conect_lines[i] = '{:>0} {:>4} {:>4} {:>4}'.format(*words)  
-            if len(words) == 3 :
-                conect_lines[i] = '{:>0} {:>4} {:>4}'.format(*words)  
-            if len(words) == 2:
-                conect_lines[i] = '{:>0} {:>4}'.format(*words)  
-        f = open(self.conect_pdb_txt, 'w')
-        for i in range(len(conect_lines)):
-            f.write(conect_lines[i] + "\n")
-        f.close()
-        conect = open(self.conect_pdb_txt, 'r')
-        conect_lines = conect.readlines()
-        for i in range(len(conect_lines)): 
-            conect_lines[i] = conect_lines[i].replace("X", "")
-        f = open(self.conect_pdb_txt, 'w')
-        for i in range(len(conect_lines)):
-            f.write(conect_lines[i])
-        f.close()
-        readFile = open(self.host_singular_file)
-        pdblines = readFile.readlines()
-        readFile.close()
-        w = open(self.conect_pdb_file,'w')
-        w.writelines([item for item in pdblines[:-1]])
-        w.close()
-        conect = open(self.conect_pdb_txt, 'r')
-        conect_lines = conect.readlines()
-        with open (self.conect_pdb_file, "a") as f:
-            for i in conect_lines:
-                f.write(i)
-        with open (self.conect_pdb_file, "a") as f:
-            f.write("END")    
-        #Exceptions
-        xml_off = open(self.host_xml, 'r') 
-        xml_off_lines = xml_off.readlines() 
-        for i in range(len(xml_off_lines)):
-            if "<Exceptions>" in xml_off_lines[i]:
-                to_begin = int(i)
-            if "</Exceptions>" in xml_off_lines[i]:
-                to_end = int(i)  
-        exception_params = xml_off_lines[to_begin + 1 : to_end]
-        for i in range(len(exception_params)):
-            exception_params[i] = exception_params[i].strip()
-            exception_params[i] = exception_params[i].replace("p1","class1") 
-            exception_params[i] = exception_params[i].replace("p2","class2") 
-            exception_params[i] = exception_params[i].replace("sig","sigma") 
-            exception_params[i] = exception_params[i].replace("eps","epsilon")
-            exception_params[i] = exception_params[i].replace("q=","charge=")
-        epsilon_exceptions = []
-        for i in range(len(exception_params)):
-            epsilon_exceptions.append(float(re.findall('[-+]?\d*\.\d+|\d+',exception_params[i])[0]))
-        epsilon_exceptions = [round(num, 10) for num in epsilon_exceptions]
-        #print(epsilon_exceptions)
-        #print(len(epsilon_exceptions))
-        charge_exceptions = []
-        for i in range(len(exception_params)):
-            charge_exceptions.append(float(re.findall('[-+]?\d*\.\d+|\d+',exception_params[i])[5]))
-        charge_exceptions = [round(num, 10) for num in charge_exceptions]
-        #print(charge_exceptions)
-        #print(len(charge_exceptions))
-        sigma_exceptions = []
-        for i in range(len(exception_params)):
-            sigma_exceptions.append(float(re.findall('[-+]?\d*\.\d+|\d+',exception_params[i])[6]))
-        sigma_exceptions = [round(num, 10) for num in sigma_exceptions]
-        #print(sigma_exceptions)
-        #print(len(sigma_exceptions))
-        class1_exceptions = []
-        for i in range(len(exception_params)):
-            class1_exceptions.append(int(re.findall('\d*\.?\d+',exception_params[i])[2]))
-        #print(class1_exceptions)
-        class2_exceptions = []
-        for i in range(len(exception_params)):
-            class2_exceptions.append(int(re.findall('\d*\.?\d+',exception_params[i])[4]))
-        #print(class2_exceptions)
-        data_tuples = list(zip(epsilon_exceptions, charge_exceptions, sigma_exceptions, class1_exceptions, class2_exceptions))
-        df_exception = pd.DataFrame(data_tuples, columns=['epsilon','charge','sigma','class1','class2'])
-        #print(df_exception.head())
-        class_1_list_exceptions = df_exception["class1"].to_list()
-        class_2_list_exceptions = df_exception["class2"].to_list()
-        df_atoms = pd.DataFrame(class_list, columns=['atom'])
-        class_1_atoms_exceptions = []
-        for i in class_1_list_exceptions:
-            class_1_atoms_exceptions.append(df_atoms['atom'].iloc[i])
-        class_2_atoms_exceptions = []
-        for i in class_2_list_exceptions:
-            class_2_atoms_exceptions.append(df_atoms['atom'].iloc[i])
-        data_tuples = list(zip(class_1_atoms_exceptions, class_2_atoms_exceptions))
-        df_exceptions_atoms = pd.DataFrame(data_tuples, columns=['class1_atoms','class2_atoms'])
-        #print(df_exceptions_atoms.head())
-        frames = [df_exception, df_exceptions_atoms]  
-        df_concat = pd.concat(frames, axis = 1)   
-        #print(df_concat.tail())
-        class1_exception_list_off = df_concat["class1_atoms"].values.tolist()
-        #print(class1_exception_list_off)
-        #print(len(class1_exception_list_off))
-        class2_exception_list_off = df_concat["class2_atoms"].values.tolist()
-        #print(class2_exception_list_off)
-        #print(len(class2_exception_list_off))
-        epsilon_exception_list_off = df_concat["epsilon"].values.tolist()
-        epsilon_exception_list_off = [round(num, 6) for num in epsilon_exception_list_off]
-        #print(epsilon_exception_list_off)
-        #print(len(epsilon_exception_list_off))
-        charge_exception_list_off = df_concat["charge"].values.tolist()
-        charge_exception_list_off = [round(num, 6) for num in charge_exception_list_off]
-        #print(charge_exception_list_off)
-        #print(len(charge_exception_list_off))
-        sigma_exception_list_off = df_concat["sigma"].values.tolist()
-        sigma_exception_list_off = [round(num, 6) for num in sigma_exception_list_off]
-        #print(sigma_exception_list_off)
-        #print(len(sigma_exception_list_off))
-        xml = open(self.host_singular_xml_file, "w")
-        xml.write("<?xml version=" + '"' + "1.0" + '"' + " " + "?>" "\n")
-        xml.write("<ForceField>" + "\n")
-        xml.write("<AtomTypes>" + "\n")
-        for i in range(len(list_atom_masses)):
-            xml.write("<Type" + " " 
-                              + "class=" + '"' + class_list[i] + '"' + " " 
-                              + "element=" + '"' + element_symbol[i] + '"' + " " 
-                              + "mass=" + '"' + str(list_atom_masses[i]) + '"' + " " 
-                              + "name=" + '"' + name_list[i] + '"' 
-                              + "/>"  + "\n")
-        xml.write("</AtomTypes>" + "\n")
-        xml.write("<Residues>" + "\n")
-        xml.write("<Residue name=" + '"' + self.host_residue_name + '"' + ">" + "\n")
-        for i in range(len(list_atom_masses)):
-            xml.write("<Atom" + " " 
-                              + "name=" + '"' + class_list[i] + '"' + " " 
-                              + "type=" + '"' + name_list[i] + '"' 
-                              + "/>"  + "\n")
-        for i in range(len(class1_bonds)):
-            xml.write("<Bond" + " " 
-                              + "from=" + '"' + str(class1_bonds[i]) + '"' + " " 
-                              + "to=" + '"' + str(class2_bonds[i]) + '"' 
-                              + "/>"  + "\n")
-        xml.write("</Residue>" + "\n")
-        xml.write("</Residues>" + "\n")
-        xml.write("<HarmonicBondForce>" + "\n")
-        for i in range(len(bond_list_off)):
-            xml.write("<Bond" + " " 
-                              + "class1=" + '"' + class1_bond_list_off[i] + '"' + " " 
-                              + "class2=" + '"' + class2_bond_list_off[i] + '"' + " " 
-                              + "k=" + '"' + str(k_list_bonds_off[i]) + '"' + " " 
-                              + "length=" + '"' + str(bond_list_off[i]) + '"' 
-                              + "/>"  + "\n")
-        xml.write("</HarmonicBondForce>" + "\n")
-        xml.write("<HarmonicAngleForce>" + "\n")
-        for i in range(len(angle_list_off)):
-            xml.write("<Angle" + " " 
-                               + "angle=" + '"' + str(angle_list_off[i]) + '"' + " " 
-                               + "class1=" + '"' + class1_angle_list_off[i] + '"' + " " 
-                               + "class2=" + '"' + class2_angle_list_off[i] + '"' + " " 
-                               + "class3=" + '"' + class3_angle_list_off[i] + '"' + " " 
-                               + "k=" + '"' + str(k_list_angles_off[i]) + '"' 
-                               + "/>"  + "\n")
-        xml.write("</HarmonicAngleForce>" + "\n")
-        xml.write("<PeriodicTorsionForce>" + "\n")
-        for i in range(len(k_list_torsions_off)):
-            xml.write("<Proper" + " " 
-                                + "k=" + '"' + str(k_list_torsions_off[i]) + '"' + " " 
-                                + "class1=" + '"' + str(class1_torsion_list_off[i]) + '"' + " " 
-                                + "class2=" + '"' + str(class2_torsion_list_off[i]) + '"' + " " 
-                                + "class3=" + '"' + str(class3_torsion_list_off[i]) + '"' + " " 
-                                + "class4=" + '"' + str(class4_torsion_list_off[i]) + '"' + " " 
-                                + "periodicity=" + '"' + str(periodicity_torsion_list_off[i]) + '"' + " "                                              
-                                + "phase=" + '"' + str(phase_torsion_list_off[i]) + '"' 
-                                + "/>"  + "\n") 
-        xml.write("</PeriodicTorsionForce>" + "\n")
-        xml.write("<NonbondedForce" + " " 
-                                + "coulomb14scale=" + '"' + self.coulomb14scale + '"' + " " 
-                                + "lj14scale=" + '"' + self.lj14scale + '"' 
-                                + ">" + "\n")
-        for i in range(len(name_list)):
-            xml.write("<Atom" + " " 
-                                + "charge=" + '"' + str(charge[i]) + '"' + " " 
-                                + "epsilon=" + '"' + str(epsilon[i]) + '"' + " " 
-                                + "sigma=" + '"' + str(sigma[i]) + '"' + " "   
-                                + "type=" + '"' + name_list[i] + '"' 
-                                + "/>"  + "\n")   
-        xml.write("</NonbondedForce>" + "\n")
-        xml.write("</ForceField>" )
-        xml.close()  
-        
-    def run_host_mm(self):
-        pdb = simtk.openmm.app.PDBFile(self.conect_pdb_file)
-        forcefield = simtk.openmm.app.ForceField(self.host_singular_xml_file)
-        system = forcefield.createSystem(pdb.topology)
-        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-        simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
-        simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
-        state = simulation.context.getState(getEnergy=True)
-        energy = state.getPotentialEnergy()
-        print(energy)
-        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.sim_output, self.sim_steps/10))
-        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))
-        simulation.step(self.sim_steps)
-        command = "rm -rf " + str(self.sim_output)
-        os.system(command)
-        
-    def write_reparameterised_host_xml(self):
-        """
-        This function replaces the angle, bond and charge parameters in the host forcefield file 
-        with the QM generated features.
-        """
-        f = open(self.host_qm_params_file, 'r')
-        lines_params = f.readlines()
-        # Bond Parameters
-        for i in range(len(lines_params)):
-            if "Begin writing the Bond Parameters" in lines_params[i]:
-                to_begin = int(i)
-            if "Finish writing the Bond Parameters" in lines_params[i]:
-                to_end = int(i)  
-        bond_params = lines_params[to_begin + 1:to_end]
-        index_search_replace_bond = []
-        for i in bond_params:
-            bond_line_to_replace = i
-            #print(bond_line_to_replace)
-            atom_number_list = [re.findall('\d*\.?\d+', i)[1], re.findall('\d*\.?\d+', i)[3]]
-            #print(atom_number_list)
-            comb_1 = "<Bond"  + " " + "class1=" + '"' + atom_number_list[0] + '"' + " " + "class2=" + '"' + atom_number_list[1] + '"'
-            comb_2 = "<Bond"  + " " + "class1=" + '"' + atom_number_list[1] + '"' + " " + "class2=" + '"' + atom_number_list[0] + '"'
-            comb_list_bond = [comb_1, comb_2]
-            #print(comb_list_bond)
-            list_search_bond = [search_in_file(file = self.host_singular_xml_file, word = comb_1),search_in_file(file = self.host_singular_xml_file, word = comb_2)]
-            #print(list_search_bond)
-            for j in range(len(list_search_bond)):
-                if list_search_bond[j] != []:
-                    to_add = (list_search_bond[j],i)
-                    #print(to_add)
-                    index_search_replace_bond.append(to_add)
-        # Angle Parameters
-        for i in range(len(lines_params)):
-            if "Begin writing the Angle Parameters" in lines_params[i]:
-                to_begin = int(i)
-            if "Finish writing the Angle Parameters" in lines_params[i]:
-                to_end = int(i)  
-        angle_params = lines_params[to_begin + 1:to_end]
-        index_search_replace_angle = []
-        for i in angle_params:
-            angle_line_to_replace = i
-            #print(angle_line_to_replace)
-            atom_number_list = [re.findall('\d*\.?\d+', i)[2], re.findall('\d*\.?\d+', i)[4], re.findall('\d*\.?\d+', i)[6]]
-            #print(atom_number_list)
-            comb_1 = "class1=" + '"' + atom_number_list[0] + '"' + " " + "class2=" + '"' + atom_number_list[1] + '"' + " " + "class3=" + '"' + atom_number_list[2] + '"' + " " + "k=" 
-            comb_2 = "class1=" + '"' + atom_number_list[0] + '"' + " " + "class2=" + '"' + atom_number_list[2] + '"' + " " + "class3=" + '"' + atom_number_list[1] + '"' + " " + "k="
-            comb_3 = "class1=" + '"' + atom_number_list[1] + '"' + " " + "class2=" + '"' + atom_number_list[0] + '"' + " " + "class3=" + '"' + atom_number_list[2] + '"' + " " + "k="
-            comb_4 = "class1=" + '"' + atom_number_list[1] + '"' + " " + "class2=" + '"' + atom_number_list[2] + '"' + " " + "class3=" + '"' + atom_number_list[0] + '"' + " " + "k=" 
-            comb_5 = "class1=" + '"' + atom_number_list[2] + '"' + " " + "class2=" + '"' + atom_number_list[0] + '"' + " " + "class3=" + '"' + atom_number_list[1] + '"' + " " + "k="
-            comb_6 = "class1=" + '"' + atom_number_list[2] + '"' + " " + "class2=" + '"' + atom_number_list[1] + '"' + " " + "class3=" + '"' + atom_number_list[0] + '"' + " " + "k="
-            comb_list_angle = [comb_1, comb_2, comb_3, comb_4, comb_5, comb_6]
-            #print(comb_list_angle)    
-            list_search_angle = [search_in_file(file = self.host_singular_xml_file, word = comb_1), 
-                                 search_in_file(file = self.host_singular_xml_file, word = comb_2),
-                                 search_in_file(file = self.host_singular_xml_file, word = comb_3),
-                                 search_in_file(file = self.host_singular_xml_file, word = comb_4),
-                                 search_in_file(file = self.host_singular_xml_file, word = comb_5),
-                                 search_in_file(file = self.host_singular_xml_file, word = comb_6)]
-            #print(list_search_angle)
-            for j in range(len(list_search_angle)):
-                if list_search_angle[j] != []:
-                    to_add = (list_search_angle[j],i)
-                    #print(to_add)
-                    index_search_replace_angle.append(to_add)       
-        f_org = open(self.host_singular_xml_file)
-        lines = f_org.readlines()
-        for i in range(len(index_search_replace_bond)):
-            line_number = index_search_replace_bond[i][0][0][0] - 1
-            line_to_replace = index_search_replace_bond[i][0][0][1]
-            line_to_replace_with = index_search_replace_bond[i][1]
-            lines[line_number] = line_to_replace_with 
-        for i in range(len(index_search_replace_angle)):
-            line_number = index_search_replace_angle[i][0][0][0] - 1
-            line_to_replace = index_search_replace_angle[i][0][0][1]
-            line_to_replace_with = index_search_replace_angle[i][1]
-            lines[line_number] = line_to_replace_with 
-        f_cop = open(self.reparameterised_host_xml_file, "w")
-        for i in lines:
-            f_cop.write(i)
-        f_cop.close()
-        f = open(self.host_qm_params_file, 'r')
-        lines_params = f.readlines()
-        # Charge Parameters
-        for i in range(len(lines_params)):
-            if "Begin writing the Charge Parameters" in lines_params[i]:
-                to_begin = int(i)
-            if "Finish writing the Charge Parameters" in lines_params[i]:
-                to_end = int(i)  
-        charge_params = lines_params[to_begin + 1:to_end]
-        charge_atom_list = []
-        for i in charge_params:
-            charge_atom_list.append([float(re.findall('[-+]?\d*\.\d+|\d+',i)[0]), int(re.findall('\d*\.?\d+', i)[3])])
-        f = open(self.reparameterised_host_xml_file, 'r')
-        lines_params = f.readlines()
-        to_replace = []
-        to_replace_with = []
-        for j in lines_params:
-            for i in range(len(charge_atom_list)):
-                if "<Atom charge" in j and "host_" + str(charge_atom_list[i][1]) in j :
-                    #print(j)
-                    to_replace.append(j)
-                    to_replace_ = re.findall('[-+]?\d*\.\d+|\d+',j)[0]
-                    to_replace_with_ = j.replace(to_replace_, str(charge_atom_list[i][0]))
-                    to_replace_with.append(to_replace_with_)
-                    #print(to_replace_with_)
-        line_numbers = []
-        for i in to_replace:
-            line_number = (search_in_file(file = self.reparameterised_host_xml_file, word = i)[0][0]) - 1
-            line_numbers.append(line_number)
-        f_in = open(self.reparameterised_host_xml_file)
-        lines = f_in.readlines()
-        for i in range(len(line_numbers)):
-            lines[line_numbers[i]] = to_replace_with[i]
-        f_out = open(self.reparams_host_file, "w")
-        for i in lines:
-            f_out.write(i)
-        f_out.close()
-        
-    def run_host_mm_qm(self):
-        pdb = simtk.openmm.app.PDBFile(self.conect_pdb_file)
-        forcefield = simtk.openmm.app.ForceField(self.reparams_host_file)
-        system = forcefield.createSystem(pdb.topology)
-        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-        simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
-        simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
-        state = simulation.context.getState(getEnergy=True)
-        energy = state.getPotentialEnergy()
-        print(energy)
-        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.sim_output, self.sim_steps/10))
-        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))
-        simulation.step(self.sim_steps)
-        command = "rm -rf " + str(self.sim_output)
-        os.system(command)
 ####################################################################################################################################################################################
 class GuestAmberXMLAmber:
 
@@ -3762,4 +2344,715 @@ class HostAmberXMLAmber:
         df_compare = pd.concat([df_energy_non_params, df_energy_params], axis=1)
         df_compare['Energy_difference'] = df_compare['Energy_parm_non_params'].sub(df_compare['Energy_parm_params'], axis = 0)
         print(df_compare)
+####################################################################################################################################################################################
+def run_openmm_prmtop_inpcrd(system_prmtop, system_inpcrd, system_output, sim_steps):
+    print("Running OpenMM simulation for " +  system_prmtop + " and " + system_inpcrd)
+    prmtop = simtk.openmm.app.AmberPrmtopFile(system_prmtop)
+    inpcrd = simtk.openmm.app.AmberInpcrdFile(system_inpcrd)
+    system = prmtop.createSystem()
+    integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
+    simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
+    simulation.context.setPositions(inpcrd.positions)
+    if inpcrd.boxVectors is not None:
+        simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+    simulation.minimizeEnergy()
+    simulation.reporters.append(simtk.openmm.app.PDBReporter(system_output, sim_steps/10))
+    simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
+    simulation.step(sim_steps)
+    command = "rm -rf " + system_output
+    os.system(command) 
+####################################################################################################################################################################################
+def run_openmm_prmtop_pdb(system_prmtop, system_pdb, system_output, sim_steps):
+    print("Running OpenMM simulation for " +  system_prmtop + " and " + system_pdb)
+    pdb = simtk.openmm.app.PDBFile(system_pdb)
+    prmtop = simtk.openmm.app.AmberPrmtopFile(system_prmtop)
+    system = prmtop.createSystem()
+    integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1/simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
+    simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
+    simulation.context.setPositions(pdb.positions)
+    simulation.minimizeEnergy()
+    simulation.reporters.append(simtk.openmm.app.PDBReporter(system_output, sim_steps/10))
+    simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
+    simulation.step(sim_steps)
+    command = "rm -rf " + system_output
+    os.system(command)  
+####################################################################################################################################################################################
+def merge_topology_files(host_prmtop, guest_prmtop, host_inpcrd, guest_inpcrd, system_prmtop, system_inpcrd):
+    print("Merging the " + host_prmtop + " " + guest_prmtop + " files")
+    print("Merging the " + host_inpcrd + " " + guest_inpcrd + " files")
+    host_system = parmed.load_file(host_prmtop, xyz = host_inpcrd)
+    guest_system = parmed.load_file(guest_prmtop, xyz = guest_inpcrd)
+    system = host_system + guest_system
+    system.save(system_prmtop, overwrite = True)
+    system.save(system_inpcrd, overwrite = True)
+####################################################################################################################################################################################
+def write_tor_params_txt(system_xml, torsion_xml_file):
+    xml_off = open(system_xml, 'r') 
+    xml_off_lines = xml_off.readlines() 
+    for i in range(len(xml_off_lines)):
+        if "<Torsions>" in xml_off_lines[i]:
+            to_begin = int(i)
+        if "</Torsions>" in xml_off_lines[i]:
+            to_end = int(i)  
+    torsion_params = xml_off_lines[to_begin + 1:to_end]
+    
+    k_list_off = []
+    for i in range(len(torsion_params)):
+        k_list_off.append(float(re.findall('\d*\.?\d+',torsion_params[i])[0]))
+    k_list_off = [round(num, 10) for num in k_list_off]
+    #print(k_list_off)
+    p1 = []
+    for i in range(len(torsion_params)):
+        p1.append(int(re.findall('\d*\.?\d+',torsion_params[i])[2]))
+    p1 = [i + 1 for i in p1]
+    #print(p1)
+    p2 = []
+    for i in range(len(torsion_params)):
+        p2.append(int(re.findall('\d*\.?\d+',torsion_params[i])[4]))
+    p2 = [i + 1 for i in p2]
+    #print(p2)
+    p3 = []
+    for i in range(len(torsion_params)):
+        p3.append(int(re.findall('\d*\.?\d+',torsion_params[i])[6]))
+    p3 = [i + 1 for i in p3]
+    #print(p3)
+    p4 = []
+    for i in range(len(torsion_params)):
+        p4.append(int(re.findall('\d*\.?\d+',torsion_params[i])[8]))
+    p4 = [i + 1 for i in p4]
+    #print(p4)
+    periodicity = []
+    for i in range(len(torsion_params)):
+        periodicity.append(int(re.findall('\d*\.?\d+',torsion_params[i])[9]))
+    #print(periodicity)
+    phase = []
+    for i in range(len(torsion_params)):
+        phase.append(float(re.findall('\d*\.?\d+',torsion_params[i])[10]))
+    phase = [round(num, 8) for num in phase]
+    #print(phase)
+    data_tuples = list(zip(k_list_off, p1, p2, p3, p4, periodicity, phase))
+    df_tor = pd.DataFrame(data_tuples, columns=['k','p1','p2','p3','p4','periodicity','phase'])
+    #print(df_tor.head())
+    df_tor.to_csv (torsion_xml_file, index = False, header = False, sep = ' ')
+####################################################################################################################################################################################    
+def write_psi4_input(xyz_file, psi_input_file, memory, charge, multiplicity, basis_set, functional, iterations, method_torsion_drive):
+    xyz_lines = open(xyz_file, 'r').readlines()[2:]
+    with open(psi_input_file, "w") as f: 
+        f.write("memory" + " " + str(memory)  + " " + "GB" + "\n") 
+        f.write("molecule" + " " + "{" + "\n")
+        f.write(str(charge) + " " + str(multiplicity) + "\n")
+        for line in xyz_lines:
+            f.write(line)
+        f.write("}" + "\n")
+        f.write("set"  + " " + "{" + "\n")
+        f.write("basis" + " " + basis_set + "\n")
+        if method_torsion_drive == "native_opt" :        
+            f.write("GEOM_MAXITER" + " " + str(iterations) + "\n")
+        f.write("}" + "\n")
+        if method_torsion_drive == "native_opt" :
+            f.write("optimize" + "(" + "'" + functional + "'"")" + "\n")  
+        if method_torsion_drive == "geometric" :
+            f.write("gradient" + "(" + "'" + functional + "'"")" + "\n") 
+####################################################################################################################################################################################           
+def write_torsion_drive_run_file(psi_input_file, dihedral_text_file, dihedral_interval, engine, method_torsion_drive, energy_threshold, torsion_drive_run_file):
+    if method_torsion_drive == "geometric":
+        torsion_command = "torsiondrive-launch" + " " + psi_input_file + " " + dihedral_text_file + " " + "-g" + " " + str(dihedral_interval) + " " + "-e" + " " + engine + " " + "--energy_thresh" + " " + str(energy_threshold) + " " + "-v"
+    if method_torsion_drive == "native_opt":
+        torsion_command = "torsiondrive-launch" + " " + psi_input_file + " " + dihedral_text_file + " " + "-g" + " " + str(dihedral_interval) + " " + "-e" + " " + engine + " " + "--energy_thresh" + " " + str(energy_threshold) + " " + "--" + method_torsion_drive + " " + "-v"
+    print(torsion_command)
+    with open(torsion_drive_run_file, "w") as f: 
+        f.write(torsion_command) 
+####################################################################################################################################################################################        
+def create_torsion_drive_dir(torsion_xml_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
+    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
+    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+    #print(df_tor.head())
+    df_dihedrals = df_tor[['p1','p2','p3','p4']]
+    #print(df_dihedrals.head())
+    dihedrals_list_list = []
+    for i in range(len(df_dihedrals)):
+        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+    set_list = set()
+    unique_dihedrals_list_list = []
+    for x in dihedrals_list_list:
+        srtd = tuple(sorted(x))
+        if srtd not in set_list:
+            unique_dihedrals_list_list.append(x)
+            set_list.add(srtd)
+    #print(unique_dihedrals_list_list)
+    os.system("rm -rf " + tor_dir)
+    os.system("mkdir " + tor_dir)
+    parent_cwd = os.getcwd()
+    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
+    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
+    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
+    os.chdir(parent_cwd + "/" + tor_dir)
+    torsion_drive_dir = os.getcwd()
+    for i in range(len(unique_dihedrals_list_list)):
+        dir_name = "torsion_drive" + "_" + str(i)
+        os.system("rm -rf " + dir_name)
+        os.system("mkdir "  + dir_name)
+        os.chdir (torsion_drive_dir + "/" + dir_name)
+        with open(dihedral_text_file, "w") as f: 
+            f.write("# dihedral definition by atom indices starting from 1" + "\n")
+            f.write("# i     j     k     l" + "\n")
+            i_ = unique_dihedrals_list_list[i][0]
+            j_ = unique_dihedrals_list_list[i][1]
+            k_ = unique_dihedrals_list_list[i][2]
+            l_ = unique_dihedrals_list_list[i][3]
+            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
+            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
+            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
+            os.chdir(torsion_drive_dir)   
+    os.system("rm -rf "  + psi_input_file)
+    os.system("rm -rf "  + template_pdb)
+    os.system("rm -rf " + torsion_drive_run_file)
+    os.chdir(parent_cwd)   
+####################################################################################################################################################################################
+def create_non_H_torsion_drive_dir(torsion_xml_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
+    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
+    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+    #print(df_tor.head())
+    ppdb = PandasPdb()
+    ppdb.read_pdb(template_pdb)
+    df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
+    #print(df_index_symbol.head())
+    df_dihedrals = df_tor[['p1','p2','p3','p4']]
+    #print(df_dihedrals.head())
+    dihedrals_list_list = []
+    for i in range(len(df_dihedrals)):
+        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+    set_list = set()
+    unique_dihedrals_list_list = []
+    for x in dihedrals_list_list:
+        srtd = tuple(sorted(x))
+        if srtd not in set_list:
+            unique_dihedrals_list_list.append(x)
+            set_list.add(srtd)
+    #print(unique_dihedrals_list_list)
+    atom_dihedral_list = []
+    for sub_list in unique_dihedrals_list_list:
+        atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+    #print(atom_dihedral_list)
+    index_to_include = []
+    for i in range(len(atom_dihedral_list)):
+        if "H" not in atom_dihedral_list[i]:
+            index_to_include.append(i)
+    non_H_dihedrals = []
+    for i in index_to_include:
+        non_H_dihedrals.append(unique_dihedrals_list_list[i])
+    #print(non_H_dihedrals)
+    non_H_atom_dihedral_list = []
+    for sub_list in non_H_dihedrals:
+        non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+    print(non_H_atom_dihedral_list)  
+    os.system("rm -rf " + tor_dir)
+    os.system("mkdir " + tor_dir)
+    parent_cwd = os.getcwd()
+    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
+    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
+    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
+    os.chdir(parent_cwd + "/" + tor_dir)
+    torsion_drive_dir = os.getcwd()
+    for i in range(len(non_H_dihedrals)):
+        dir_name = "torsion_drive" + "_" + str(i)
+        os.system("rm -rf " + dir_name)
+        os.system("mkdir "  + dir_name)
+        os.chdir (torsion_drive_dir + "/" + dir_name)
+        with open(dihedral_text_file, "w") as f: 
+            f.write("# dihedral definition by atom indices starting from 1" + "\n")
+            f.write("# i     j     k     l" + "\n")
+            i_ = non_H_dihedrals[i][0]
+            j_ = non_H_dihedrals[i][1]
+            k_ = non_H_dihedrals[i][2]
+            l_ = non_H_dihedrals[i][3]
+            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
+            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
+            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
+            os.chdir(torsion_drive_dir)   
+    os.system("rm -rf "  + psi_input_file)
+    os.system("rm -rf "  + template_pdb)
+    os.system("rm -rf " + torsion_drive_run_file)
+    os.chdir(parent_cwd)  
+####################################################################################################################################################################################    
+def create_non_H_bonded_torsion_drive_dir(torsion_xml_file, system_bonds_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
+    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
+    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+    #print(df_tor.head())
+    ppdb = PandasPdb()
+    ppdb.read_pdb(template_pdb)
+    df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
+    #print(df_index_symbol.head())
+    df_dihedrals = df_tor[['p1','p2','p3','p4']]
+    #print(df_dihedrals.head())
+    dihedrals_list_list = []
+    for i in range(len(df_dihedrals)):
+        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+    set_list = set()
+    unique_dihedrals_list_list = []
+    for x in dihedrals_list_list:
+        srtd = tuple(sorted(x))
+        if srtd not in set_list:
+            unique_dihedrals_list_list.append(x)
+            set_list.add(srtd)
+    #print(unique_dihedrals_list_list)
+    atom_dihedral_list = []
+    for sub_list in unique_dihedrals_list_list:
+        atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+    #print(atom_dihedral_list)
+    index_to_include = []
+    for i in range(len(atom_dihedral_list)):
+        if "H" not in atom_dihedral_list[i]:
+            index_to_include.append(i)
+    non_H_dihedrals = []
+    for i in index_to_include:
+        non_H_dihedrals.append(unique_dihedrals_list_list[i])
+    #print(non_H_dihedrals)
+    non_H_atom_dihedral_list = []
+    for sub_list in non_H_dihedrals:
+        non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+    #print(non_H_atom_dihedral_list)  
+    df_bonds_all = pd.read_csv(system_bonds_file, header = None, delimiter = r"\s+")
+    df_bonds_all.columns = ["bond_names", "k", "angle", "b1", "b2"]
+    df_bonds = df_bonds_all[['b1','b2']]
+    bonds_list_list = []
+    for i in range(len(df_bonds)):
+        bonds_list_list.append(df_bonds.iloc[i].values.tolist())
+    #print(bonds_list_list)
+    reverse_bond_list_list = []
+    for i in bonds_list_list:
+        reverse_bond_list_list.append(reverse_list(i))
+    #print(reverse_bond_list_list)
+    bond_list = bonds_list_list + reverse_bond_list_list
+    #print(bond_list)
+    non_H_dihedral_bonds_list = []
+    for i in non_H_dihedrals:
+        non_H_dihedral_bonds_list.append([[i[0], i[1]], [i[1], i[2]], [i[2], i[3]]])
+    #print(non_H_dihedral_bonds_list)
+    bonded_index_to_include = []
+    for i in range(len(non_H_dihedral_bonds_list)):
+        if [non_H_dihedral_bonds_list[i][0] in bond_list, non_H_dihedral_bonds_list[i][1] in bond_list, non_H_dihedral_bonds_list[i][2] in bond_list] == [True, True, True] :
+            bonded_index_to_include.append(i)
+    #print(bonded_index_to_include)
+    non_H_bonded_dihedrals = []
+    for i in bonded_index_to_include:
+        non_H_bonded_dihedrals.append(non_H_dihedrals[i])
+    #print(non_H_bonded_dihedrals)
+    non_H_bonded_atom_dihedral_list = []
+    for sub_list in non_H_bonded_dihedrals:
+        non_H_bonded_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+    print(non_H_bonded_atom_dihedral_list)    
+    os.system("rm -rf " + tor_dir)
+    os.system("mkdir " + tor_dir)
+    parent_cwd = os.getcwd()
+    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
+    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
+    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
+    os.chdir(parent_cwd + "/" + tor_dir)
+    torsion_drive_dir = os.getcwd()
+    for i in range(len(non_H_bonded_dihedrals)):
+        dir_name = "torsion_drive" + "_" + str(i)
+        os.system("rm -rf " + dir_name)
+        os.system("mkdir "  + dir_name)
+        os.chdir (torsion_drive_dir + "/" + dir_name)
+        with open(dihedral_text_file, "w") as f: 
+            f.write("# dihedral definition by atom indices starting from 1" + "\n")
+            f.write("# i     j     k     l" + "\n")
+            i_ = non_H_bonded_dihedrals[i][0]
+            j_ = non_H_bonded_dihedrals[i][1]
+            k_ = non_H_bonded_dihedrals[i][2]
+            l_ = non_H_bonded_dihedrals[i][3]
+            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
+            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
+            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
+            os.chdir(torsion_drive_dir)   
+    os.system("rm -rf "  + psi_input_file)
+    os.system("rm -rf "  + template_pdb)
+    os.system("rm -rf " + torsion_drive_run_file)
+    os.chdir(parent_cwd)  
+####################################################################################################################################################################################
+def run_torsion_sim(tor_dir, psi_input_file, dihedral_text_file, dihedral_interval, engine, torsion_drive_run_file):
+    parent_cwd = os.getcwd()
+    target_dir = parent_cwd + "/" + tor_dir
+    num_folders = 0
+    for _, dirnames, filenames in os.walk(target_dir):
+        num_folders += len(dirnames)
+    for i in range(num_folders):
+        dir_ = "torsion_drive" + "_" + str(i)
+        os.chdir(parent_cwd + "/" + tor_dir + "/" + dir_)
+        run_command = "bash" + " " + torsion_drive_run_file
+        #os.system(run_command)
+        #print(run_command)
+        os.chdir(parent_cwd)  
+####################################################################################################################################################################################
+def scale_list(list_):
+    scaled_list = [i - min(list_) for i in list_]
+    return (scaled_list)
+####################################################################################################################################################################################
+def list_kJ_kcal(list_):
+    converted_list = [i / 4.184 for i in list_]
+    return (converted_list)
+####################################################################################################################################################################################
+def list_hartree_kcal(list_):
+    converted_list = [i * 627.5094 for i in list_]
+    return (converted_list)
+####################################################################################################################################################################################
+def list_to_dict(lst):
+    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
+    return (res_dct)
+####################################################################################################################################################################################
+def torsiondrive_input_to_xyz(psi_input_file, xyz_file): 
+    with open (psi_input_file, "r") as f:
+        lines = f.readlines()
+    for i in range(len(lines)):
+        if "molecule {" in lines[i]:
+            to_begin = int(i)   
+        if "set {" in lines[i]:
+            to_end = int(i)  
+    xyz_lines = lines[to_begin + 2 : to_end - 1]
+    with open(xyz_file, 'w') as f:
+        f.write(str(len(xyz_lines)) + "\n")
+        f.write(xyz_file + "\n")
+        for i in xyz_lines:
+            f.write(i)
+####################################################################################################################################################################################
+def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
+    with open (xyz_file, "r") as f:
+        lines = f.readlines()
+    needed_lines = lines[2:]
+    with open(coords_file, 'w') as f:
+        for i in needed_lines:
+            f.write(i)
+    df = pd.read_csv(coords_file, header = None, delimiter = r"\s+")
+    df.columns = ["atom", "x", "y", "z"]
+    ppdb = PandasPdb()
+    ppdb.read_pdb(template_pdb)
+    ppdb.df["ATOM"]["x_coord"] = df["x"]
+    ppdb.df["ATOM"]["y_coord"] = df["y"]
+    ppdb.df["ATOM"]["z_coord"] = df["z"]  
+    ppdb.to_pdb(system_pdb)  
+####################################################################################################################################################################################
+def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
+    """
+    This function generates an openforcefield xml file from the pdb file
+    """
+    command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
+    os.system(command)
+    off_molecule = openforcefield.topology.Molecule(system_sdf)
+    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
+    system = force_field.create_openmm_system(off_molecule.to_topology())
+    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
+    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
+    with open(system_xml, 'w') as f:
+        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
+####################################################################################################################################################################################        
+def generate_xml_from_charged_pdb_sdf(system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml):
+    """
+    This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
+    """
+    command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
+    os.system(command)
+    with open(system_init_sdf, 'r') as f1 :
+        filedata = f1.readlines()
+        filedata = filedata[:-2]
+    with open(system_sdf, "w+") as out:
+        for i in filedata:
+            out.write(i)
+        line_1 = "M  CHG  " + str(num_charge_atoms) + "   " + str(index_charge_atom_1)   + "   " + str(charge_atom_1) + "\n" 
+        line_2 = "M  END" + "\n"
+        line_3 = "$$$$"
+        out.write(line_1)
+        out.write(line_2)
+        out.write(line_3)
+    off_molecule = openforcefield.topology.Molecule(system_sdf)
+    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
+    system = force_field.create_openmm_system(off_molecule.to_topology())
+    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
+    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
+    with open(system_xml, 'w') as f:
+        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
+####################################################################################################################################################################################
+def get_dihedrals(qm_scan_file):
+    with open(qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    dihedrals = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        dihedral = float(energy_dihedral[0])
+        dihedrals.append(dihedral)
+    return(dihedrals)
+####################################################################################################################################################################################
+def get_qm_energies(qm_scan_file):
+    with open(qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    qm_energies = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i 
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        energy = float(energy_dihedral[1])
+        qm_energies.append(energy)
+    return(qm_energies)
+####################################################################################################################################################################################
+def generate_mm_pdbs(qm_scan_file, template_pdb):
+    with open (qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    dihedrals = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i 
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        dihedral = float(energy_dihedral[0])
+        dihedrals.append(dihedral)
+    lines_markers = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            lines_markers.append(i)
+    lines_markers.append(len(lines) + 1)
+    for i in range(len(lines_markers) - 1):
+        #pdb_file_to_write = str(dihedrals[i]) + ".pdb"
+        if dihedrals[i] > 0 :
+            pdb_file_to_write = "plus_" + str(abs(dihedrals[i])) + ".pdb"
+        if dihedrals[i] < 0 :
+            pdb_file_to_write = "minus_" + str(abs(dihedrals[i])) + ".pdb"        
+        to_begin = lines_markers[i]
+        to_end = lines_markers[i+1]
+        lines_to_write = lines[to_begin + 1:to_end - 1]
+        x_coords = []
+        y_coords = []
+        z_coords = []
+        for i in lines_to_write:
+            coordinates = i 
+            coordinates = re.findall(r'[-+]?\d+[.]?\d*', coordinates)
+            x = float(coordinates[0])
+            y = float(coordinates[1])
+            z = float(coordinates[2])
+            x_coords.append(x)
+            y_coords.append(y)
+            z_coords.append(z)
+        ppdb = PandasPdb()
+        ppdb.read_pdb(template_pdb)
+        ppdb.df["ATOM"]["x_coord"] = x_coords
+        ppdb.df["ATOM"]["y_coord"] = y_coords
+        ppdb.df["ATOM"]["z_coord"] = z_coords    
+        ppdb.to_pdb(pdb_file_to_write)  
+####################################################################################################################################################################################
+def remove_mm_files(qm_scan_file):
+    mm_pdb_list = []
+    for i in get_dihedrals(qm_scan_file):
+        if i > 0 :
+            pdb_file = "plus_" + str(abs(i)) + ".pdb"
+        if i < 0 :
+            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
+        mm_pdb_list.append(pdb_file)
+    for i in mm_pdb_list:
+        command = "rm -rf  " + i 
+        os.system(command) 
+        command = "rm -rf  " + i[:-4] + ".inpcrd"
+        os.system(command) 
+        command = "rm -rf  " + i[:-4] + ".prmtop"
+        os.system(command) 
+####################################################################################################################################################################################
+def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
+    system_prmtop = system_pdb[:-4] + ".prmtop"
+    system_inpcrd = system_pdb[:-4] + ".inpcrd"
+    if load_topology == "parmed":
+        openmm_system = parmed.openmm.load_topology(parmed.load_file(system_pdb, structure=True).topology, parmed.load_file(system_xml))
+    if load_topology == "openmm":
+        openmm_system = parmed.openmm.load_topology(simtk.openmm.app.PDBFile(system_pdb).topology, parmed.load_file(system_xml))
+    openmm_system.save(system_prmtop, overwrite=True)
+    openmm_system.coordinates = parmed.load_file(system_pdb, structure=True).coordinates
+    openmm_system.save(system_inpcrd, overwrite=True)
+    parm = parmed.load_file(system_prmtop, system_inpcrd)
+    prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(parm, parm.createSystem())
+    #print(prmtop_energy_decomposition)
+    prmtop_energy_decomposition_value_no_torsion =  [list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicBondForce"), 
+                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicAngleForce"), 
+                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("NonbondedForce")]
+    return(sum(prmtop_energy_decomposition_value_no_torsion))    
+####################################################################################################################################################################################
+def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
+    mm_pdb_list = []
+    for i in get_dihedrals(qm_scan_file):
+        if i > 0 :
+            pdb_file = "plus_" + str(abs(i)) + ".pdb"
+        if i < 0 :
+            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
+        mm_pdb_list.append(pdb_file)
+    for i in mm_pdb_list:
+        mm_pdb_file = i
+    mm_potential_energies = []
+    for i in mm_pdb_list:
+        mm_pdb_file = i
+        mm_energy = get_non_torsion_mm_energy(system_pdb = i, load_topology = load_topology, system_xml = system_xml)
+        mm_potential_energies.append(mm_energy)
+    return(mm_potential_energies)
+####################################################################################################################################################################################
+def list_diff(list_1, list_2):
+    diff_list = []
+    zipped_list = zip(list_1, list_2)
+    for list1_i, list2_i in zipped_list:
+        diff_list.append(list1_i-list2_i)
+    return(diff_list)
+####################################################################################################################################################################################
+def dihedral_energy (x, k1, k2, k3, k4 = 0):
+    energy_1 = k1 * (1 + np.cos (1 * x * 0.01745))
+    energy_2 = k2 * (1 - np.cos (2 * x * 0.01745))
+    energy_3 = k3 * (1 + np.cos (3 * x * 0.01745))
+    energy_4 = k4 * (1 - np.cos (4 * x *0.01745))
+    dihedral_energy = energy_1 + energy_2 + energy_3 + energy_4
+    return (dihedral_energy)
+####################################################################################################################################################################################
+def error_function(delta_qm, delta_mm):
+    squared_error = np.square(np.subtract(delta_qm, delta_mm))
+    mean_squared_error = squared_error.mean()
+    root_mean_squared_error = math.sqrt(mean_squared_error)
+    return (root_mean_squared_error)
+####################################################################################################################################################################################
+def error_function_boltzmann(delta_qm, delta_mm, T):
+    kb = 3.297623483* 10**(-24) # in cal/K
+    delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
+    squared_error = np.square(np.subtract(delta_qm, delta_mm)) * delta_qm_boltzmann_weighted
+    mean_squared_error = squared_error.mean()
+    root_mean_squared_error = math.sqrt(mean_squared_error)
+    return (root_mean_squared_error)
+####################################################################################################################################################################################
+def gen_init_guess(qm_scan_file, load_topology, system_xml):
+    x = get_dihedrals(qm_scan_file)
+    y  = scale_list(list_ = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml))
+    init_vals = [0.0, 0.0, 0.0, 0.0]
+    k_init_guess, covar = scipy.optimize.curve_fit(dihedral_energy, x, y, p0 = init_vals)
+    for i in range(len(k_init_guess)):
+        if k_init_guess[i] < 0:
+            k_init_guess[i] = 0
+    return(k_init_guess)
+####################################################################################################################################################################################
+def objective_function(k_array, x, delta_qm):
+    delta_mm = dihedral_energy(x, k1 = k_array[0], k2 = k_array[1], k3 = k_array[2],  k4 = k_array[3])    
+    loss_function = error_function(delta_qm, delta_mm)
+    return(loss_function)
+####################################################################################################################################################################################
+def fit_params(qm_scan_file, load_topology, system_xml, method):
+    k_guess = gen_init_guess(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
+    x_data = np.array(get_dihedrals(qm_scan_file))
+    delta_qm = np.array(scale_list(list_hartree_kcal(list_ = get_qm_energies(qm_scan_file)))) 
+    optimise = scipy.optimize.minimize(objective_function, k_guess, args=(x_data,delta_qm), method = method, bounds = [(0.00, None), (0.00, None), (0.00, None), (0.00, None)])
+    return(optimise.x)
+####################################################################################################################################################################################
+def get_tor_params(qm_scan_file, template_pdb, load_topology, system_xml, method):
+    qm_e = get_qm_energies(qm_scan_file = qm_scan_file)
+    qm_e_kcal = list_hartree_kcal(qm_e)
+    delta_qm = scale_list(qm_e_kcal)
+    generate_mm_pdbs(qm_scan_file = qm_scan_file, template_pdb = template_pdb)
+    mm_pe_no_torsion_kcal = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
+    delta_mm = scale_list(mm_pe_no_torsion_kcal)  
+    opt_param = fit_params(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml, method = method)
+    return(opt_param)
+####################################################################################################################################################################################
+def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
+    opt_param = get_tor_params(qm_scan_file = qm_scan_file, template_pdb = template_pdb, load_topology = load_topology, system_xml = system_xml, method = method)
+    dihedral_text = open(dihedral_text_file, 'r')
+    dihedral_text_lines = dihedral_text.readlines()
+    atom_numbers = dihedral_text_lines[-1]
+    atom_index_from_1 = [int(re.findall(r'\d+', atom_numbers)[0]), int(re.findall(r'\d+', atom_numbers)[1]), int(re.findall(r'\d+', atom_numbers)[2]), int(re.findall(r'\d+', atom_numbers)[3])]
+    atom_index = [i -1 for i in atom_index_from_1]
+    atom_index_lines = " " + "p1=" + '"' + str(atom_index[0]) + '"' + " " +  "p2=" + '"' + str(atom_index[1]) + '"' + " " +  "p3=" + '"' + str(atom_index[2]) + '"' + " " +  "p4=" + '"' + str(atom_index[3]) + '"' + " "  
+    tor_lines = []
+    for i in range(len(opt_param)):
+        line_to_append = "                " + "<Torsion " + "k=" + '"' + str(round(opt_param[i], 8)) + '"' + atom_index_lines + "periodicity=" + '"' + str(i+1) + '"' + " " + "phase=" + '"' + "0" + '"' + "/>"
+        #print(line_to_append)
+        tor_lines.append(line_to_append)
+    return(tor_lines)
+####################################################################################################################################################################################
+def write_reparams_torsion_lines(tor_dir, reparameterized_torsional_params_file , psi_input_file , xyz_file , coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
+    torsional_parameters_list = []
+    parent_cwd = os.getcwd()
+    target_dir = parent_cwd + "/" + tor_dir
+    for i in os.listdir(target_dir):
+        os.chdir(parent_cwd + "/" + tor_dir + "/" + i)
+        print("Entering directory" + " : "  + os.getcwd())
+        torsiondrive_input_to_xyz(psi_input_file = psi_input_file, xyz_file = xyz_file)
+        xyz_to_pdb(xyz_file = xyz_file, coords_file = coords_file, template_pdb = template_pdb, system_pdb = system_pdb)
+        generate_xml_from_charged_pdb_sdf(system_pdb = system_pdb, system_init_sdf = system_init_sdf, system_sdf = system_sdf, num_charge_atoms = num_charge_atoms, index_charge_atom_1 = index_charge_atom_1, charge_atom_1 = charge_atom_1, system_xml = system_xml) 
+        torsional_lines = get_torsional_lines(template_pdb = template_pdb, system_xml = system_xml, qm_scan_file = qm_scan_file, load_topology = load_topology,  method = method, dihedral_text_file = dihedral_text_file)
+        #print(torsional_lines)
+        torsional_parameters_list.append(torsional_lines)
+        remove_mm_files(qm_scan_file = qm_scan_file)
+        os.chdir(parent_cwd)  
+    torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
+    with open(reparameterized_torsional_params_file, "w") as f: 
+        for i in torsional_parameters:
+            f.write(i + "\n") 
+####################################################################################################################################################################################
+def write_reparams_torsion_lines_charged(tor_dir, reparameterized_torsional_params_file , psi_input_file , xyz_file , coords_file, template_pdb, system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
+    torsional_parameters_list = []
+    parent_cwd = os.getcwd()
+    target_dir = parent_cwd + "/" + tor_dir
+    for i in os.listdir(target_dir):
+        os.chdir(parent_cwd + "/" + tor_dir + "/" + i)
+        print("Entering directory" + " : "  + os.getcwd())
+        torsiondrive_input_to_xyz(psi_input_file = psi_input_file, xyz_file = xyz_file)
+        xyz_to_pdb(xyz_file = xyz_file, coords_file = coords_file, template_pdb = template_pdb, system_pdb = system_pdb)
+        generate_xml_from_charged_pdb_sdf(system_pdb = system_pdb, system_init_sdf = system_init_sdf, system_sdf = system_sdf, num_charge_atoms = num_charge_atoms, index_charge_atom_1 = index_charge_atom_1, charge_atom_1 = charge_atom_1, system_xml = system_xml) 
+        torsional_lines = get_torsional_lines(template_pdb = template_pdb, system_xml = system_xml, qm_scan_file = qm_scan_file, load_topology = load_topology,  method = method, dihedral_text_file = dihedral_text_file)
+        #print(torsional_lines)
+        torsional_parameters_list.append(torsional_lines)
+        remove_mm_files(qm_scan_file = qm_scan_file)
+        os.chdir(parent_cwd)  
+    torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
+    with open(reparameterized_torsional_params_file, "w") as f: 
+        for i in torsional_parameters:
+            f.write(i + "\n") 
+####################################################################################################################################################################################
+def write_torsional_reparams(reparameterised_system_xml_file, reparameterized_torsional_params_file, reparameterised_torsional_system_xml_file):
+    xml_tor = open(reparameterized_torsional_params_file, 'r') 
+    xml_tor_lines = xml_tor.readlines() 
+    non_zero_k_tor = []
+    for i in xml_tor_lines:
+        to_find = "k=" + '"' + "0.0" + '"' 
+        if to_find not in i:
+            non_zero_k_tor.append(i)
+    #print(non_zero_k_tor)
+    p1 = []
+    for i in range(len(non_zero_k_tor)):
+        p1.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[2]))
+    #print(p1)
+    p2 = []
+    for i in range(len(non_zero_k_tor)):
+        p2.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[4]))
+    #print(p2)
+    p3 = []
+    for i in range(len(non_zero_k_tor)):
+        p3.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[6]))
+    #print(p3)
+    p4 = []
+    for i in range(len(non_zero_k_tor)):
+        p4.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[8]))
+    #print(p4)
+    periodicity = []
+    for i in range(len(non_zero_k_tor)):
+        periodicity.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[9]))
+    #print(periodicity)
+    xml_tor_reparams = open(reparameterised_system_xml_file, 'r') 
+    xml_tor_reparams_lines = xml_tor_reparams.readlines() 
+    for j in range(len(xml_tor_reparams_lines)):
+        for i in range(len(non_zero_k_tor)):
+            to_find_tor = "p1=" + '"' + str(p1[i]) + '"' + " " + "p2=" + '"' + str(p2[i]) + '"' + " " + "p3=" + '"' + str(p3[i]) + '"' + " " + "p4=" + '"' + str(p4[i]) + '"' + " " + "periodicity=" + '"' + str(periodicity[i]) + '"' 
+            if to_find_tor in xml_tor_reparams_lines[j]:
+                #print(xml_tor_reparams_lines[j])
+                xml_tor_reparams_lines[j] = non_zero_k_tor[i]        
 ####################################################################################################################################################################################
