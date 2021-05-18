@@ -3056,3 +3056,14 @@ def write_torsional_reparams(reparameterised_system_xml_file, reparameterized_to
                 #print(xml_tor_reparams_lines[j])
                 xml_tor_reparams_lines[j] = non_zero_k_tor[i]        
 ####################################################################################################################################################################################
+class test_class:
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+    def method_a(self):
+        return (self.a + self.b)
+    def method_b(self):
+        return (self.a * self.b)
+    def method_c(self):
+        return (self.a - self.c)
