@@ -32,6 +32,9 @@ def unit_vector_N(u_BC, u_AB):
     u_N = cross_product / norm_u_N
     return u_N
 ####################################################################################################################################################################################
+def copy_file(source, destination):
+    shutil.copy(source, destination)
+####################################################################################################################################################################################
 def  u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     # Gives the vector in the plane A,B,C and perpendicular to A to B
     diff_AB = coords[atom_B,:] - coords[atom_A,:]
@@ -1135,7 +1138,7 @@ class PrepareGaussianHost:
 ####################################################################################################################################################################################
 class ParameterizeHost:
     
-    def __init__(self, xyz_file, coordinate_file, unprocessed_hessian_file, bond_list_file, angle_list_file, hessian_file, atom_names_file, bond_parameter_file, vibrational_scaling, angle_parameter_file, charge_parameter_file, host_qm_pdb, host_qm_params_file, host_pdb, ffxml, host_xml, sim_output, sim_steps, host_residue_name, host_singular_file, conect_pdb_txt, conect_pdb_file, host_singular_xml_file, coulomb14scale, lj14scale, reparameterised_host_xml_file, reparams_host_file):
+    def __init__(self, xyz_file, coordinate_file, unprocessed_hessian_file, bond_list_file, angle_list_file, hessian_file, atom_names_file, bond_parameter_file, vibrational_scaling, angle_parameter_file, charge_parameter_file, host_qm_pdb):
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
         self.unprocessed_hessian_file = unprocessed_hessian_file
@@ -1148,21 +1151,6 @@ class ParameterizeHost:
         self.angle_parameter_file = angle_parameter_file
         self.charge_parameter_file = charge_parameter_file
         self.host_qm_pdb = host_qm_pdb
-        self.host_qm_params_file = host_qm_params_file
-        self.host_pdb = host_pdb
-        self.ffxml = ffxml
-        self.host_xml = host_xml
-        self.sim_output = sim_output
-        self.sim_steps = sim_steps
-        self.host_residue_name = host_residue_name
-        self.host_singular_file = host_singular_file
-        self.conect_pdb_txt = conect_pdb_txt
-        self.conect_pdb_file = conect_pdb_file
-        self.host_singular_xml_file = host_singular_xml_file
-        self.coulomb14scale = coulomb14scale
-        self.lj14scale = lj14scale
-        self.reparameterised_host_xml_file = reparameterised_host_xml_file
-        self.reparams_host_file = reparams_host_file
 
     def get_xyz(self):   
         """
