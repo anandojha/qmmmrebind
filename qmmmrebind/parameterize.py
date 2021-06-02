@@ -236,6 +236,292 @@ def list_to_dict(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
     return (res_dct)
 ####################################################################################################################################################################################
+def scale_list(list_):
+    scaled_list = [i - min(list_) for i in list_]
+    return (scaled_list)
+####################################################################################################################################################################################
+def list_kJ_kcal(list_):
+    converted_list = [i / 4.184 for i in list_]
+    return (converted_list)
+####################################################################################################################################################################################
+def list_hartree_kcal(list_):
+    converted_list = [i * 627.5094 for i in list_]
+    return (converted_list)
+####################################################################################################################################################################################
+def torsiondrive_input_to_xyz(psi_input_file, xyz_file): 
+    with open (psi_input_file, "r") as f:
+        lines = f.readlines()
+    for i in range(len(lines)):
+        if "molecule {" in lines[i]:
+            to_begin = int(i)   
+        if "set {" in lines[i]:
+            to_end = int(i)  
+    xyz_lines = lines[to_begin + 2 : to_end - 1]
+    with open(xyz_file, 'w') as f:
+        f.write(str(len(xyz_lines)) + "\n")
+        f.write(xyz_file + "\n")
+        for i in xyz_lines:
+            f.write(i)
+####################################################################################################################################################################################
+def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
+    with open (xyz_file, "r") as f:
+        lines = f.readlines()
+    needed_lines = lines[2:]
+    with open(coords_file, 'w') as f:
+        for i in needed_lines:
+            f.write(i)
+    df = pd.read_csv(coords_file, header = None, delimiter = r"\s+")
+    df.columns = ["atom", "x", "y", "z"]
+    ppdb = PandasPdb()
+    ppdb.read_pdb(template_pdb)
+    ppdb.df["ATOM"]["x_coord"] = df["x"]
+    ppdb.df["ATOM"]["y_coord"] = df["y"]
+    ppdb.df["ATOM"]["z_coord"] = df["z"]  
+    ppdb.to_pdb(system_pdb)  
+####################################################################################################################################################################################
+def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
+    """
+    This function generates an openforcefield xml file from the pdb file
+    """
+    command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
+    os.system(command)
+    off_molecule = openforcefield.topology.Molecule(system_sdf)
+    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
+    system = force_field.create_openmm_system(off_molecule.to_topology())
+    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
+    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
+    with open(system_xml, 'w') as f:
+        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
+####################################################################################################################################################################################        
+def generate_xml_from_charged_pdb_sdf(system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml):
+    """
+    This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
+    """
+    command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
+    os.system(command)
+    with open(system_init_sdf, 'r') as f1 :
+        filedata = f1.readlines()
+        filedata = filedata[:-2]
+    with open(system_sdf, "w+") as out:
+        for i in filedata:
+            out.write(i)
+        line_1 = "M  CHG  " + str(num_charge_atoms) + "   " + str(index_charge_atom_1)   + "   " + str(charge_atom_1) + "\n" 
+        line_2 = "M  END" + "\n"
+        line_3 = "$$$$"
+        out.write(line_1)
+        out.write(line_2)
+        out.write(line_3)
+    off_molecule = openforcefield.topology.Molecule(system_sdf)
+    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
+    system = force_field.create_openmm_system(off_molecule.to_topology())
+    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
+    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
+    with open(system_xml, 'w') as f:
+        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
+####################################################################################################################################################################################
+def get_dihedrals(qm_scan_file):
+    with open(qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    dihedrals = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        dihedral = float(energy_dihedral[0])
+        dihedrals.append(dihedral)
+    return(dihedrals)
+####################################################################################################################################################################################
+def get_qm_energies(qm_scan_file):
+    with open(qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    qm_energies = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i 
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        energy = float(energy_dihedral[1])
+        qm_energies.append(energy)
+    return(qm_energies)
+####################################################################################################################################################################################
+def generate_mm_pdbs(qm_scan_file, template_pdb):
+    with open (qm_scan_file, "r") as f:
+        lines = f.readlines()
+    energy_dihedral_lines = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            energy_dihedral_lines.append(lines[i])
+    dihedrals = []
+    for i in energy_dihedral_lines:
+        energy_dihedral = i 
+        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
+        dihedral = float(energy_dihedral[0])
+        dihedrals.append(dihedral)
+    lines_markers = []
+    for i in range(len(lines)):
+        if "Dihedral" in lines[i]:
+            lines_markers.append(i)
+    lines_markers.append(len(lines) + 1)
+    for i in range(len(lines_markers) - 1):
+        #pdb_file_to_write = str(dihedrals[i]) + ".pdb"
+        if dihedrals[i] > 0 :
+            pdb_file_to_write = "plus_" + str(abs(dihedrals[i])) + ".pdb"
+        if dihedrals[i] < 0 :
+            pdb_file_to_write = "minus_" + str(abs(dihedrals[i])) + ".pdb"        
+        to_begin = lines_markers[i]
+        to_end = lines_markers[i+1]
+        lines_to_write = lines[to_begin + 1:to_end - 1]
+        x_coords = []
+        y_coords = []
+        z_coords = []
+        for i in lines_to_write:
+            coordinates = i 
+            coordinates = re.findall(r'[-+]?\d+[.]?\d*', coordinates)
+            x = float(coordinates[0])
+            y = float(coordinates[1])
+            z = float(coordinates[2])
+            x_coords.append(x)
+            y_coords.append(y)
+            z_coords.append(z)
+        ppdb = PandasPdb()
+        ppdb.read_pdb(template_pdb)
+        ppdb.df["ATOM"]["x_coord"] = x_coords
+        ppdb.df["ATOM"]["y_coord"] = y_coords
+        ppdb.df["ATOM"]["z_coord"] = z_coords    
+        ppdb.to_pdb(pdb_file_to_write)  
+####################################################################################################################################################################################
+def remove_mm_files(qm_scan_file):
+    mm_pdb_list = []
+    for i in get_dihedrals(qm_scan_file):
+        if i > 0 :
+            pdb_file = "plus_" + str(abs(i)) + ".pdb"
+        if i < 0 :
+            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
+        mm_pdb_list.append(pdb_file)
+    for i in mm_pdb_list:
+        command = "rm -rf  " + i 
+        os.system(command) 
+        command = "rm -rf  " + i[:-4] + ".inpcrd"
+        os.system(command) 
+        command = "rm -rf  " + i[:-4] + ".prmtop"
+        os.system(command) 
+####################################################################################################################################################################################
+def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
+    system_prmtop = system_pdb[:-4] + ".prmtop"
+    system_inpcrd = system_pdb[:-4] + ".inpcrd"
+    if load_topology == "parmed":
+        openmm_system = parmed.openmm.load_topology(parmed.load_file(system_pdb, structure=True).topology, parmed.load_file(system_xml))
+    if load_topology == "openmm":
+        openmm_system = parmed.openmm.load_topology(simtk.openmm.app.PDBFile(system_pdb).topology, parmed.load_file(system_xml))
+    openmm_system.save(system_prmtop, overwrite=True)
+    openmm_system.coordinates = parmed.load_file(system_pdb, structure=True).coordinates
+    openmm_system.save(system_inpcrd, overwrite=True)
+    parm = parmed.load_file(system_prmtop, system_inpcrd)
+    prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(parm, parm.createSystem())
+    #print(prmtop_energy_decomposition)
+    prmtop_energy_decomposition_value_no_torsion =  [list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicBondForce"), 
+                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicAngleForce"), 
+                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("NonbondedForce")]
+    return(sum(prmtop_energy_decomposition_value_no_torsion))    
+####################################################################################################################################################################################
+def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
+    mm_pdb_list = []
+    for i in get_dihedrals(qm_scan_file):
+        if i > 0 :
+            pdb_file = "plus_" + str(abs(i)) + ".pdb"
+        if i < 0 :
+            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
+        mm_pdb_list.append(pdb_file)
+    for i in mm_pdb_list:
+        mm_pdb_file = i
+    mm_potential_energies = []
+    for i in mm_pdb_list:
+        mm_pdb_file = i
+        mm_energy = get_non_torsion_mm_energy(system_pdb = i, load_topology = load_topology, system_xml = system_xml)
+        mm_potential_energies.append(mm_energy)
+    return(mm_potential_energies)
+####################################################################################################################################################################################
+def list_diff(list_1, list_2):
+    diff_list = []
+    zipped_list = zip(list_1, list_2)
+    for list1_i, list2_i in zipped_list:
+        diff_list.append(list1_i-list2_i)
+    return(diff_list)
+####################################################################################################################################################################################
+def dihedral_energy (x, k1, k2, k3, k4 = 0):
+    energy_1 = k1 * (1 + np.cos (1 * x * 0.01745))
+    energy_2 = k2 * (1 - np.cos (2 * x * 0.01745))
+    energy_3 = k3 * (1 + np.cos (3 * x * 0.01745))
+    energy_4 = k4 * (1 - np.cos (4 * x *0.01745))
+    dihedral_energy = energy_1 + energy_2 + energy_3 + energy_4
+    return (dihedral_energy)
+####################################################################################################################################################################################
+def error_function(delta_qm, delta_mm):
+    squared_error = np.square(np.subtract(delta_qm, delta_mm))
+    mean_squared_error = squared_error.mean()
+    root_mean_squared_error = math.sqrt(mean_squared_error)
+    return (root_mean_squared_error)
+####################################################################################################################################################################################
+def error_function_boltzmann(delta_qm, delta_mm, T):
+    kb = 3.297623483* 10**(-24) # in cal/K
+    delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
+    squared_error = np.square(np.subtract(delta_qm, delta_mm)) * delta_qm_boltzmann_weighted
+    mean_squared_error = squared_error.mean()
+    root_mean_squared_error = math.sqrt(mean_squared_error)
+    return (root_mean_squared_error)
+####################################################################################################################################################################################
+def gen_init_guess(qm_scan_file, load_topology, system_xml):
+    x = get_dihedrals(qm_scan_file)
+    y  = scale_list(list_ = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml))
+    init_vals = [0.0, 0.0, 0.0, 0.0]
+    k_init_guess, covar = scipy.optimize.curve_fit(dihedral_energy, x, y, p0 = init_vals)
+    for i in range(len(k_init_guess)):
+        if k_init_guess[i] < 0:
+            k_init_guess[i] = 0
+    return(k_init_guess)
+####################################################################################################################################################################################
+def objective_function(k_array, x, delta_qm):
+    delta_mm = dihedral_energy(x, k1 = k_array[0], k2 = k_array[1], k3 = k_array[2],  k4 = k_array[3])    
+    loss_function = error_function(delta_qm, delta_mm)
+    return(loss_function)
+####################################################################################################################################################################################
+def fit_params(qm_scan_file, load_topology, system_xml, method):
+    k_guess = gen_init_guess(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
+    x_data = np.array(get_dihedrals(qm_scan_file))
+    delta_qm = np.array(scale_list(list_hartree_kcal(list_ = get_qm_energies(qm_scan_file)))) 
+    optimise = scipy.optimize.minimize(objective_function, k_guess, args=(x_data,delta_qm), method = method, bounds = [(0.00, None), (0.00, None), (0.00, None), (0.00, None)])
+    return(optimise.x)
+####################################################################################################################################################################################
+def get_tor_params(qm_scan_file, template_pdb, load_topology, system_xml, method):
+    qm_e = get_qm_energies(qm_scan_file = qm_scan_file)
+    qm_e_kcal = list_hartree_kcal(qm_e)
+    delta_qm = scale_list(qm_e_kcal)
+    generate_mm_pdbs(qm_scan_file = qm_scan_file, template_pdb = template_pdb)
+    mm_pe_no_torsion_kcal = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
+    delta_mm = scale_list(mm_pe_no_torsion_kcal)  
+    opt_param = fit_params(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml, method = method)
+    return(opt_param)
+####################################################################################################################################################################################
+def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
+    opt_param = get_tor_params(qm_scan_file = qm_scan_file, template_pdb = template_pdb, load_topology = load_topology, system_xml = system_xml, method = method)
+    dihedral_text = open(dihedral_text_file, 'r')
+    dihedral_text_lines = dihedral_text.readlines()
+    atom_numbers = dihedral_text_lines[-1]
+    atom_index_from_1 = [int(re.findall(r'\d+', atom_numbers)[0]), int(re.findall(r'\d+', atom_numbers)[1]), int(re.findall(r'\d+', atom_numbers)[2]), int(re.findall(r'\d+', atom_numbers)[3])]
+    atom_index = [i -1 for i in atom_index_from_1]
+    atom_index_lines = " " + "p1=" + '"' + str(atom_index[0]) + '"' + " " +  "p2=" + '"' + str(atom_index[1]) + '"' + " " +  "p3=" + '"' + str(atom_index[2]) + '"' + " " +  "p4=" + '"' + str(atom_index[3]) + '"' + " "  
+    tor_lines = []
+    for i in range(len(opt_param)):
+        line_to_append = "                " + "<Torsion " + "k=" + '"' + str(round(opt_param[i], 8)) + '"' + atom_index_lines + "periodicity=" + '"' + str(i+1) + '"' + " " + "phase=" + '"' + "0" + '"' + "/>"
+        #print(line_to_append)
+        tor_lines.append(line_to_append)
+    return(tor_lines)
+####################################################################################################################################################################################
 class PrepareQMMM:
  
     def __init__(self, init_pdb, cleaned_pdb, guest_init_pdb, host_pdb, guest_resname, guest_pdb, guest_xyz, distance, residue_list, host_qm_atoms, host_mm_atoms, host_qm_pdb, host_mm_pdb, qm_pdb, mm_pdb, host_mm_region_I_atoms, host_mm_region_II_atoms, host_mm_region_I_pdb, host_mm_region_II_pdb, num_residues):
@@ -2721,331 +3007,66 @@ class TorsionDriveSims:
             print(run_command)
             os.chdir(parent_cwd) 
 ####################################################################################################################################################################################
-def scale_list(list_):
-    scaled_list = [i - min(list_) for i in list_]
-    return (scaled_list)
-####################################################################################################################################################################################
-def list_kJ_kcal(list_):
-    converted_list = [i / 4.184 for i in list_]
-    return (converted_list)
-####################################################################################################################################################################################
-def list_hartree_kcal(list_):
-    converted_list = [i * 627.5094 for i in list_]
-    return (converted_list)
-####################################################################################################################################################################################
-def torsiondrive_input_to_xyz(psi_input_file, xyz_file): 
-    with open (psi_input_file, "r") as f:
-        lines = f.readlines()
-    for i in range(len(lines)):
-        if "molecule {" in lines[i]:
-            to_begin = int(i)   
-        if "set {" in lines[i]:
-            to_end = int(i)  
-    xyz_lines = lines[to_begin + 2 : to_end - 1]
-    with open(xyz_file, 'w') as f:
-        f.write(str(len(xyz_lines)) + "\n")
-        f.write(xyz_file + "\n")
-        for i in xyz_lines:
-            f.write(i)
-####################################################################################################################################################################################
-def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
-    with open (xyz_file, "r") as f:
-        lines = f.readlines()
-    needed_lines = lines[2:]
-    with open(coords_file, 'w') as f:
-        for i in needed_lines:
-            f.write(i)
-    df = pd.read_csv(coords_file, header = None, delimiter = r"\s+")
-    df.columns = ["atom", "x", "y", "z"]
-    ppdb = PandasPdb()
-    ppdb.read_pdb(template_pdb)
-    ppdb.df["ATOM"]["x_coord"] = df["x"]
-    ppdb.df["ATOM"]["y_coord"] = df["y"]
-    ppdb.df["ATOM"]["z_coord"] = df["z"]  
-    ppdb.to_pdb(system_pdb)  
-####################################################################################################################################################################################
-def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
-    """
-    This function generates an openforcefield xml file from the pdb file
-    """
-    command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
-    os.system(command)
-    off_molecule = openforcefield.topology.Molecule(system_sdf)
-    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
-    system = force_field.create_openmm_system(off_molecule.to_topology())
-    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
-    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
-    with open(system_xml, 'w') as f:
-        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
-####################################################################################################################################################################################        
-def generate_xml_from_charged_pdb_sdf(system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml):
-    """
-    This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
-    """
-    command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
-    os.system(command)
-    with open(system_init_sdf, 'r') as f1 :
-        filedata = f1.readlines()
-        filedata = filedata[:-2]
-    with open(system_sdf, "w+") as out:
-        for i in filedata:
-            out.write(i)
-        line_1 = "M  CHG  " + str(num_charge_atoms) + "   " + str(index_charge_atom_1)   + "   " + str(charge_atom_1) + "\n" 
-        line_2 = "M  END" + "\n"
-        line_3 = "$$$$"
-        out.write(line_1)
-        out.write(line_2)
-        out.write(line_3)
-    off_molecule = openforcefield.topology.Molecule(system_sdf)
-    force_field = openforcefield.typing.engines.smirnoff.ForceField('openff_unconstrained-1.0.0.offxml')
-    system = force_field.create_openmm_system(off_molecule.to_topology())
-    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
-    structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
-    with open(system_xml, 'w') as f:
-        f.write(simtk.openmm.XmlSerializer.serialize(system)) 
-####################################################################################################################################################################################
-def get_dihedrals(qm_scan_file):
-    with open(qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    dihedrals = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i
-        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
-        dihedral = float(energy_dihedral[0])
-        dihedrals.append(dihedral)
-    return(dihedrals)
-####################################################################################################################################################################################
-def get_qm_energies(qm_scan_file):
-    with open(qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    qm_energies = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i 
-        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
-        energy = float(energy_dihedral[1])
-        qm_energies.append(energy)
-    return(qm_energies)
-####################################################################################################################################################################################
-def generate_mm_pdbs(qm_scan_file, template_pdb):
-    with open (qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    dihedrals = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i 
-        energy_dihedral = re.findall(r'[-+]?\d+[.]?\d*', energy_dihedral)
-        dihedral = float(energy_dihedral[0])
-        dihedrals.append(dihedral)
-    lines_markers = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            lines_markers.append(i)
-    lines_markers.append(len(lines) + 1)
-    for i in range(len(lines_markers) - 1):
-        #pdb_file_to_write = str(dihedrals[i]) + ".pdb"
-        if dihedrals[i] > 0 :
-            pdb_file_to_write = "plus_" + str(abs(dihedrals[i])) + ".pdb"
-        if dihedrals[i] < 0 :
-            pdb_file_to_write = "minus_" + str(abs(dihedrals[i])) + ".pdb"        
-        to_begin = lines_markers[i]
-        to_end = lines_markers[i+1]
-        lines_to_write = lines[to_begin + 1:to_end - 1]
-        x_coords = []
-        y_coords = []
-        z_coords = []
-        for i in lines_to_write:
-            coordinates = i 
-            coordinates = re.findall(r'[-+]?\d+[.]?\d*', coordinates)
-            x = float(coordinates[0])
-            y = float(coordinates[1])
-            z = float(coordinates[2])
-            x_coords.append(x)
-            y_coords.append(y)
-            z_coords.append(z)
-        ppdb = PandasPdb()
-        ppdb.read_pdb(template_pdb)
-        ppdb.df["ATOM"]["x_coord"] = x_coords
-        ppdb.df["ATOM"]["y_coord"] = y_coords
-        ppdb.df["ATOM"]["z_coord"] = z_coords    
-        ppdb.to_pdb(pdb_file_to_write)  
-####################################################################################################################################################################################
-def remove_mm_files(qm_scan_file):
-    mm_pdb_list = []
-    for i in get_dihedrals(qm_scan_file):
-        if i > 0 :
-            pdb_file = "plus_" + str(abs(i)) + ".pdb"
-        if i < 0 :
-            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
-        mm_pdb_list.append(pdb_file)
-    for i in mm_pdb_list:
-        command = "rm -rf  " + i 
-        os.system(command) 
-        command = "rm -rf  " + i[:-4] + ".inpcrd"
-        os.system(command) 
-        command = "rm -rf  " + i[:-4] + ".prmtop"
-        os.system(command) 
-####################################################################################################################################################################################
-def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
-    system_prmtop = system_pdb[:-4] + ".prmtop"
-    system_inpcrd = system_pdb[:-4] + ".inpcrd"
-    if load_topology == "parmed":
-        openmm_system = parmed.openmm.load_topology(parmed.load_file(system_pdb, structure=True).topology, parmed.load_file(system_xml))
-    if load_topology == "openmm":
-        openmm_system = parmed.openmm.load_topology(simtk.openmm.app.PDBFile(system_pdb).topology, parmed.load_file(system_xml))
-    openmm_system.save(system_prmtop, overwrite=True)
-    openmm_system.coordinates = parmed.load_file(system_pdb, structure=True).coordinates
-    openmm_system.save(system_inpcrd, overwrite=True)
-    parm = parmed.load_file(system_prmtop, system_inpcrd)
-    prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(parm, parm.createSystem())
-    #print(prmtop_energy_decomposition)
-    prmtop_energy_decomposition_value_no_torsion =  [list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicBondForce"), 
-                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicAngleForce"), 
-                                                     list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("NonbondedForce")]
-    return(sum(prmtop_energy_decomposition_value_no_torsion))    
-####################################################################################################################################################################################
-def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
-    mm_pdb_list = []
-    for i in get_dihedrals(qm_scan_file):
-        if i > 0 :
-            pdb_file = "plus_" + str(abs(i)) + ".pdb"
-        if i < 0 :
-            pdb_file = "minus_" + str(abs(i)) + ".pdb"  
-        mm_pdb_list.append(pdb_file)
-    for i in mm_pdb_list:
-        mm_pdb_file = i
-    mm_potential_energies = []
-    for i in mm_pdb_list:
-        mm_pdb_file = i
-        mm_energy = get_non_torsion_mm_energy(system_pdb = i, load_topology = load_topology, system_xml = system_xml)
-        mm_potential_energies.append(mm_energy)
-    return(mm_potential_energies)
-####################################################################################################################################################################################
-def list_diff(list_1, list_2):
-    diff_list = []
-    zipped_list = zip(list_1, list_2)
-    for list1_i, list2_i in zipped_list:
-        diff_list.append(list1_i-list2_i)
-    return(diff_list)
-####################################################################################################################################################################################
-def dihedral_energy (x, k1, k2, k3, k4 = 0):
-    energy_1 = k1 * (1 + np.cos (1 * x * 0.01745))
-    energy_2 = k2 * (1 - np.cos (2 * x * 0.01745))
-    energy_3 = k3 * (1 + np.cos (3 * x * 0.01745))
-    energy_4 = k4 * (1 - np.cos (4 * x *0.01745))
-    dihedral_energy = energy_1 + energy_2 + energy_3 + energy_4
-    return (dihedral_energy)
-####################################################################################################################################################################################
-def error_function(delta_qm, delta_mm):
-    squared_error = np.square(np.subtract(delta_qm, delta_mm))
-    mean_squared_error = squared_error.mean()
-    root_mean_squared_error = math.sqrt(mean_squared_error)
-    return (root_mean_squared_error)
-####################################################################################################################################################################################
-def error_function_boltzmann(delta_qm, delta_mm, T):
-    kb = 3.297623483* 10**(-24) # in cal/K
-    delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
-    squared_error = np.square(np.subtract(delta_qm, delta_mm)) * delta_qm_boltzmann_weighted
-    mean_squared_error = squared_error.mean()
-    root_mean_squared_error = math.sqrt(mean_squared_error)
-    return (root_mean_squared_error)
-####################################################################################################################################################################################
-def gen_init_guess(qm_scan_file, load_topology, system_xml):
-    x = get_dihedrals(qm_scan_file)
-    y  = scale_list(list_ = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml))
-    init_vals = [0.0, 0.0, 0.0, 0.0]
-    k_init_guess, covar = scipy.optimize.curve_fit(dihedral_energy, x, y, p0 = init_vals)
-    for i in range(len(k_init_guess)):
-        if k_init_guess[i] < 0:
-            k_init_guess[i] = 0
-    return(k_init_guess)
-####################################################################################################################################################################################
-def objective_function(k_array, x, delta_qm):
-    delta_mm = dihedral_energy(x, k1 = k_array[0], k2 = k_array[1], k3 = k_array[2],  k4 = k_array[3])    
-    loss_function = error_function(delta_qm, delta_mm)
-    return(loss_function)
-####################################################################################################################################################################################
-def fit_params(qm_scan_file, load_topology, system_xml, method):
-    k_guess = gen_init_guess(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
-    x_data = np.array(get_dihedrals(qm_scan_file))
-    delta_qm = np.array(scale_list(list_hartree_kcal(list_ = get_qm_energies(qm_scan_file)))) 
-    optimise = scipy.optimize.minimize(objective_function, k_guess, args=(x_data,delta_qm), method = method, bounds = [(0.00, None), (0.00, None), (0.00, None), (0.00, None)])
-    return(optimise.x)
-####################################################################################################################################################################################
-def get_tor_params(qm_scan_file, template_pdb, load_topology, system_xml, method):
-    qm_e = get_qm_energies(qm_scan_file = qm_scan_file)
-    qm_e_kcal = list_hartree_kcal(qm_e)
-    delta_qm = scale_list(qm_e_kcal)
-    generate_mm_pdbs(qm_scan_file = qm_scan_file, template_pdb = template_pdb)
-    mm_pe_no_torsion_kcal = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
-    delta_mm = scale_list(mm_pe_no_torsion_kcal)  
-    opt_param = fit_params(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml, method = method)
-    return(opt_param)
-####################################################################################################################################################################################
-def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
-    opt_param = get_tor_params(qm_scan_file = qm_scan_file, template_pdb = template_pdb, load_topology = load_topology, system_xml = system_xml, method = method)
-    dihedral_text = open(dihedral_text_file, 'r')
-    dihedral_text_lines = dihedral_text.readlines()
-    atom_numbers = dihedral_text_lines[-1]
-    atom_index_from_1 = [int(re.findall(r'\d+', atom_numbers)[0]), int(re.findall(r'\d+', atom_numbers)[1]), int(re.findall(r'\d+', atom_numbers)[2]), int(re.findall(r'\d+', atom_numbers)[3])]
-    atom_index = [i -1 for i in atom_index_from_1]
-    atom_index_lines = " " + "p1=" + '"' + str(atom_index[0]) + '"' + " " +  "p2=" + '"' + str(atom_index[1]) + '"' + " " +  "p3=" + '"' + str(atom_index[2]) + '"' + " " +  "p4=" + '"' + str(atom_index[3]) + '"' + " "  
-    tor_lines = []
-    for i in range(len(opt_param)):
-        line_to_append = "                " + "<Torsion " + "k=" + '"' + str(round(opt_param[i], 8)) + '"' + atom_index_lines + "periodicity=" + '"' + str(i+1) + '"' + " " + "phase=" + '"' + "0" + '"' + "/>"
-        #print(line_to_append)
-        tor_lines.append(line_to_append)
-    return(tor_lines)
-####################################################################################################################################################################################
-def write_reparams_torsion_lines(tor_dir, reparameterized_torsional_params_file , psi_input_file , xyz_file , coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
-    torsional_parameters_list = []
-    parent_cwd = os.getcwd()
-    target_dir = parent_cwd + "/" + tor_dir
-    for i in os.listdir(target_dir):
-        os.chdir(parent_cwd + "/" + tor_dir + "/" + i)
-        print("Entering directory" + " : "  + os.getcwd())
-        torsiondrive_input_to_xyz(psi_input_file = psi_input_file, xyz_file = xyz_file)
-        xyz_to_pdb(xyz_file = xyz_file, coords_file = coords_file, template_pdb = template_pdb, system_pdb = system_pdb)
-        generate_xml_from_charged_pdb_sdf(system_pdb = system_pdb, system_init_sdf = system_init_sdf, system_sdf = system_sdf, num_charge_atoms = num_charge_atoms, index_charge_atom_1 = index_charge_atom_1, charge_atom_1 = charge_atom_1, system_xml = system_xml) 
-        torsional_lines = get_torsional_lines(template_pdb = template_pdb, system_xml = system_xml, qm_scan_file = qm_scan_file, load_topology = load_topology,  method = method, dihedral_text_file = dihedral_text_file)
-        #print(torsional_lines)
-        torsional_parameters_list.append(torsional_lines)
-        remove_mm_files(qm_scan_file = qm_scan_file)
-        os.chdir(parent_cwd)  
-    torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
-    with open(reparameterized_torsional_params_file, "w") as f: 
-        for i in torsional_parameters:
-            f.write(i + "\n") 
-####################################################################################################################################################################################
-def write_reparams_torsion_lines_charged(tor_dir, reparameterized_torsional_params_file , psi_input_file , xyz_file , coords_file, template_pdb, system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
-    torsional_parameters_list = []
-    parent_cwd = os.getcwd()
-    target_dir = parent_cwd + "/" + tor_dir
-    for i in os.listdir(target_dir):
-        os.chdir(parent_cwd + "/" + tor_dir + "/" + i)
-        print("Entering directory" + " : "  + os.getcwd())
-        torsiondrive_input_to_xyz(psi_input_file = psi_input_file, xyz_file = xyz_file)
-        xyz_to_pdb(xyz_file = xyz_file, coords_file = coords_file, template_pdb = template_pdb, system_pdb = system_pdb)
-        generate_xml_from_charged_pdb_sdf(system_pdb = system_pdb, system_init_sdf = system_init_sdf, system_sdf = system_sdf, num_charge_atoms = num_charge_atoms, index_charge_atom_1 = index_charge_atom_1, charge_atom_1 = charge_atom_1, system_xml = system_xml) 
-        torsional_lines = get_torsional_lines(template_pdb = template_pdb, system_xml = system_xml, qm_scan_file = qm_scan_file, load_topology = load_topology,  method = method, dihedral_text_file = dihedral_text_file)
-        #print(torsional_lines)
-        torsional_parameters_list.append(torsional_lines)
-        remove_mm_files(qm_scan_file = qm_scan_file)
-        os.chdir(parent_cwd)  
-    torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
-    with open(reparameterized_torsional_params_file, "w") as f: 
-        for i in torsional_parameters:
-            f.write(i + "\n") 
+class TorsionDriveParams:
+
+    def __init__(self, tor_dir, reparameterized_torsional_params_file, psi_input_file, xyz_file, coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, method, dihedral_text_file, system_init_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, load_topology):  
+        self.tor_dir = tor_dir
+        self.reparameterized_torsional_params_file = reparameterized_torsional_params_file
+        self.psi_input_file = psi_input_file
+        self.xyz_file = xyz_file
+        self.coords_file = coords_file
+        self.template_pdb = template_pdb
+        self.system_pdb = system_pdb
+        self.system_sdf = system_sdf
+        self.system_xml = system_xml
+        self.qm_scan_file = qm_scan_file
+        self.method = method
+        self.dihedral_text_file = dihedral_text_file
+        self.system_init_sdf = system_init_sdf
+        self.num_charge_atoms = num_charge_atoms
+        self.index_charge_atom_1 = index_charge_atom_1
+        self.charge_atom_1 = charge_atom_1
+        self.load_topology = load_topology
+
+    def write_reparams_torsion_lines(self):
+        torsional_parameters_list = []
+        parent_cwd = os.getcwd()
+        target_dir = parent_cwd + "/" + self.tor_dir
+        for i in os.listdir(target_dir):
+            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
+            print("Entering directory" + " : "  + os.getcwd())
+            torsiondrive_input_to_xyz(psi_input_file = self.psi_input_file, xyz_file = self.xyz_file)
+            xyz_to_pdb(xyz_file = self.xyz_file, coords_file = self.coords_file, template_pdb = self.template_pdb, system_pdb = self.system_pdb)
+            generate_xml_from_charged_pdb_sdf(system_pdb = self.system_pdb, system_init_sdf = system_init_sdf, system_sdf = self.system_sdf, num_charge_atoms = num_charge_atoms, index_charge_atom_1 = index_charge_atom_1, charge_atom_1 = charge_atom_1, system_xml = self.system_xml) 
+            torsional_lines = get_torsional_lines(template_pdb = self.template_pdb, system_xml = self.system_xml, qm_scan_file = self.qm_scan_file, load_topology = self.load_topology,  method = self.method, dihedral_text_file = self.dihedral_text_file)
+            #print(torsional_lines)
+            torsional_parameters_list.append(torsional_lines)
+            remove_mm_files(qm_scan_file = self.qm_scan_file)
+            os.chdir(parent_cwd)  
+        torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
+        with open(self.reparameterized_torsional_params_file, "w") as f: 
+            for i in torsional_parameters:
+                f.write(i + "\n") 
+
+    def write_reparams_torsion_lines_charged(self):
+        torsional_parameters_list = []
+        parent_cwd = os.getcwd()
+        target_dir = parent_cwd + "/" + self.tor_dir
+        for i in os.listdir(target_dir):
+            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
+            print("Entering directory" + " : "  + os.getcwd())
+            torsiondrive_input_to_xyz(psi_input_file = self.psi_input_file, xyz_file = self.xyz_file)
+            xyz_to_pdb(xyz_file = self.xyz_file, coords_file = self.coords_file, template_pdb = self.template_pdb, system_pdb = self.system_pdb)
+            generate_xml_from_charged_pdb_sdf(system_pdb = self.system_pdb, system_init_sdf = self.system_init_sdf, system_sdf = self.system_sdf, num_charge_atoms = self.num_charge_atoms, index_charge_atom_1 = self.index_charge_atom_1, charge_atom_1 = self.charge_atom_1, system_xml = self.system_xml) 
+            torsional_lines = get_torsional_lines(template_pdb = self.template_pdb, system_xml = self.system_xml, qm_scan_file = self.qm_scan_file, load_topology = self.load_topology,  method = self.method, dihedral_text_file = self.dihedral_text_file)
+            #print(torsional_lines)
+            torsional_parameters_list.append(torsional_lines)
+            remove_mm_files(qm_scan_file = self.qm_scan_file)
+            os.chdir(parent_cwd)  
+        torsional_parameters = [item for sublist in torsional_parameters_list for item in sublist]
+        with open(self.reparameterized_torsional_params_file, "w") as f: 
+            for i in torsional_parameters:
+                f.write(i + "\n") 
 ####################################################################################################################################################################################
 def write_torsional_reparams(reparameterised_system_xml_file, reparameterized_torsional_params_file, reparameterised_torsional_system_xml_file):
     xml_tor = open(reparameterized_torsional_params_file, 'r') 
