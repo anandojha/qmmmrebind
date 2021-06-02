@@ -1,1 +1,0 @@
-torsiondrive-launch torsion_drive_input.dat dihedrals.txt -g 15 -e psi4 --energy_thresh 0.001 -v
