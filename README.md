@@ -9,15 +9,7 @@ QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Repara
 
 QMMMREBIND:
 Software Requirements : Gaussian16, Amber, TorsionDrive and Psi4
-conda install git
-conda create -n qmmmrebind python=3.8
-conda activate qmmmrebind
-conda install biopandas -c conda-forge
-conda install -c conda-forge mendeleev
-conda install -c conda-forge openmm
-conda install -c conda-forge parmed
-conda install openforcefield
-conda install -c conda-forge openbabel
+
 ### Copyright
 
 Copyright (c) 2021, Anupam Anand Ojha

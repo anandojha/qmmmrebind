@@ -17,6 +17,7 @@ import parmed
 import pickle
 import shutil
 import simtk
+import scipy
 import time
 import math
 import sys
@@ -1956,6 +1957,7 @@ class GuestAmberXMLAmber:
         print(df_compare)
 ####################################################################################################################################################################################
 class HostAmberXMLAmber:
+
     def __init__(self, system_pdb, system_xml, sim_output, sim_steps, charge_parameter_file, system_qm_pdb, bond_parameter_file, angle_parameter_file, system_qm_params_file, reparameterised_intermediate_system_xml_file, system_xml_non_bonded_file, system_xml_non_bonded_reparams_file, reparameterised_system_xml_file, non_reparameterised_system_xml_file, prmtop_system_non_params, inpcrd_system_non_params, prmtop_system_params, inpcrd_system_params, load_topology):   
         self.system_pdb = system_pdb
         self.system_xml = system_xml
@@ -2333,348 +2335,391 @@ class HostAmberXMLAmber:
         df_compare['Energy_difference'] = df_compare['Energy_parm_non_params'].sub(df_compare['Energy_parm_params'], axis = 0)
         print(df_compare)
 ####################################################################################################################################################################################
-def run_openmm_prmtop_inpcrd(system_prmtop, system_inpcrd, system_output, sim_steps):
-    print("Running OpenMM simulation for " +  system_prmtop + " and " + system_inpcrd)
-    prmtop = simtk.openmm.app.AmberPrmtopFile(system_prmtop)
-    inpcrd = simtk.openmm.app.AmberInpcrdFile(system_inpcrd)
-    system = prmtop.createSystem()
-    integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-    simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
-    simulation.context.setPositions(inpcrd.positions)
-    if inpcrd.boxVectors is not None:
-        simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-    simulation.minimizeEnergy()
-    simulation.reporters.append(simtk.openmm.app.PDBReporter(system_output, sim_steps/10))
-    simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
-    simulation.step(sim_steps)
-    command = "rm -rf " + system_output
-    os.system(command) 
+class RunOpenMMSims:
+
+    def __init__(self, system_prmtop, system_inpcrd, system_pdb, system_output, sim_steps):   
+        self.system_prmtop = system_prmtop
+        self.system_inpcrd = system_inpcrd
+        self.system_pdb = system_pdb
+        self.system_output = system_output
+        self.sim_steps = sim_steps
+
+    def run_openmm_prmtop_inpcrd(self):
+        print("Running OpenMM simulation for " +  self.system_prmtop + " and " + self.system_inpcrd)
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_prmtop)
+        inpcrd = simtk.openmm.app.AmberInpcrdFile(self.system_inpcrd)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1 / simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
+        simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
+        simulation.context.setPositions(inpcrd.positions)
+        if inpcrd.boxVectors is not None:
+            simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.system_output, self.sim_steps/10))
+        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command) 
+
+    def run_openmm_prmtop_pdb(self):
+        print("Running OpenMM simulation for " +  self.system_prmtop + " and " + self.system_pdb)
+        pdb = simtk.openmm.app.PDBFile(self.system_pdb)
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_prmtop)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1/simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
+        simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(simtk.openmm.app.PDBReporter(self.system_output, self.sim_steps/10))
+        simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(self.sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)  
 ####################################################################################################################################################################################
-def run_openmm_prmtop_pdb(system_prmtop, system_pdb, system_output, sim_steps):
-    print("Running OpenMM simulation for " +  system_prmtop + " and " + system_pdb)
-    pdb = simtk.openmm.app.PDBFile(system_pdb)
-    prmtop = simtk.openmm.app.AmberPrmtopFile(system_prmtop)
-    system = prmtop.createSystem()
-    integrator = simtk.openmm.LangevinIntegrator(300 * simtk.unit.kelvin, 1/simtk.unit.picosecond, 0.002 * simtk.unit.picoseconds)
-    simulation = simtk.openmm.app.Simulation(prmtop.topology, system, integrator)
-    simulation.context.setPositions(pdb.positions)
-    simulation.minimizeEnergy()
-    simulation.reporters.append(simtk.openmm.app.PDBReporter(system_output, sim_steps/10))
-    simulation.reporters.append(simtk.openmm.app.StateDataReporter(stdout, reportInterval = int(sim_steps/10), step = True, potentialEnergy = True, temperature = True))  
-    simulation.step(sim_steps)
-    command = "rm -rf " + system_output
-    os.system(command)  
+class MergeHostGuestTopology:
+
+    def __init__(self, host_prmtop, guest_prmtop, host_inpcrd, guest_inpcrd, system_prmtop, system_inpcrd):  
+        self.host_prmtop = host_prmtop
+        self.guest_prmtop = guest_prmtop
+        self.host_inpcrd = host_inpcrd
+        self.guest_inpcrd = guest_inpcrd
+        self.system_prmtop = system_prmtop 
+        self.system_inpcrd = system_inpcrd 
+
+    def merge_topology_files(self):
+        print("Merging the " + self.host_prmtop + " " + self.guest_prmtop + " files")
+        print("Merging the " + self.host_inpcrd + " " + self.guest_inpcrd + " files")
+        host_system = parmed.load_file(self.host_prmtop, xyz = self.host_inpcrd)
+        guest_system = parmed.load_file(self.guest_prmtop, xyz = self.guest_inpcrd)
+        system = host_system + guest_system
+        system.save(self.system_prmtop, overwrite = True)
+        system.save(self.system_inpcrd, overwrite = True)
 ####################################################################################################################################################################################
-def merge_topology_files(host_prmtop, guest_prmtop, host_inpcrd, guest_inpcrd, system_prmtop, system_inpcrd):
-    print("Merging the " + host_prmtop + " " + guest_prmtop + " files")
-    print("Merging the " + host_inpcrd + " " + guest_inpcrd + " files")
-    host_system = parmed.load_file(host_prmtop, xyz = host_inpcrd)
-    guest_system = parmed.load_file(guest_prmtop, xyz = guest_inpcrd)
-    system = host_system + guest_system
-    system.save(system_prmtop, overwrite = True)
-    system.save(system_inpcrd, overwrite = True)
-####################################################################################################################################################################################
-def write_tor_params_txt(system_xml, torsion_xml_file):
-    xml_off = open(system_xml, 'r') 
-    xml_off_lines = xml_off.readlines() 
-    for i in range(len(xml_off_lines)):
-        if "<Torsions>" in xml_off_lines[i]:
-            to_begin = int(i)
-        if "</Torsions>" in xml_off_lines[i]:
-            to_end = int(i)  
-    torsion_params = xml_off_lines[to_begin + 1:to_end]
-    
-    k_list_off = []
-    for i in range(len(torsion_params)):
-        k_list_off.append(float(re.findall('\d*\.?\d+',torsion_params[i])[0]))
-    k_list_off = [round(num, 10) for num in k_list_off]
-    #print(k_list_off)
-    p1 = []
-    for i in range(len(torsion_params)):
-        p1.append(int(re.findall('\d*\.?\d+',torsion_params[i])[2]))
-    p1 = [i + 1 for i in p1]
-    #print(p1)
-    p2 = []
-    for i in range(len(torsion_params)):
-        p2.append(int(re.findall('\d*\.?\d+',torsion_params[i])[4]))
-    p2 = [i + 1 for i in p2]
-    #print(p2)
-    p3 = []
-    for i in range(len(torsion_params)):
-        p3.append(int(re.findall('\d*\.?\d+',torsion_params[i])[6]))
-    p3 = [i + 1 for i in p3]
-    #print(p3)
-    p4 = []
-    for i in range(len(torsion_params)):
-        p4.append(int(re.findall('\d*\.?\d+',torsion_params[i])[8]))
-    p4 = [i + 1 for i in p4]
-    #print(p4)
-    periodicity = []
-    for i in range(len(torsion_params)):
-        periodicity.append(int(re.findall('\d*\.?\d+',torsion_params[i])[9]))
-    #print(periodicity)
-    phase = []
-    for i in range(len(torsion_params)):
-        phase.append(float(re.findall('\d*\.?\d+',torsion_params[i])[10]))
-    phase = [round(num, 8) for num in phase]
-    #print(phase)
-    data_tuples = list(zip(k_list_off, p1, p2, p3, p4, periodicity, phase))
-    df_tor = pd.DataFrame(data_tuples, columns=['k','p1','p2','p3','p4','periodicity','phase'])
-    #print(df_tor.head())
-    df_tor.to_csv (torsion_xml_file, index = False, header = False, sep = ' ')
-####################################################################################################################################################################################    
-def write_psi4_input(xyz_file, psi_input_file, memory, charge, multiplicity, basis_set, functional, iterations, method_torsion_drive):
-    xyz_lines = open(xyz_file, 'r').readlines()[2:]
-    with open(psi_input_file, "w") as f: 
-        f.write("memory" + " " + str(memory)  + " " + "GB" + "\n") 
-        f.write("molecule" + " " + "{" + "\n")
-        f.write(str(charge) + " " + str(multiplicity) + "\n")
-        for line in xyz_lines:
-            f.write(line)
-        f.write("}" + "\n")
-        f.write("set"  + " " + "{" + "\n")
-        f.write("basis" + " " + basis_set + "\n")
-        if method_torsion_drive == "native_opt" :        
-            f.write("GEOM_MAXITER" + " " + str(iterations) + "\n")
-        f.write("}" + "\n")
-        if method_torsion_drive == "native_opt" :
-            f.write("optimize" + "(" + "'" + functional + "'"")" + "\n")  
-        if method_torsion_drive == "geometric" :
-            f.write("gradient" + "(" + "'" + functional + "'"")" + "\n") 
-####################################################################################################################################################################################           
-def write_torsion_drive_run_file(psi_input_file, dihedral_text_file, dihedral_interval, engine, method_torsion_drive, energy_threshold, torsion_drive_run_file):
-    if method_torsion_drive == "geometric":
-        torsion_command = "torsiondrive-launch" + " " + psi_input_file + " " + dihedral_text_file + " " + "-g" + " " + str(dihedral_interval) + " " + "-e" + " " + engine + " " + "--energy_thresh" + " " + str(energy_threshold) + " " + "-v"
-    if method_torsion_drive == "native_opt":
-        torsion_command = "torsiondrive-launch" + " " + psi_input_file + " " + dihedral_text_file + " " + "-g" + " " + str(dihedral_interval) + " " + "-e" + " " + engine + " " + "--energy_thresh" + " " + str(energy_threshold) + " " + "--" + method_torsion_drive + " " + "-v"
-    print(torsion_command)
-    with open(torsion_drive_run_file, "w") as f: 
-        f.write(torsion_command) 
-####################################################################################################################################################################################        
-def create_torsion_drive_dir(torsion_xml_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
-    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
-    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
-    #print(df_tor.head())
-    df_dihedrals = df_tor[['p1','p2','p3','p4']]
-    #print(df_dihedrals.head())
-    dihedrals_list_list = []
-    for i in range(len(df_dihedrals)):
-        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
-    set_list = set()
-    unique_dihedrals_list_list = []
-    for x in dihedrals_list_list:
-        srtd = tuple(sorted(x))
-        if srtd not in set_list:
-            unique_dihedrals_list_list.append(x)
-            set_list.add(srtd)
-    #print(unique_dihedrals_list_list)
-    os.system("rm -rf " + tor_dir)
-    os.system("mkdir " + tor_dir)
-    parent_cwd = os.getcwd()
-    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
-    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
-    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
-    os.chdir(parent_cwd + "/" + tor_dir)
-    torsion_drive_dir = os.getcwd()
-    for i in range(len(unique_dihedrals_list_list)):
-        dir_name = "torsion_drive" + "_" + str(i)
-        os.system("rm -rf " + dir_name)
-        os.system("mkdir "  + dir_name)
-        os.chdir (torsion_drive_dir + "/" + dir_name)
-        with open(dihedral_text_file, "w") as f: 
-            f.write("# dihedral definition by atom indices starting from 1" + "\n")
-            f.write("# i     j     k     l" + "\n")
-            i_ = unique_dihedrals_list_list[i][0]
-            j_ = unique_dihedrals_list_list[i][1]
-            k_ = unique_dihedrals_list_list[i][2]
-            l_ = unique_dihedrals_list_list[i][3]
-            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
-            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
-            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
-            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
-            os.chdir(torsion_drive_dir)   
-    os.system("rm -rf "  + psi_input_file)
-    os.system("rm -rf "  + template_pdb)
-    os.system("rm -rf " + torsion_drive_run_file)
-    os.chdir(parent_cwd)   
-####################################################################################################################################################################################
-def create_non_H_torsion_drive_dir(torsion_xml_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
-    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
-    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
-    #print(df_tor.head())
-    ppdb = PandasPdb()
-    ppdb.read_pdb(template_pdb)
-    df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
-    #print(df_index_symbol.head())
-    df_dihedrals = df_tor[['p1','p2','p3','p4']]
-    #print(df_dihedrals.head())
-    dihedrals_list_list = []
-    for i in range(len(df_dihedrals)):
-        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
-    set_list = set()
-    unique_dihedrals_list_list = []
-    for x in dihedrals_list_list:
-        srtd = tuple(sorted(x))
-        if srtd not in set_list:
-            unique_dihedrals_list_list.append(x)
-            set_list.add(srtd)
-    #print(unique_dihedrals_list_list)
-    atom_dihedral_list = []
-    for sub_list in unique_dihedrals_list_list:
-        atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
-    #print(atom_dihedral_list)
-    index_to_include = []
-    for i in range(len(atom_dihedral_list)):
-        if "H" not in atom_dihedral_list[i]:
-            index_to_include.append(i)
-    non_H_dihedrals = []
-    for i in index_to_include:
-        non_H_dihedrals.append(unique_dihedrals_list_list[i])
-    #print(non_H_dihedrals)
-    non_H_atom_dihedral_list = []
-    for sub_list in non_H_dihedrals:
-        non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
-    print(non_H_atom_dihedral_list)  
-    os.system("rm -rf " + tor_dir)
-    os.system("mkdir " + tor_dir)
-    parent_cwd = os.getcwd()
-    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
-    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
-    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
-    os.chdir(parent_cwd + "/" + tor_dir)
-    torsion_drive_dir = os.getcwd()
-    for i in range(len(non_H_dihedrals)):
-        dir_name = "torsion_drive" + "_" + str(i)
-        os.system("rm -rf " + dir_name)
-        os.system("mkdir "  + dir_name)
-        os.chdir (torsion_drive_dir + "/" + dir_name)
-        with open(dihedral_text_file, "w") as f: 
-            f.write("# dihedral definition by atom indices starting from 1" + "\n")
-            f.write("# i     j     k     l" + "\n")
-            i_ = non_H_dihedrals[i][0]
-            j_ = non_H_dihedrals[i][1]
-            k_ = non_H_dihedrals[i][2]
-            l_ = non_H_dihedrals[i][3]
-            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
-            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
-            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
-            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
-            os.chdir(torsion_drive_dir)   
-    os.system("rm -rf "  + psi_input_file)
-    os.system("rm -rf "  + template_pdb)
-    os.system("rm -rf " + torsion_drive_run_file)
-    os.chdir(parent_cwd)  
-####################################################################################################################################################################################    
-def create_non_H_bonded_torsion_drive_dir(torsion_xml_file, system_bonds_file, tor_dir, psi_input_file, dihedral_text_file, template_pdb, torsion_drive_run_file):
-    df_tor = pd.read_csv(torsion_xml_file, header = None, delimiter = r"\s+")
-    df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
-    #print(df_tor.head())
-    ppdb = PandasPdb()
-    ppdb.read_pdb(template_pdb)
-    df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
-    #print(df_index_symbol.head())
-    df_dihedrals = df_tor[['p1','p2','p3','p4']]
-    #print(df_dihedrals.head())
-    dihedrals_list_list = []
-    for i in range(len(df_dihedrals)):
-        dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
-    set_list = set()
-    unique_dihedrals_list_list = []
-    for x in dihedrals_list_list:
-        srtd = tuple(sorted(x))
-        if srtd not in set_list:
-            unique_dihedrals_list_list.append(x)
-            set_list.add(srtd)
-    #print(unique_dihedrals_list_list)
-    atom_dihedral_list = []
-    for sub_list in unique_dihedrals_list_list:
-        atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
-    #print(atom_dihedral_list)
-    index_to_include = []
-    for i in range(len(atom_dihedral_list)):
-        if "H" not in atom_dihedral_list[i]:
-            index_to_include.append(i)
-    non_H_dihedrals = []
-    for i in index_to_include:
-        non_H_dihedrals.append(unique_dihedrals_list_list[i])
-    #print(non_H_dihedrals)
-    non_H_atom_dihedral_list = []
-    for sub_list in non_H_dihedrals:
-        non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
-    #print(non_H_atom_dihedral_list)  
-    df_bonds_all = pd.read_csv(system_bonds_file, header = None, delimiter = r"\s+")
-    df_bonds_all.columns = ["bond_names", "k", "angle", "b1", "b2"]
-    df_bonds = df_bonds_all[['b1','b2']]
-    bonds_list_list = []
-    for i in range(len(df_bonds)):
-        bonds_list_list.append(df_bonds.iloc[i].values.tolist())
-    #print(bonds_list_list)
-    reverse_bond_list_list = []
-    for i in bonds_list_list:
-        reverse_bond_list_list.append(reverse_list(i))
-    #print(reverse_bond_list_list)
-    bond_list = bonds_list_list + reverse_bond_list_list
-    #print(bond_list)
-    non_H_dihedral_bonds_list = []
-    for i in non_H_dihedrals:
-        non_H_dihedral_bonds_list.append([[i[0], i[1]], [i[1], i[2]], [i[2], i[3]]])
-    #print(non_H_dihedral_bonds_list)
-    bonded_index_to_include = []
-    for i in range(len(non_H_dihedral_bonds_list)):
-        if [non_H_dihedral_bonds_list[i][0] in bond_list, non_H_dihedral_bonds_list[i][1] in bond_list, non_H_dihedral_bonds_list[i][2] in bond_list] == [True, True, True] :
-            bonded_index_to_include.append(i)
-    #print(bonded_index_to_include)
-    non_H_bonded_dihedrals = []
-    for i in bonded_index_to_include:
-        non_H_bonded_dihedrals.append(non_H_dihedrals[i])
-    #print(non_H_bonded_dihedrals)
-    non_H_bonded_atom_dihedral_list = []
-    for sub_list in non_H_bonded_dihedrals:
-        non_H_bonded_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
-    print(non_H_bonded_atom_dihedral_list)    
-    os.system("rm -rf " + tor_dir)
-    os.system("mkdir " + tor_dir)
-    parent_cwd = os.getcwd()
-    shutil.copy(parent_cwd + "/" + psi_input_file, parent_cwd + "/" + tor_dir + "/" + psi_input_file)
-    shutil.copy(parent_cwd + "/" + template_pdb, parent_cwd + "/" + tor_dir + "/" + template_pdb)
-    shutil.copy(parent_cwd + "/" + torsion_drive_run_file, parent_cwd + "/" + tor_dir + "/" + torsion_drive_run_file)
-    os.chdir(parent_cwd + "/" + tor_dir)
-    torsion_drive_dir = os.getcwd()
-    for i in range(len(non_H_bonded_dihedrals)):
-        dir_name = "torsion_drive" + "_" + str(i)
-        os.system("rm -rf " + dir_name)
-        os.system("mkdir "  + dir_name)
-        os.chdir (torsion_drive_dir + "/" + dir_name)
-        with open(dihedral_text_file, "w") as f: 
-            f.write("# dihedral definition by atom indices starting from 1" + "\n")
-            f.write("# i     j     k     l" + "\n")
-            i_ = non_H_bonded_dihedrals[i][0]
-            j_ = non_H_bonded_dihedrals[i][1]
-            k_ = non_H_bonded_dihedrals[i][2]
-            l_ = non_H_bonded_dihedrals[i][3]
-            f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
-            shutil.copy (torsion_drive_dir + "/" + psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + psi_input_file)
-            shutil.copy (torsion_drive_dir + "/" + template_pdb, torsion_drive_dir + "/" + dir_name + "/" + template_pdb)
-            shutil.copy (torsion_drive_dir + "/" + torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + torsion_drive_run_file)
-            os.chdir(torsion_drive_dir)   
-    os.system("rm -rf "  + psi_input_file)
-    os.system("rm -rf "  + template_pdb)
-    os.system("rm -rf " + torsion_drive_run_file)
-    os.chdir(parent_cwd)  
-####################################################################################################################################################################################
-def run_torsion_sim(tor_dir, psi_input_file, dihedral_text_file, dihedral_interval, engine, torsion_drive_run_file):
-    parent_cwd = os.getcwd()
-    target_dir = parent_cwd + "/" + tor_dir
-    num_folders = 0
-    for _, dirnames, filenames in os.walk(target_dir):
-        num_folders += len(dirnames)
-    for i in range(num_folders):
-        dir_ = "torsion_drive" + "_" + str(i)
-        os.chdir(parent_cwd + "/" + tor_dir + "/" + dir_)
-        run_command = "bash" + " " + torsion_drive_run_file
-        #os.system(run_command)
-        #print(run_command)
+class TorsionDriveSims:
+
+    def __init__(self, reparameterised_system_xml_file, torsion_xml_file, xyz_file, psi_input_file, memory, charge, multiplicity, basis_set, functional, iterations, method_torsion_drive, system_bonds_file, tor_dir, dihedral_text_file, template_pdb, torsion_drive_run_file, dihedral_interval, engine, energy_threshold):  
+        self.reparameterised_system_xml_file = reparameterised_system_xml_file
+        self.torsion_xml_file = torsion_xml_file
+        self.xyz_file = xyz_file
+        self.psi_input_file = psi_input_file
+        self.memory = memory
+        self.charge = charge
+        self.multiplicity = multiplicity
+        self.basis_set = basis_set
+        self.functional = functional
+        self.iterations = iterations
+        self.method_torsion_drive = method_torsion_drive
+        self.system_bonds_file = system_bonds_file
+        self.tor_dir = tor_dir
+        self.dihedral_text_file = dihedral_text_file
+        self.template_pdb = template_pdb
+        self.torsion_drive_run_file = torsion_drive_run_file
+        self.dihedral_interval = dihedral_interval
+        self.engine = engine
+        self.energy_threshold = energy_threshold
+
+    def write_torsion_drive_run_file(self):
+        if self.method_torsion_drive == "geometric":
+            torsion_command = "torsiondrive-launch" + " " + self.psi_input_file + " " + self.dihedral_text_file + " " + "-g" + " " + str(self.dihedral_interval) + " " + "-e" + " " + self.engine + " " + "--energy_thresh" + " " + str(self.energy_threshold) + " " + "-v"
+        if self.method_torsion_drive == "native_opt":
+            torsion_command = "torsiondrive-launch" + " " + self.psi_input_file + " " + self.dihedral_text_file + " " + "-g" + " " + str(self.dihedral_interval) + " " + "-e" + " " + self.engine + " " + "--energy_thresh" + " " + str(self.energy_threshold) + " " + "--" + self.method_torsion_drive + " " + "-v"
+        print(torsion_command)
+        with open(self.torsion_drive_run_file, "w") as f: 
+            f.write(torsion_command) 
+
+    def write_tor_params_txt(self):
+        xml_off = open(self.reparameterised_system_xml_file, 'r') 
+        xml_off_lines = xml_off.readlines() 
+        for i in range(len(xml_off_lines)):
+            if "<Torsions>" in xml_off_lines[i]:
+                to_begin = int(i)
+            if "</Torsions>" in xml_off_lines[i]:
+                to_end = int(i)  
+        torsion_params = xml_off_lines[to_begin + 1:to_end]
+
+        k_list_off = []
+        for i in range(len(torsion_params)):
+            k_list_off.append(float(re.findall('\d*\.?\d+',torsion_params[i])[0]))
+        k_list_off = [round(num, 10) for num in k_list_off]
+        #print(k_list_off)
+        p1 = []
+        for i in range(len(torsion_params)):
+            p1.append(int(re.findall('\d*\.?\d+',torsion_params[i])[2]))
+        p1 = [i + 1 for i in p1]
+        #print(p1)
+        p2 = []
+        for i in range(len(torsion_params)):
+            p2.append(int(re.findall('\d*\.?\d+',torsion_params[i])[4]))
+        p2 = [i + 1 for i in p2]
+        #print(p2)
+        p3 = []
+        for i in range(len(torsion_params)):
+            p3.append(int(re.findall('\d*\.?\d+',torsion_params[i])[6]))
+        p3 = [i + 1 for i in p3]
+        #print(p3)
+        p4 = []
+        for i in range(len(torsion_params)):
+            p4.append(int(re.findall('\d*\.?\d+',torsion_params[i])[8]))
+        p4 = [i + 1 for i in p4]
+        #print(p4)
+        periodicity = []
+        for i in range(len(torsion_params)):
+            periodicity.append(int(re.findall('\d*\.?\d+',torsion_params[i])[9]))
+        #print(periodicity)
+        phase = []
+        for i in range(len(torsion_params)):
+            phase.append(float(re.findall('\d*\.?\d+',torsion_params[i])[10]))
+        phase = [round(num, 8) for num in phase]
+        #print(phase)
+        data_tuples = list(zip(k_list_off, p1, p2, p3, p4, periodicity, phase))
+        df_tor = pd.DataFrame(data_tuples, columns=['k','p1','p2','p3','p4','periodicity','phase'])
+        #print(df_tor.head())
+        df_tor.to_csv (self.torsion_xml_file, index = False, header = False, sep = ' ')
+
+    def write_psi4_input(self):
+        xyz_lines = open(self.xyz_file, 'r').readlines()[2:]
+        with open(self.psi_input_file, "w") as f: 
+            f.write("memory" + " " + str(self.memory)  + " " + "GB" + "\n") 
+            f.write("molecule" + " " + "{" + "\n")
+            f.write(str(self.charge) + " " + str(self.multiplicity) + "\n")
+            for line in xyz_lines:
+                f.write(line)
+            f.write("}" + "\n")
+            f.write("set"  + " " + "{" + "\n")
+            f.write("basis" + " " + self.basis_set + "\n")
+            if self.method_torsion_drive == "native_opt" :        
+                f.write("GEOM_MAXITER" + " " + str(self.iterations) + "\n")
+            f.write("}" + "\n")
+            if self.method_torsion_drive == "native_opt" :
+                f.write("optimize" + "(" + "'" + self.functional + "'"")" + "\n")  
+            if self.method_torsion_drive == "geometric" :
+                f.write("gradient" + "(" + "'" + self.functional + "'"")" + "\n") 
+
+    def create_torsion_drive_dir(self):
+        df_tor = pd.read_csv(self.torsion_xml_file, header = None, delimiter = r"\s+")
+        df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+        #print(df_tor.head())
+        df_dihedrals = df_tor[['p1','p2','p3','p4']]
+        #print(df_dihedrals.head())
+        dihedrals_list_list = []
+        for i in range(len(df_dihedrals)):
+            dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+        set_list = set()
+        unique_dihedrals_list_list = []
+        for x in dihedrals_list_list:
+            srtd = tuple(sorted(x))
+            if srtd not in set_list:
+                unique_dihedrals_list_list.append(x)
+                set_list.add(srtd)
+        #print(unique_dihedrals_list_list)
+        os.system("rm -rf " + self.tor_dir)
+        os.system("mkdir " + self.tor_dir)
+        parent_cwd = os.getcwd()
+        shutil.copy(parent_cwd + "/" + self.psi_input_file, parent_cwd + "/" + self.tor_dir + "/" + self.psi_input_file)
+        shutil.copy(parent_cwd + "/" + self.template_pdb, parent_cwd + "/" + self.tor_dir + "/" + self.template_pdb)
+        shutil.copy(parent_cwd + "/" + self.torsion_drive_run_file, parent_cwd + "/" + self.tor_dir + "/" + self.torsion_drive_run_file)
+        os.chdir(parent_cwd + "/" + self.tor_dir)
+        torsion_drive_dir = os.getcwd()
+        for i in range(len(unique_dihedrals_list_list)):
+            dir_name = "torsion_drive" + "_" + str(i)
+            os.system("rm -rf " + dir_name)
+            os.system("mkdir "  + dir_name)
+            os.chdir (torsion_drive_dir + "/" + dir_name)
+            with open(self.dihedral_text_file, "w") as f: 
+                f.write("# dihedral definition by atom indices starting from 1" + "\n")
+                f.write("# i     j     k     l" + "\n")
+                i_ = unique_dihedrals_list_list[i][0]
+                j_ = unique_dihedrals_list_list[i][1]
+                k_ = unique_dihedrals_list_list[i][2]
+                l_ = unique_dihedrals_list_list[i][3]
+                f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+                shutil.copy (torsion_drive_dir + "/" + self.psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + self.psi_input_file)
+                shutil.copy (torsion_drive_dir + "/" + self.template_pdb, torsion_drive_dir + "/" + dir_name + "/" + self.template_pdb)
+                shutil.copy (torsion_drive_dir + "/" + self.torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + self.torsion_drive_run_file)
+                os.chdir(torsion_drive_dir)   
+        os.system("rm -rf "  + self.psi_input_file)
+        os.system("rm -rf "  + self.template_pdb)
+        os.system("rm -rf " + self.torsion_drive_run_file)
+        os.chdir(parent_cwd)   
+
+    def create_non_H_torsion_drive_dir(self):
+        df_tor = pd.read_csv(self.torsion_xml_file, header = None, delimiter = r"\s+")
+        df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+        #print(df_tor.head())
+        ppdb = PandasPdb()
+        ppdb.read_pdb(self.template_pdb)
+        df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
+        #print(df_index_symbol.head())
+        df_dihedrals = df_tor[['p1','p2','p3','p4']]
+        #print(df_dihedrals.head())
+        dihedrals_list_list = []
+        for i in range(len(df_dihedrals)):
+            dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+        set_list = set()
+        unique_dihedrals_list_list = []
+        for x in dihedrals_list_list:
+            srtd = tuple(sorted(x))
+            if srtd not in set_list:
+                unique_dihedrals_list_list.append(x)
+                set_list.add(srtd)
+        #print(unique_dihedrals_list_list)
+        atom_dihedral_list = []
+        for sub_list in unique_dihedrals_list_list:
+            atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+        #print(atom_dihedral_list)
+        index_to_include = []
+        for i in range(len(atom_dihedral_list)):
+            if "H" not in atom_dihedral_list[i]:
+                index_to_include.append(i)
+        non_H_dihedrals = []
+        for i in index_to_include:
+            non_H_dihedrals.append(unique_dihedrals_list_list[i])
+        #print(non_H_dihedrals)
+        non_H_atom_dihedral_list = []
+        for sub_list in non_H_dihedrals:
+            non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+        print(non_H_atom_dihedral_list)  
+        os.system("rm -rf " + self.tor_dir)
+        os.system("mkdir " + self.tor_dir)
+        parent_cwd = os.getcwd()
+        shutil.copy(parent_cwd + "/" + self.psi_input_file, parent_cwd + "/" + self.tor_dir + "/" + self.psi_input_file)
+        shutil.copy(parent_cwd + "/" + self.template_pdb, parent_cwd + "/" + self.tor_dir + "/" + self.template_pdb)
+        shutil.copy(parent_cwd + "/" + self.torsion_drive_run_file, parent_cwd + "/" + self.tor_dir + "/" + self.torsion_drive_run_file)
+        os.chdir(parent_cwd + "/" + self.tor_dir)
+        torsion_drive_dir = os.getcwd()
+        for i in range(len(non_H_dihedrals)):
+            dir_name = "torsion_drive" + "_" + str(i)
+            os.system("rm -rf " + dir_name)
+            os.system("mkdir "  + dir_name)
+            os.chdir (torsion_drive_dir + "/" + dir_name)
+            with open(self.dihedral_text_file, "w") as f: 
+                f.write("# dihedral definition by atom indices starting from 1" + "\n")
+                f.write("# i     j     k     l" + "\n")
+                i_ = non_H_dihedrals[i][0]
+                j_ = non_H_dihedrals[i][1]
+                k_ = non_H_dihedrals[i][2]
+                l_ = non_H_dihedrals[i][3]
+                f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+                shutil.copy (torsion_drive_dir + "/" + self.psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + self.psi_input_file)
+                shutil.copy (torsion_drive_dir + "/" + self.template_pdb, torsion_drive_dir + "/" + dir_name + "/" + self.template_pdb)
+                shutil.copy (torsion_drive_dir + "/" + self.torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + self.torsion_drive_run_file)
+                os.chdir(torsion_drive_dir)   
+        os.system("rm -rf "  + self.psi_input_file)
+        os.system("rm -rf "  + self.template_pdb)
+        os.system("rm -rf " + self.torsion_drive_run_file)
         os.chdir(parent_cwd)  
+
+
+    def create_non_H_bonded_torsion_drive_dir(self):
+        df_tor = pd.read_csv(self.torsion_xml_file, header = None, delimiter = r"\s+")
+        df_tor.columns = ['k','p1','p2','p3','p4','periodicity','phase']
+        #print(df_tor.head())
+        ppdb = PandasPdb()
+        ppdb.read_pdb(self.template_pdb)
+        df_index_symbol = ppdb.df["ATOM"][["atom_number", "element_symbol"]]
+        #print(df_index_symbol.head())
+        df_dihedrals = df_tor[['p1','p2','p3','p4']]
+        #print(df_dihedrals.head())
+        dihedrals_list_list = []
+        for i in range(len(df_dihedrals)):
+            dihedrals_list_list.append(df_dihedrals.iloc[i].values.tolist())
+        set_list = set()
+        unique_dihedrals_list_list = []
+        for x in dihedrals_list_list:
+            srtd = tuple(sorted(x))
+            if srtd not in set_list:
+                unique_dihedrals_list_list.append(x)
+                set_list.add(srtd)
+        #print(unique_dihedrals_list_list)
+        atom_dihedral_list = []
+        for sub_list in unique_dihedrals_list_list:
+            atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+        #print(atom_dihedral_list)
+        index_to_include = []
+        for i in range(len(atom_dihedral_list)):
+            if "H" not in atom_dihedral_list[i]:
+                index_to_include.append(i)
+        non_H_dihedrals = []
+        for i in index_to_include:
+            non_H_dihedrals.append(unique_dihedrals_list_list[i])
+        #print(non_H_dihedrals)
+        non_H_atom_dihedral_list = []
+        for sub_list in non_H_dihedrals:
+            non_H_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+        #print(non_H_atom_dihedral_list)  
+        df_bonds_all = pd.read_csv(self.system_bonds_file, header = None, delimiter = r"\s+")
+        df_bonds_all.columns = ["bond_names", "k", "angle", "b1", "b2"]
+        df_bonds = df_bonds_all[['b1','b2']]
+        bonds_list_list = []
+        for i in range(len(df_bonds)):
+            bonds_list_list.append(df_bonds.iloc[i].values.tolist())
+        #print(bonds_list_list)
+        reverse_bond_list_list = []
+        for i in bonds_list_list:
+            reverse_bond_list_list.append(reverse_list(i))
+        #print(reverse_bond_list_list)
+        bond_list = bonds_list_list + reverse_bond_list_list
+        #print(bond_list)
+        non_H_dihedral_bonds_list = []
+        for i in non_H_dihedrals:
+            non_H_dihedral_bonds_list.append([[i[0], i[1]], [i[1], i[2]], [i[2], i[3]]])
+        #print(non_H_dihedral_bonds_list)
+        bonded_index_to_include = []
+        for i in range(len(non_H_dihedral_bonds_list)):
+            if [non_H_dihedral_bonds_list[i][0] in bond_list, non_H_dihedral_bonds_list[i][1] in bond_list, non_H_dihedral_bonds_list[i][2] in bond_list] == [True, True, True] :
+                bonded_index_to_include.append(i)
+        #print(bonded_index_to_include)
+        non_H_bonded_dihedrals = []
+        for i in bonded_index_to_include:
+            non_H_bonded_dihedrals.append(non_H_dihedrals[i])
+        #print(non_H_bonded_dihedrals)
+        non_H_bonded_atom_dihedral_list = []
+        for sub_list in non_H_bonded_dihedrals:
+            non_H_bonded_atom_dihedral_list.append([df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[0]]["element_symbol"].to_list()[0],df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[1]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[2]]["element_symbol"].to_list()[0], df_index_symbol.loc[df_index_symbol['atom_number'] == sub_list[3]]["element_symbol"].to_list()[0]])
+        print(non_H_bonded_atom_dihedral_list)    
+        os.system("rm -rf " + self.tor_dir)
+        os.system("mkdir " + self.tor_dir)
+        parent_cwd = os.getcwd()
+        shutil.copy(parent_cwd + "/" + self.psi_input_file, parent_cwd + "/" + self.tor_dir + "/" + self.psi_input_file)
+        shutil.copy(parent_cwd + "/" + self.template_pdb, parent_cwd + "/" + self.tor_dir + "/" + self.template_pdb)
+        shutil.copy(parent_cwd + "/" + self.torsion_drive_run_file, parent_cwd + "/" + self.tor_dir + "/" + self.torsion_drive_run_file)
+        os.chdir(parent_cwd + "/" + self.tor_dir)
+        torsion_drive_dir = os.getcwd()
+        for i in range(len(non_H_bonded_dihedrals)):
+            dir_name = "torsion_drive" + "_" + str(i)
+            os.system("rm -rf " + dir_name)
+            os.system("mkdir "  + dir_name)
+            os.chdir (torsion_drive_dir + "/" + dir_name)
+            with open(self.dihedral_text_file, "w") as f: 
+                f.write("# dihedral definition by atom indices starting from 1" + "\n")
+                f.write("# i     j     k     l" + "\n")
+                i_ = non_H_bonded_dihedrals[i][0]
+                j_ = non_H_bonded_dihedrals[i][1]
+                k_ = non_H_bonded_dihedrals[i][2]
+                l_ = non_H_bonded_dihedrals[i][3]
+                f.write(" " +  "{:< 6d}".format(i_) + "{:< 6d}".format(j_) + "{:< 6d}".format(k_) + "{:< 6d}".format(l_) +  "\n")
+                shutil.copy (torsion_drive_dir + "/" + self.psi_input_file, torsion_drive_dir + "/" + dir_name + "/" + self.psi_input_file)
+                shutil.copy (torsion_drive_dir + "/" + self.template_pdb, torsion_drive_dir + "/" + dir_name + "/" + self.template_pdb)
+                shutil.copy (torsion_drive_dir + "/" + self.torsion_drive_run_file, torsion_drive_dir + "/" + dir_name + "/" + self.torsion_drive_run_file)
+                os.chdir(torsion_drive_dir)   
+        os.system("rm -rf "  + self.psi_input_file)
+        os.system("rm -rf "  + self.template_pdb)
+        os.system("rm -rf " + self.torsion_drive_run_file)
+        os.chdir(parent_cwd)  
+
+    def run_torsion_sim(self):
+        parent_cwd = os.getcwd()
+        target_dir = parent_cwd + "/" + self.tor_dir
+        num_folders = 0
+        for _, dirnames, filenames in os.walk(target_dir):
+            num_folders += len(dirnames)
+        for i in range(num_folders):
+            dir_ = "torsion_drive" + "_" + str(i)
+            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + dir_)
+            run_command = "bash" + " " + self.torsion_drive_run_file
+            #os.system(run_command)
+            print(run_command)
+            os.chdir(parent_cwd) 
 ####################################################################################################################################################################################
 def scale_list(list_):
     scaled_list = [i - min(list_) for i in list_]
@@ -2687,10 +2732,6 @@ def list_kJ_kcal(list_):
 def list_hartree_kcal(list_):
     converted_list = [i * 627.5094 for i in list_]
     return (converted_list)
-####################################################################################################################################################################################
-def list_to_dict(lst):
-    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
-    return (res_dct)
 ####################################################################################################################################################################################
 def torsiondrive_input_to_xyz(psi_input_file, xyz_file): 
     with open (psi_input_file, "r") as f:
@@ -3044,14 +3085,3 @@ def write_torsional_reparams(reparameterised_system_xml_file, reparameterized_to
                 #print(xml_tor_reparams_lines[j])
                 xml_tor_reparams_lines[j] = non_zero_k_tor[i]        
 ####################################################################################################################################################################################
-class test_class:
-    def __init__(self, a, b, c):
-        self.a = a
-        self.b = b
-        self.c = c
-    def method_a(self):
-        return (self.a + self.b)
-    def method_b(self):
-        return (self.a * self.b)
-    def method_c(self):
-        return (self.a - self.c)
