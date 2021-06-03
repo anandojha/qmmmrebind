@@ -3009,7 +3009,7 @@ class TorsionDriveSims:
 ####################################################################################################################################################################################
 class TorsionDriveParams:
 
-    def __init__(self, tor_dir, reparameterized_torsional_params_file, psi_input_file, xyz_file, coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, method, dihedral_text_file, system_init_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, load_topology):  
+    def __init__(self, tor_dir, reparameterized_torsional_params_file, psi_input_file, xyz_file, coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, method, dihedral_text_file, system_init_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, load_topology, reparameterised_system_xml_file, reparameterised_torsional_system_xml_file):  
         self.tor_dir = tor_dir
         self.reparameterized_torsional_params_file = reparameterized_torsional_params_file
         self.psi_input_file = psi_input_file
@@ -3027,6 +3027,8 @@ class TorsionDriveParams:
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
         self.load_topology = load_topology
+        self.reparameterised_system_xml_file = reparameterised_system_xml_file
+        self.reparameterised_torsional_system_xml_file = reparameterised_torsional_system_xml_file
 
     def write_reparams_torsion_lines(self):
         torsional_parameters_list = []
@@ -3067,42 +3069,45 @@ class TorsionDriveParams:
         with open(self.reparameterized_torsional_params_file, "w") as f: 
             for i in torsional_parameters:
                 f.write(i + "\n") 
-####################################################################################################################################################################################
-def write_torsional_reparams(reparameterised_system_xml_file, reparameterized_torsional_params_file, reparameterised_torsional_system_xml_file):
-    xml_tor = open(reparameterized_torsional_params_file, 'r') 
-    xml_tor_lines = xml_tor.readlines() 
-    non_zero_k_tor = []
-    for i in xml_tor_lines:
-        to_find = "k=" + '"' + "0.0" + '"' 
-        if to_find not in i:
-            non_zero_k_tor.append(i)
-    #print(non_zero_k_tor)
-    p1 = []
-    for i in range(len(non_zero_k_tor)):
-        p1.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[2]))
-    #print(p1)
-    p2 = []
-    for i in range(len(non_zero_k_tor)):
-        p2.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[4]))
-    #print(p2)
-    p3 = []
-    for i in range(len(non_zero_k_tor)):
-        p3.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[6]))
-    #print(p3)
-    p4 = []
-    for i in range(len(non_zero_k_tor)):
-        p4.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[8]))
-    #print(p4)
-    periodicity = []
-    for i in range(len(non_zero_k_tor)):
-        periodicity.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[9]))
-    #print(periodicity)
-    xml_tor_reparams = open(reparameterised_system_xml_file, 'r') 
-    xml_tor_reparams_lines = xml_tor_reparams.readlines() 
-    for j in range(len(xml_tor_reparams_lines)):
+
+    def write_torsional_reparams(self):
+        xml_tor = open(self.reparameterized_torsional_params_file, 'r') 
+        xml_tor_lines = xml_tor.readlines() 
+        non_zero_k_tor = []
+        for i in xml_tor_lines:
+            to_find = "k=" + '"' + "0.0" + '"' 
+            if to_find not in i:
+                non_zero_k_tor.append(i)
+        #print(non_zero_k_tor)
+        p1 = []
         for i in range(len(non_zero_k_tor)):
-            to_find_tor = "p1=" + '"' + str(p1[i]) + '"' + " " + "p2=" + '"' + str(p2[i]) + '"' + " " + "p3=" + '"' + str(p3[i]) + '"' + " " + "p4=" + '"' + str(p4[i]) + '"' + " " + "periodicity=" + '"' + str(periodicity[i]) + '"' 
-            if to_find_tor in xml_tor_reparams_lines[j]:
-                #print(xml_tor_reparams_lines[j])
-                xml_tor_reparams_lines[j] = non_zero_k_tor[i]        
+            p1.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[2]))
+        #print(p1)
+        p2 = []
+        for i in range(len(non_zero_k_tor)):
+            p2.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[4]))
+        #print(p2)
+        p3 = []
+        for i in range(len(non_zero_k_tor)):
+            p3.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[6]))
+        #print(p3)
+        p4 = []
+        for i in range(len(non_zero_k_tor)):
+            p4.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[8]))
+        #print(p4)
+        periodicity = []
+        for i in range(len(non_zero_k_tor)):
+            periodicity.append(int(re.findall('\d*\.?\d+',non_zero_k_tor[i])[9]))
+        #print(periodicity)
+        xml_tor_reparams = open(self.reparameterised_system_xml_file, 'r') 
+        xml_tor_reparams_lines = xml_tor_reparams.readlines() 
+        for j in range(len(xml_tor_reparams_lines)):
+            for i in range(len(non_zero_k_tor)):
+                to_find_tor = "p1=" + '"' + str(p1[i]) + '"' + " " + "p2=" + '"' + str(p2[i]) + '"' + " " + "p3=" + '"' + str(p3[i]) + '"' + " " + "p4=" + '"' + str(p4[i]) + '"' + " " + "periodicity=" + '"' + str(periodicity[i]) + '"' 
+                if to_find_tor in xml_tor_reparams_lines[j]:
+                    #print(xml_tor_reparams_lines[j])
+                    xml_tor_reparams_lines[j] = non_zero_k_tor[i]    
+        with open(self.reparameterised_torsional_system_xml_file, 'w') as f:
+            for i in xml_tor_reparams_lines:
+                f.write(i)
 ####################################################################################################################################################################################
