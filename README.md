@@ -8,7 +8,7 @@ QMMMReBind
 QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Reparamaterisation of the binding site for the receptor-ligand complexes
 
 QMMMREBIND:
-Software Requirements : Gaussian16, Amber, TorsionDrive and Psi4
+Software Requirements : Gaussian16, Amber, TorsionDrive, Openbabel and Psi4
 
 ### Copyright
 
