@@ -14,7 +14,7 @@
 * Psi4
 
 ## Installation and Setup Instructions :
-* Make sure [anaconda3] (https://www.anaconda.com/) is installed on the local machine. Go to this [link] (https://www.anaconda.com/products/individual) and download the latest edition of anaconda3. Move the anaconda-downloaded.sh file to the home directory and open the terminal, bash the .sh file and follow the instructions. 
+* Make sure [anaconda3](https://www.anaconda.com/) is installed on the local machine. Go to this [link](https://www.anaconda.com/products/individual) and download the latest edition of anaconda3. Move the anaconda-downloaded.sh file to the home directory and open the terminal, bash the .sh file and follow the instructions. 
 * Create a new conda environment with python version 3.8 :
 ```bash
 conda create -n qmmmrebind python=3.8
