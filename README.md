@@ -16,11 +16,13 @@
 ## Installation and Set up Instructions :
 * conda create -n qmmmrebind python=3.8
 * conda activate qmmmrebind
-* conda install git openforcefield
-* conda install -c conda-forge biopandas mendeleev openmm parmed openbabel 
+* conda install git 
+* conda install openforcefield
+* conda install -c conda-forge openbabel 
 * git clone https://github.com/anandojha/qmmmrebind.git
 * cd qmmmrebind
-* pytest 
+* python setup.py install
+* python setup.py test 
 
 ### Copyright
 
