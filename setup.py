@@ -1,6 +1,6 @@
 """
 QMMMReBind
-QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Reparamaterisation of the binding site for the receptor-ligand complexes
+QMMMReBind : Quantum Mechanics – Molecular Mechanics ( QM-MM ) forcefield Reparamaterisation of the Binding site for the receptor-ligand complexes
 """
 import sys
 from setuptools import setup, find_packages

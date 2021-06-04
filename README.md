@@ -1,4 +1,4 @@
-# QMMMReBind - Quantum Mechanics – Molecular Mechanics ( *QMMM* ) ForceField *Re*paramaterisation of the *Bind*ing site for receptor-ligand complexes
+# QMMMReBind - Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield *Re*paramaterisation of the *Bind*ing site for receptor-ligand complexes
 
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/anandojha/qmmmrebind/workflows/CI/badge.svg)](https://github.com/anandojha/qmmmrebind/actions?query=workflow%3ACI)
