@@ -1,6 +1,5 @@
 """
-parameterize.py
-QMMMReBind : Quantum Mechanics – Molecular Mechanics ( QMMM ) forcefield Reparamaterisation of the Binding site for the receptor-ligand complexes
+QMMMReBind : Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield *Re*paramaterisation of the *Bind*ing site for the receptor-ligand complexes
 """
 
 import openforcefield.typing.engines.smirnoff
