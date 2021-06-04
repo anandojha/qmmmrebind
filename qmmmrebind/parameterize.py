@@ -1,3 +1,8 @@
+"""
+parameterize.py
+QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Reparamaterisation of the binding site for the receptor-ligand complexes
+"""
+
 import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
 import matplotlib.pyplot as plt
