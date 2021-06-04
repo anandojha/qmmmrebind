@@ -33,7 +33,7 @@ conda install -c conda-forge openbabel
 ```bash
 conda install git
 ```
-* Clone the QMMMReBind repository :
+* Clone the *QMMMReBind* repository :
 ```bash
 git clone https://github.com/anandojha/qmmmrebind.git
 ```
