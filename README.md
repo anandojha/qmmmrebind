@@ -13,8 +13,8 @@
 * TorsionDrive
 * Psi4
 
-## Installation and Set up Instructions :
-* Make sure anaconda3 is installed on the local machine. 
+## Installation and Setup Instructions :
+* Make sure [anaconda3] (https://www.anaconda.com/) is installed on the local machine. Go to this [link] (https://www.anaconda.com/products/individual) and download the latest edition of anaconda3. Move the anaconda-downloaded.sh file to the home directory and open the terminal, bash the .sh file and follow the instructions. 
 * Create a new conda environment with python version 3.8 :
 ```bash
 conda create -n qmmmrebind python=3.8
@@ -23,7 +23,7 @@ conda create -n qmmmrebind python=3.8
 ```bash
 conda activate qmmmrebind
 ```
-* Install git, openforcefield and openbabel with the following commands:
+* Install git, openforcefield and openbabel with the following commands :
 ```bash
 conda install openforcefield
 ```
@@ -31,13 +31,13 @@ conda install openforcefield
 conda install -c conda-forge openbabel 
 ```
 ```bash
- conda install git
+conda install git
 ```
 * Clone the QMMMReBind repository :
 ```bash
 git clone https://github.com/anandojha/qmmmrebind.git
 ```
-* Move in the directory, set up QMMMReBind and perform the installation test:
+* Move in the directory, set up QMMMReBind and perform the installation test :
 ```bash
 cd qmmmrebind
 ```
