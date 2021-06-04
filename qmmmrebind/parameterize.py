@@ -524,15 +524,16 @@ def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, m
 ####################################################################################################################################################################################
 class PrepareQMMM:
  
-    def __init__(self, init_pdb, cleaned_pdb, guest_init_pdb, host_pdb, guest_resname, guest_pdb, guest_xyz, distance, residue_list, host_qm_atoms, host_mm_atoms, host_qm_pdb, host_mm_pdb, qm_pdb, mm_pdb, host_mm_region_I_atoms, host_mm_region_II_atoms, host_mm_region_I_pdb, host_mm_region_II_pdb, num_residues):
+    def __init__(self, init_pdb, distance, num_residues, guest_resname, cleaned_pdb = "system.pdb", guest_init_pdb = "guest_init.pdb", host_pdb = "host.pdb", guest_pdb = "guest_init_II.pdb", guest_xyz = "guest_coord.txt", residue_list = "residue_list.txt", host_qm_atoms = "host_qm.txt", host_mm_atoms = "host_mm.txt", host_qm_pdb = "host_qm.pdb", host_mm_pdb = "host_mm.pdb", qm_pdb = "qm.pdb", mm_pdb = "mm.pdb", host_mm_region_I_atoms = "host_mm_region_I.txt", host_mm_region_II_atoms = "host_mm_region_II.txt", host_mm_region_I_pdb = "host_mm_region_I.pdb", host_mm_region_II_pdb = "host_mm_region_II.pdb"):
         self.init_pdb = init_pdb
+        self.distance = distance
+        self.num_residues = num_residues
+        self.guest_resname = guest_resname
         self.cleaned_pdb = cleaned_pdb
         self.guest_init_pdb = guest_init_pdb
         self.host_pdb = host_pdb
-        self.guest_resname = guest_resname
         self.guest_pdb = guest_pdb
         self.guest_xyz  = guest_xyz
-        self.distance = distance
         self.residue_list = residue_list
         self.host_qm_atoms = host_qm_atoms
         self.host_mm_atoms = host_mm_atoms
@@ -544,7 +545,6 @@ class PrepareQMMM:
         self.host_mm_region_II_atoms = host_mm_region_II_atoms
         self.host_mm_region_I_pdb = host_mm_region_I_pdb
         self.host_mm_region_II_pdb = host_mm_region_II_pdb
-        self.num_residues = num_residues
 
     def clean_up(self):   
         """
@@ -808,12 +808,12 @@ class PrepareQMMM:
 ####################################################################################################################################################################################
 class PrepareGaussianGuest:
     
-    def __init__(self, guest_pdb, n_processors, memory, charge, multiplicity, functional, basis_set, optimisation, frequency, add_keywords_I, add_keywords_II, add_keywords_III, gauss_out_file, fchk_out_file):
+    def __init__(self, charge, multiplicity, guest_pdb = "guest_init_II.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "OPT", frequency = "FREQ", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_out_file = "guest.out", fchk_out_file = "guest_fchk.out"):
+        self.charge = charge
+        self.multiplicity = multiplicity
         self.guest_pdb = guest_pdb
         self.n_processors = n_processors
         self.memory = memory
-        self.charge = charge
-        self.multiplicity = multiplicity
         self.functional = functional
         self.basis_set  = basis_set
         self.optimisation = optimisation
@@ -869,14 +869,14 @@ class PrepareGaussianGuest:
             sp.run(execute_command, shell = True, stdout = f, stderr = sp.STDOUT)
 ####################################################################################################################################################################################
 class PrepareGaussianHostGuest:
-    
-    def __init__(self, guest_pdb, host_qm_pdb, n_processors, memory, charge, multiplicity, functional, basis_set, optimisation, frequency, add_keywords_I, add_keywords_II, add_keywords_III, gauss_system_out_file, fchk_system_out_file, host_guest_input, qm_guest_charge_parameter_file, qm_host_charge_parameter_file, qm_guest_atom_charge_parameter_file):
+
+    def __init__(self, charge, multiplicity, guest_pdb = "guest_init_II.pdb", host_qm_pdb = "host_qm.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "", frequency = "", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_system_out_file = "system_qm.out", fchk_system_out_file = "system_qm_fchk.out", host_guest_input = "host_guest.com", qm_guest_charge_parameter_file = "guest_qm_surround_charges.txt", qm_host_charge_parameter_file = "host_qm_surround_charges.txt", qm_guest_atom_charge_parameter_file = "guest_qm_atom_surround_charges.txt"):
+        self.charge = charge
+        self.multiplicity = multiplicity
         self.guest_pdb = guest_pdb
         self.host_qm_pdb = host_qm_pdb
         self.n_processors = n_processors
         self.memory = memory
-        self.charge = charge
-        self.multiplicity = multiplicity
         self.functional = functional
         self.basis_set  = basis_set
         self.optimisation = optimisation
@@ -981,7 +981,8 @@ class PrepareGaussianHostGuest:
 ####################################################################################################################################################################################
 class ParameterizeGuest:
     
-    def __init__(self, xyz_file, coordinate_file, unprocessed_hessian_file, bond_list_file, angle_list_file, hessian_file, atom_names_file, bond_parameter_file, vibrational_scaling, angle_parameter_file, charge_parameter_file, guest_pdb, proper_dihedral_file):
+    def __init__(self, vibrational_scaling, xyz_file = "guest_coords.xyz", coordinate_file = "guest_coordinates.txt", unprocessed_hessian_file = "guest_unprocessed_hessian.txt", bond_list_file = "guest_bond_list.txt", angle_list_file = "guest_angle_list.txt", hessian_file = "guest_hessian.txt", atom_names_file = "guest_atom_names.txt", bond_parameter_file = "guest_bonds.txt", angle_parameter_file = "guest_angles.txt", charge_parameter_file = "guest_charges.txt", guest_pdb = "guest_init_II.pdb", proper_dihedral_file = "proper_dihedrals.txt"):
+        self.vibrational_scaling = vibrational_scaling
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
         self.unprocessed_hessian_file = unprocessed_hessian_file
@@ -990,7 +991,6 @@ class ParameterizeGuest:
         self.hessian_file = hessian_file
         self.atom_names_file = atom_names_file
         self.bond_parameter_file = bond_parameter_file
-        self.vibrational_scaling = vibrational_scaling
         self.angle_parameter_file = angle_parameter_file
         self.charge_parameter_file = charge_parameter_file
         self.guest_pdb = guest_pdb
@@ -1362,13 +1362,13 @@ class ParameterizeGuest:
         #return(proper_dihedrals)
 ####################################################################################################################################################################################
 class PrepareGaussianHost:
-    
-    def __init__(self, host_qm_pdb, n_processors, memory, charge, multiplicity, functional, basis_set, optimisation, frequency, add_keywords_I, add_keywords_II, add_keywords_III, gauss_out_file, fchk_out_file):
+  
+    def __init__(self, charge, multiplicity, host_qm_pdb = "host_qm.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "OPT", frequency = "FREQ", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_out_file = "host_qm.out", fchk_out_file = "host_qm_fchk.out"):
+        self.charge = charge
+        self.multiplicity = multiplicity
         self.host_qm_pdb = host_qm_pdb
         self.n_processors = n_processors
         self.memory = memory
-        self.charge = charge
-        self.multiplicity = multiplicity
         self.functional = functional
         self.basis_set  = basis_set
         self.optimisation = optimisation
@@ -1424,8 +1424,9 @@ class PrepareGaussianHost:
             sp.run(execute_command, shell = True, stdout = f, stderr = sp.STDOUT)
 ####################################################################################################################################################################################
 class ParameterizeHost:
-    
-    def __init__(self, xyz_file, coordinate_file, unprocessed_hessian_file, bond_list_file, angle_list_file, hessian_file, atom_names_file, bond_parameter_file, vibrational_scaling, angle_parameter_file, charge_parameter_file, host_qm_pdb):
+
+    def __init__(self, vibrational_scaling, xyz_file = "host_qm_coords.xyz", coordinate_file = "host_qm_coordinates.txt", unprocessed_hessian_file = "host_qm_unprocessed_hessian.txt", bond_list_file = "host_qm_bond_list.txt", angle_list_file = "host_qm_angle_list.txt", hessian_file = "host_qm_hessian.txt", atom_names_file = "host_qm_atom_names.txt", bond_parameter_file = "host_qm_bonds.txt", angle_parameter_file = "host_qm_angles.txt", charge_parameter_file = "host_qm_surround_charges.txt", host_qm_pdb = "host_qm.pdb"):
+        self.vibrational_scaling = vibrational_scaling
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
         self.unprocessed_hessian_file = unprocessed_hessian_file
@@ -1434,7 +1435,6 @@ class ParameterizeHost:
         self.hessian_file = hessian_file
         self.atom_names_file = atom_names_file
         self.bond_parameter_file = bond_parameter_file
-        self.vibrational_scaling = vibrational_scaling
         self.angle_parameter_file = angle_parameter_file
         self.charge_parameter_file = charge_parameter_file
         self.host_qm_pdb = host_qm_pdb
@@ -1763,11 +1763,14 @@ class ParameterizeHost:
 ####################################################################################################################################################################################
 class GuestAmberXMLAmber:
 
-    def __init__(self, system_pdb, system_mol2, system_in, charge, system_frcmod, prmtop_system, inpcrd_system, system_leap, system_xml, system_smi, system_sdf, system_init_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, index_charge_atom_2, charge_atom_2, charge_parameter_file, system_qm_pdb, bond_parameter_file, angle_parameter_file, system_qm_params_file, reparameterised_intermediate_system_xml_file, system_xml_non_bonded_file, system_xml_non_bonded_reparams_file, reparameterised_system_xml_file, non_reparameterised_system_xml_file, prmtop_system_non_params, inpcrd_system_non_params, prmtop_system_params, inpcrd_system_params, load_topology):   
+    def __init__(self, charge, num_charge_atoms, charge_atom_1, index_charge_atom_1, system_pdb = "guest_init_II.pdb", system_mol2 = "guest.mol2", system_in = "guest.in", system_frcmod = "guest.frcmod", prmtop_system = "guest.prmtop", inpcrd_system = "guest.inpcrd", system_leap = "guest.leap", system_xml = "guest_init.xml",  system_smi =  "guest.smi",  system_sdf =  "guest.sdf", system_init_sdf = "guest_init.sdf", index_charge_atom_2 = " ", charge_atom_2 = " ", charge_parameter_file = "guest_charges.txt", system_qm_pdb = "guest_init_II.pdb", bond_parameter_file = "guest_bonds.txt", angle_parameter_file = "guest_angles.txt", system_qm_params_file = "guest_qm_params.txt", reparameterised_intermediate_system_xml_file = "guest_intermediate_reparameterised.xml", system_xml_non_bonded_file = "guest_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "guest_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "guest_reparameterised.xml", non_reparameterised_system_xml_file = "guest_init.xml", prmtop_system_non_params = "guest_non_params.prmtop", inpcrd_system_non_params = "guest_non_params.inpcrd", prmtop_system_params = "guest_params.prmtop", inpcrd_system_params = "guest_params.inpcrd", load_topology = "openmm"):   
+        self.charge = charge
+        self.num_charge_atoms = num_charge_atoms
+        self.charge_atom_1 = charge_atom_1
+        self.index_charge_atom_1 = index_charge_atom_1
         self.system_pdb = system_pdb
         self.system_mol2 = system_mol2
         self.system_in = system_in
-        self.charge = charge
         self.system_frcmod = system_frcmod
         self.prmtop_system = prmtop_system
         self.inpcrd_system = inpcrd_system
@@ -1776,9 +1779,6 @@ class GuestAmberXMLAmber:
         self.system_smi = system_smi
         self.system_sdf = system_sdf
         self.system_init_sdf = system_init_sdf
-        self.num_charge_atoms = num_charge_atoms
-        self.index_charge_atom_1 = index_charge_atom_1
-        self.charge_atom_1 = charge_atom_1
         self.index_charge_atom_2 = index_charge_atom_2
         self.charge_atom_2 = charge_atom_2
         self.charge_parameter_file = charge_parameter_file
@@ -2244,7 +2244,7 @@ class GuestAmberXMLAmber:
 ####################################################################################################################################################################################
 class HostAmberXMLAmber:
 
-    def __init__(self, system_pdb, system_xml, sim_output, sim_steps, charge_parameter_file, system_qm_pdb, bond_parameter_file, angle_parameter_file, system_qm_params_file, reparameterised_intermediate_system_xml_file, system_xml_non_bonded_file, system_xml_non_bonded_reparams_file, reparameterised_system_xml_file, non_reparameterised_system_xml_file, prmtop_system_non_params, inpcrd_system_non_params, prmtop_system_params, inpcrd_system_params, load_topology):   
+    def __init__(self, system_pdb = "host.pdb", system_xml = "host.xml", sim_output = "sim_output.pdb", sim_steps = 1000, charge_parameter_file = "host_qm_surround_charges.txt", system_qm_pdb = "host_qm.pdb", bond_parameter_file = "host_qm_bonds.txt", angle_parameter_file = "host_qm_angles.txt", system_qm_params_file = "host_qm_params.txt", reparameterised_intermediate_system_xml_file = "host_intermediate_reparameterised.xml", system_xml_non_bonded_file = "host_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "host_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "host_reparameterised.xml", non_reparameterised_system_xml_file = "host.xml", prmtop_system_non_params = "host_non_params.prmtop", inpcrd_system_non_params = "host_non_params.inpcrd", prmtop_system_params = "host_params.prmtop", inpcrd_system_params = "host_params.inpcrd", load_topology = "openmm"):   
         self.system_pdb = system_pdb
         self.system_xml = system_xml
         self.sim_output = sim_output
@@ -2623,7 +2623,7 @@ class HostAmberXMLAmber:
 ####################################################################################################################################################################################
 class RunOpenMMSims:
 
-    def __init__(self, system_prmtop, system_inpcrd, system_pdb, system_output, sim_steps):   
+    def __init__(self, system_prmtop, system_inpcrd, system_pdb, system_output =  "sim_output.pdb", sim_steps = 1000):   
         self.system_prmtop = system_prmtop
         self.system_inpcrd = system_inpcrd
         self.system_pdb = system_pdb
@@ -2683,14 +2683,14 @@ class MergeHostGuestTopology:
 ####################################################################################################################################################################################
 class TorsionDriveSims:
 
-    def __init__(self, reparameterised_system_xml_file, torsion_xml_file, xyz_file, psi_input_file, memory, charge, multiplicity, basis_set, functional, iterations, method_torsion_drive, system_bonds_file, tor_dir, dihedral_text_file, template_pdb, torsion_drive_run_file, dihedral_interval, engine, energy_threshold):  
+    def __init__(self, charge, multiplicity, reparameterised_system_xml_file = "guest_reparameterised.xml", torsion_xml_file = "guest_torsion_xml.txt", xyz_file = "guest_coords.xyz", psi_input_file = "torsion_drive_input.dat", memory = 50, basis_set = "STO-3G", functional = "BLYP", iterations = 2000, method_torsion_drive = "native_opt", system_bonds_file = "guest_bonds.txt", tor_dir = "torsion_dir", dihedral_text_file = "dihedrals.txt", template_pdb = "guest_init_II.pdb", torsion_drive_run_file = "run_command", dihedral_interval = 15, engine = "psi4", energy_threshold = 0.001):  
+        self.charge = charge
+        self.multiplicity = multiplicity
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
         self.torsion_xml_file = torsion_xml_file
         self.xyz_file = xyz_file
         self.psi_input_file = psi_input_file
         self.memory = memory
-        self.charge = charge
-        self.multiplicity = multiplicity
         self.basis_set = basis_set
         self.functional = functional
         self.iterations = iterations
@@ -3009,7 +3009,10 @@ class TorsionDriveSims:
 ####################################################################################################################################################################################
 class TorsionDriveParams:
 
-    def __init__(self, tor_dir, reparameterized_torsional_params_file, psi_input_file, xyz_file, coords_file, template_pdb, system_pdb, system_sdf, system_xml, qm_scan_file, method, dihedral_text_file, system_init_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, load_topology, reparameterised_system_xml_file, reparameterised_torsional_system_xml_file):  
+    def __init__(self, num_charge_atoms, index_charge_atom_1, charge_atom_1, tor_dir = "torsion_dir", reparameterized_torsional_params_file = "reparameterized_torsional_params.txt", psi_input_file = "torsion_drive_input.dat", xyz_file = "torsion_drive_input.xyz", coords_file = "torsion_drive_input.txt", template_pdb = "guest_init_II.pdb", system_pdb = "torsion_drive_input.pdb", system_sdf = "torsion_drive_input.sdf", system_xml = "torsion_drive_input.xml", qm_scan_file = "scan.xyz", load_topology = "openmm", method = "L-BFGS-B", dihedral_text_file = "dihedrals.txt", system_init_sdf = "torsion_drive_input_init.sdf", reparameterised_system_xml_file = "guest_reparameterised.xml", reparameterised_torsional_system_xml_file = "guest_torsional_reparameterized.xml"):  
+        self.num_charge_atoms = num_charge_atoms
+        self.index_charge_atom_1 = index_charge_atom_1
+        self.charge_atom_1 = charge_atom_1
         self.tor_dir = tor_dir
         self.reparameterized_torsional_params_file = reparameterized_torsional_params_file
         self.psi_input_file = psi_input_file
@@ -3023,9 +3026,6 @@ class TorsionDriveParams:
         self.method = method
         self.dihedral_text_file = dihedral_text_file
         self.system_init_sdf = system_init_sdf
-        self.num_charge_atoms = num_charge_atoms
-        self.index_charge_atom_1 = index_charge_atom_1
-        self.charge_atom_1 = charge_atom_1
         self.load_topology = load_topology
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
         self.reparameterised_torsional_system_xml_file = reparameterised_torsional_system_xml_file
