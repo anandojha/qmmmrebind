@@ -14,21 +14,44 @@
 * Psi4
 
 ## Installation and Set up Instructions :
-* conda create -n qmmmrebind python=3.8
-* conda activate qmmmrebind
-* conda install git 
-* conda install openforcefield
-* conda install -c conda-forge openbabel 
-* git clone https://github.com/anandojha/qmmmrebind.git
-* cd qmmmrebind
-* python setup.py install
-* python setup.py test 
+* Make sure anaconda3 is installed on the local machine. 
+* Create a new conda environment with python version 3.8 :
+```bash
+conda create -n qmmmrebind python=3.8
+```
+* Activate the conda environment:
+```bash
+conda activate qmmmrebind
+```
+* Install git, openforcefield and openbabel with the following commands:
+```bash
+conda install openforcefield
+```
+```bash
+conda install -c conda-forge openbabel 
+```
+```bash
+ conda install git
+```
+* Clone the QMMMReBind repository :
+```bash
+git clone https://github.com/anandojha/qmmmrebind.git
+```
+* Move in the directory, set up QMMMReBind and perform the installation test:
+```bash
+cd qmmmrebind
+```
+```bash
+python setup.py install
+```
+```bash
+python setup.py test 
+```
+
+Documentation can be found [here](https://github.com/anandojha/qmmmrebind/blob/main/qmmmrebind/html/parameterize.html)
 
 ### Copyright
-
 Copyright (c) 2021, Anupam Anand Ojha
-
 #### Acknowledgements
- 
 Project based on the 
 [Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.5.
