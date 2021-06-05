@@ -2,6 +2,10 @@
 QMMMReBind : Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield *Re*paramaterisation of the *Bind*ing site for the receptor-ligand complexes
 """
 
+
+"""
+Imported Libraries
+"""
 import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
 import matplotlib.pyplot as plt
@@ -27,19 +31,29 @@ import math
 import sys
 import re
 import os
-####################################################################################################################################################################################
+
+"""
+Nested List of Atomic numbers of the elements, their symbols and their names
+"""
+
 element_list = [['1 ', 'H ', 'Hydrogen'], ['2 ', 'He', 'Helium'], ['3 ', 'Li', 'Lithium'], ['4 ', 'Be', 'Beryllium'], ['5 ', 'B ', 'Boron'], ['6 ', 'C ', 'Carbon'], ['7 ', 'N ', 'Nitrogen'], ['8 ', 'O ', 'Oxygen'], ['9 ', 'F ', 'Fluorine'], ['10', 'Ne', 'Neon'], ['11', 'Na', 'Sodium'], ['12', 'Mg', 'Magnesium'], ['13', 'Al', 'Aluminum'], ['14', 'Si', 'Silicon'], ['15', 'P ', 'Phosphorus'], ['16', 'S ', 'Sulfur'], ['17', 'Cl', 'Chlorine'], ['18', 'Ar', 'Argon'], ['19', 'K ', 'Potassium'], ['20', 'Ca', 'Calcium'], ['21', 'Sc', 'Scandium'], ['22', 'Ti', 'Titanium'], ['23', 'V ', 'Vanadium'], ['24', 'Cr', 'Chromium'], ['25', 'Mn', 'Manganese'], ['26', 'Fe', 'Iron'], ['27', 'Co', 'Cobalt'], ['28', 'Ni', 'Nickel'], ['29', 'Cu', 'Copper'], ['30', 'Zn', 'Zinc'], ['31', 'Ga', 'Gallium'], ['32', 'Ge', 'Germanium'], ['33', 'As', 'Arsenic'], ['34', 'Se', 'Selenium'], ['35', 'Br', 'Bromine'], ['36', 'Kr', 'Krypton'], ['37', 'Rb', 'Rubidium'], ['38', 'Sr', 'Strontium'], ['39', 'Y ', 'Yttrium'], ['40', 'Zr', 'Zirconium'], ['41', 'Nb', 'Niobium'], ['42', 'Mo', 'Molybdenum'], ['43', 'Tc', 'Technetium'], ['44', 'Ru', 'Ruthenium'], ['45', 'Rh', 'Rhodium'], ['46', 'Pd', 'Palladium'], ['47', 'Ag', 'Silver'], ['48', 'Cd', 'Cadmium'], ['49', 'In', 'Indium'], ['50', 'Sn', 'Tin'], ['51', 'Sb', 'Antimony'], ['52', 'Te', 'Tellurium'], ['53', 'I ', 'Iodine'], ['54', 'Xe', 'Xenon'], ['55', 'Cs', 'Cesium'], ['56', 'Ba', 'Barium'], ['57', 'La', 'Lanthanum'], ['58', 'Ce', 'Cerium'], ['59', 'Pr', 'Praseodymium'], ['60', 'Nd', 'Neodymium'], ['61', 'Pm', 'Promethium'], ['62', 'Sm', 'Samarium'], ['63', 'Eu', 'Europium'], ['64', 'Gd', 'Gadolinium'], ['65', 'Tb', 'Terbium'], ['66', 'Dy', 'Dysprosium'], ['67', 'Ho', 'Holmium'], ['68', 'Er', 'Erbium'], ['69', 'Tm', 'Thulium'], ['70', 'Yb', 'Ytterbium'], ['71', 'Lu', 'Lutetium'], ['72', 'Hf', 'Hafnium'], ['73', 'Ta', 'Tantalum'], ['74', 'W ', 'Tungsten'], ['75', 'Re', 'Rhenium'], ['76', 'Os', 'Osmium'], ['77', 'Ir', 'Iridium'], ['78', 'Pt', 'Platinum'], ['79', 'Au', 'Gold'], ['80', 'Hg', 'Mercury'], ['81', 'Tl', 'Thallium'], ['82', 'Pb', 'Lead'], ['83', 'Bi', 'Bismuth'], ['84', 'Po', 'Polonium'], ['85', 'At', 'Astatine'], ['86', 'Rn', 'Radon'], ['87', 'Fr', 'Francium'], ['88', 'Ra', 'Radium'], ['89', 'Ac', 'Actinium'], ['90', 'Th', 'Thorium'], ['91', 'Pa', 'Protactinium'], ['92', 'U ', 'Uranium'], ['93', 'Np', 'Neptunium'], ['94', 'Pu', 'Plutonium'], ['95', 'Am', 'Americium'], ['96', 'Cm', 'Curium'], ['97', 'Bk', 'Berkelium'], ['98', 'Cf', 'Californium'], ['99', 'Es', 'Einsteinium']]
-####################################################################################################################################################################################
+
+
+"""
+Discrete Functions to be used in the module
+"""
+
 def unit_vector_N(u_BC, u_AB):
     # Calculates unit normal vector which is perpendicular to plane ABC
     cross_product = np.cross(u_BC, u_AB)
     norm_u_N = np.linalg.norm(cross_product)
     u_N = cross_product / norm_u_N
     return u_N
-####################################################################################################################################################################################
+
+
 def copy_file(source, destination):
     shutil.copy(source, destination)
-####################################################################################################################################################################################
+
 def  u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     # Gives the vector in the plane A,B,C and perpendicular to A to B
     diff_AB = coords[atom_B,:] - coords[atom_A,:]
@@ -53,7 +67,7 @@ def  u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     norm_PA = np.linalg.norm(u_PA)
     u_PA = u_PA /norm_PA;
     return u_PA
-####################################################################################################################################################################################
+
 def force_angle_constant( atom_A, atom_B, atom_C, bond_lengths, eigenvalues, eigenvectors, coords, scaling_1, scaling_2 ):
     # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle (in kcal/mol/rad^2) and equilibrium angle in degrees
     # Vectors along bonds calculated
@@ -103,13 +117,13 @@ def force_angle_constant( atom_A, atom_B, atom_C, bond_lengths, eigenvalues, eig
         scaling_2 = 1
         [ k_theta, theta_0 ] = force_angle_constant_special_case( atom_A, atom_B, atom_C, bond_lengths, eigenvalues, eigenvectors, coords, scaling_1, scaling_2 )
     return k_theta, theta_0
-####################################################################################################################################################################################
+
 def dot_product(u_PA , eig_AB):
     x = 0     
     for i in range(0,3):
         x = x + u_PA[i] * eig_AB[i].conjugate()
     return x 
-####################################################################################################################################################################################
+
 def force_angle_constant_special_case( atom_A, atom_B, atom_C, bond_lengths, eigenvalues, eigenvectors, coords, scaling_1, scaling_2 ):
     # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle (in kcal/mol/rad^2) and equilibrium angle in degrees
     # Deals with cases when u_N cannot be defined and instead takes samples of u_N across a unit sphere. 
@@ -157,7 +171,7 @@ def force_angle_constant_special_case( atom_A, atom_B, atom_C, bond_lengths, eig
     # Equilibrium Angle independent of u_N
     theta_0 = math.degrees(math.cos(np.dot(u_AB, u_CB)))
     return k_theta, theta_0
-####################################################################################################################################################################################
+
 def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
     # Force Constant - Equation 10 of Seminario paper - gives force constant for bond
     # Eigenvalues and eigenvectors calculated 
@@ -174,7 +188,7 @@ def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
         k_AB = k_AB + ( eigenvalues_AB[i] * dot_product )
     k_AB = -k_AB * 0.5 # Convert to OPLS form
     return k_AB
-####################################################################################################################################################################################
+
 def  u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     # Gives the vector in the plane A,B,C and perpendicular to A to B
     diff_AB = coords[atom_B,:] - coords[atom_A,:]
@@ -188,18 +202,18 @@ def  u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     norm_PA = np.linalg.norm(u_PA)
     u_PA = u_PA /norm_PA;
     return u_PA
-####################################################################################################################################################################################
+
 def reverse_list(lst): 
     reversed_list = lst[::-1] 
     return (reversed_list)
-####################################################################################################################################################################################
+
 def uniq(input_):
     output = []
     for x in input_:
         if x not in output:
             output.append(x)
     return output
-####################################################################################################################################################################################
+
 def search_in_file(file: str, word: str) -> list:
     """Search for the given string in file and return lines containing that string along with line numbers"""
     line_number = 0
@@ -210,7 +224,7 @@ def search_in_file(file: str, word: str) -> list:
             if word in line:
                 list_of_results.append((line_number, line.rstrip()))
     return(list_of_results)
-####################################################################################################################################################################################
+
 def OPLS_LJ(system):
     forces = {system.getForce(index).__class__.__name__: system.getForce(index) for index in range(system.getNumForces())}
     nonbonded_force = forces['NonbondedForce']
@@ -235,23 +249,23 @@ def OPLS_LJ(system):
             eps14 = math.sqrt(LJset[p1][1].value_in_unit(simtk.unit.kilojoule/simtk.unit.mole) * LJset[p2][1].value_in_unit(simtk.unit.kilojoule/simtk.unit.mole))
             nonbonded_force.setExceptionParameters(i, p1, p2, q, sig14, eps)
     return (system)
-####################################################################################################################################################################################
+
 def list_to_dict(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
     return (res_dct)
-####################################################################################################################################################################################
+
 def scale_list(list_):
     scaled_list = [i - min(list_) for i in list_]
     return (scaled_list)
-####################################################################################################################################################################################
+
 def list_kJ_kcal(list_):
     converted_list = [i / 4.184 for i in list_]
     return (converted_list)
-####################################################################################################################################################################################
+
 def list_hartree_kcal(list_):
     converted_list = [i * 627.5094 for i in list_]
     return (converted_list)
-####################################################################################################################################################################################
+
 def torsiondrive_input_to_xyz(psi_input_file, xyz_file): 
     with open (psi_input_file, "r") as f:
         lines = f.readlines()
@@ -266,7 +280,7 @@ def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
         f.write(xyz_file + "\n")
         for i in xyz_lines:
             f.write(i)
-####################################################################################################################################################################################
+
 def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
     with open (xyz_file, "r") as f:
         lines = f.readlines()
@@ -282,7 +296,7 @@ def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
     ppdb.df["ATOM"]["y_coord"] = df["y"]
     ppdb.df["ATOM"]["z_coord"] = df["z"]  
     ppdb.to_pdb(system_pdb)  
-####################################################################################################################################################################################
+
 def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     """
     This function generates an openforcefield xml file from the pdb file
@@ -296,7 +310,7 @@ def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
     with open(system_xml, 'w') as f:
         f.write(simtk.openmm.XmlSerializer.serialize(system)) 
-####################################################################################################################################################################################        
+        
 def generate_xml_from_charged_pdb_sdf(system_pdb, system_init_sdf, system_sdf, num_charge_atoms, index_charge_atom_1, charge_atom_1, system_xml):
     """
     This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
@@ -322,7 +336,7 @@ def generate_xml_from_charged_pdb_sdf(system_pdb, system_init_sdf, system_sdf, n
     structure = parmed.openmm.load_topology(pdbfile.topology, system, xyz = pdbfile.positions)
     with open(system_xml, 'w') as f:
         f.write(simtk.openmm.XmlSerializer.serialize(system)) 
-####################################################################################################################################################################################
+
 def get_dihedrals(qm_scan_file):
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -337,7 +351,7 @@ def get_dihedrals(qm_scan_file):
         dihedral = float(energy_dihedral[0])
         dihedrals.append(dihedral)
     return(dihedrals)
-####################################################################################################################################################################################
+
 def get_qm_energies(qm_scan_file):
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -352,7 +366,7 @@ def get_qm_energies(qm_scan_file):
         energy = float(energy_dihedral[1])
         qm_energies.append(energy)
     return(qm_energies)
-####################################################################################################################################################################################
+
 def generate_mm_pdbs(qm_scan_file, template_pdb):
     with open (qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -398,7 +412,7 @@ def generate_mm_pdbs(qm_scan_file, template_pdb):
         ppdb.df["ATOM"]["y_coord"] = y_coords
         ppdb.df["ATOM"]["z_coord"] = z_coords    
         ppdb.to_pdb(pdb_file_to_write)  
-####################################################################################################################################################################################
+
 def remove_mm_files(qm_scan_file):
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
@@ -414,7 +428,7 @@ def remove_mm_files(qm_scan_file):
         os.system(command) 
         command = "rm -rf  " + i[:-4] + ".prmtop"
         os.system(command) 
-####################################################################################################################################################################################
+
 def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
     system_prmtop = system_pdb[:-4] + ".prmtop"
     system_inpcrd = system_pdb[:-4] + ".inpcrd"
@@ -432,7 +446,7 @@ def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
                                                      list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("HarmonicAngleForce"), 
                                                      list_to_dict([item for sublist in [list(elem) for elem in prmtop_energy_decomposition] for item in sublist]).get("NonbondedForce")]
     return(sum(prmtop_energy_decomposition_value_no_torsion))    
-####################################################################################################################################################################################
+
 def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
@@ -449,14 +463,14 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
         mm_energy = get_non_torsion_mm_energy(system_pdb = i, load_topology = load_topology, system_xml = system_xml)
         mm_potential_energies.append(mm_energy)
     return(mm_potential_energies)
-####################################################################################################################################################################################
+
 def list_diff(list_1, list_2):
     diff_list = []
     zipped_list = zip(list_1, list_2)
     for list1_i, list2_i in zipped_list:
         diff_list.append(list1_i-list2_i)
     return(diff_list)
-####################################################################################################################################################################################
+
 def dihedral_energy (x, k1, k2, k3, k4 = 0):
     energy_1 = k1 * (1 + np.cos (1 * x * 0.01745))
     energy_2 = k2 * (1 - np.cos (2 * x * 0.01745))
@@ -464,13 +478,13 @@ def dihedral_energy (x, k1, k2, k3, k4 = 0):
     energy_4 = k4 * (1 - np.cos (4 * x *0.01745))
     dihedral_energy = energy_1 + energy_2 + energy_3 + energy_4
     return (dihedral_energy)
-####################################################################################################################################################################################
+
 def error_function(delta_qm, delta_mm):
     squared_error = np.square(np.subtract(delta_qm, delta_mm))
     mean_squared_error = squared_error.mean()
     root_mean_squared_error = math.sqrt(mean_squared_error)
     return (root_mean_squared_error)
-####################################################################################################################################################################################
+
 def error_function_boltzmann(delta_qm, delta_mm, T):
     kb = 3.297623483* 10**(-24) # in cal/K
     delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
@@ -478,7 +492,7 @@ def error_function_boltzmann(delta_qm, delta_mm, T):
     mean_squared_error = squared_error.mean()
     root_mean_squared_error = math.sqrt(mean_squared_error)
     return (root_mean_squared_error)
-####################################################################################################################################################################################
+
 def gen_init_guess(qm_scan_file, load_topology, system_xml):
     x = get_dihedrals(qm_scan_file)
     y  = scale_list(list_ = get_mm_potential_energies(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml))
@@ -488,19 +502,19 @@ def gen_init_guess(qm_scan_file, load_topology, system_xml):
         if k_init_guess[i] < 0:
             k_init_guess[i] = 0
     return(k_init_guess)
-####################################################################################################################################################################################
+
 def objective_function(k_array, x, delta_qm):
     delta_mm = dihedral_energy(x, k1 = k_array[0], k2 = k_array[1], k3 = k_array[2],  k4 = k_array[3])    
     loss_function = error_function(delta_qm, delta_mm)
     return(loss_function)
-####################################################################################################################################################################################
+
 def fit_params(qm_scan_file, load_topology, system_xml, method):
     k_guess = gen_init_guess(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml)
     x_data = np.array(get_dihedrals(qm_scan_file))
     delta_qm = np.array(scale_list(list_hartree_kcal(list_ = get_qm_energies(qm_scan_file)))) 
     optimise = scipy.optimize.minimize(objective_function, k_guess, args=(x_data,delta_qm), method = method, bounds = [(0.00, None), (0.00, None), (0.00, None), (0.00, None)])
     return(optimise.x)
-####################################################################################################################################################################################
+
 def get_tor_params(qm_scan_file, template_pdb, load_topology, system_xml, method):
     qm_e = get_qm_energies(qm_scan_file = qm_scan_file)
     qm_e_kcal = list_hartree_kcal(qm_e)
@@ -510,7 +524,7 @@ def get_tor_params(qm_scan_file, template_pdb, load_topology, system_xml, method
     delta_mm = scale_list(mm_pe_no_torsion_kcal)  
     opt_param = fit_params(qm_scan_file = qm_scan_file, load_topology = load_topology, system_xml = system_xml, method = method)
     return(opt_param)
-####################################################################################################################################################################################
+
 def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, method, dihedral_text_file):
     opt_param = get_tor_params(qm_scan_file = qm_scan_file, template_pdb = template_pdb, load_topology = load_topology, system_xml = system_xml, method = method)
     dihedral_text = open(dihedral_text_file, 'r')
@@ -525,10 +539,187 @@ def get_torsional_lines(template_pdb, system_xml, qm_scan_file, load_topology, m
         #print(line_to_append)
         tor_lines.append(line_to_append)
     return(tor_lines)
-####################################################################################################################################################################################
+
+"""
+Classes
+"""
+
 class PrepareQMMM:
+
+    """
+    A class used to segregate the QM and MM regions.
+
+    This class contains methods to remove the solvent, ions and all
+    entities that are exclusive of receptor and the ligand. It also
+    defines the Quantum Mechanical (QM) region and the Molecular
+    Mechanical (MM) region based upon the distance of the ligand
+    from the receptor and the chosen number of receptor residues. It
+    is also assumed that the initial PDB file will have the receptor
+    followed by the ligand.
+
+    ...
+
+    Attributes
+    ----------
+    init_pdb : str
+        Initial PDB file containing the receptor-ligand complex with
+        solvent, ions, etc.
+    cleaned_pdb : str
+        Formatted PDB file containing only the receptor and the ligand.
+        (This file will be saved in the current working directory)
+    guest_init_pdb : str
+        A separate ligand PDB file with atom numbers not beginning from 1.
+        (This file will be saved in the current working directory)
+    host_pdb : str
+        A separate receptor PDB file with atom numbers beginning from 1.
+    guest_resname : str
+        Three letter residue ID for the ligand
+    guest_pdb : str
+        Ligand PDB file with atom numbers beginning from 1.
+        (This file will be saved in the current working directory)
+    guest_xyz : str
+        A text file of the XYZ corordinates of the ligand.
+        (This file will be saved in the current working directory)
+    distance : float
+        The distance required to define the QM region of the receptor.
+        This is the distance between the atoms of the ligand and the
+        atoms of the receptor.
+    residue_list : str
+        A text file of the residue numbers of the receptor within the
+        proximity (as defined by the distance) from the ligand.
+        (This file will be saved in the current working directory)
+    host_qm_atoms : str
+        A text file of the atom numbers of the receptors in the QM
+        region.
+        (This file will be saved in the current working directory)
+    host_mm_atoms : str
+        A text file of the atom numbers of the receptors in the MM
+        region (all atoms except atoms in the QM region)
+        (This file will be saved in the current working directory)
+    host_qm_pdb : str
+        PDB file for the receptor's QM region.
+        (This file will be saved in the current working directory)
+    host_mm_pdb : str
+        PDB file for the receptor's MM region.
+        (This file will be saved in the current working directory)
+    qm_pdb : str
+        PDB file for the QM region (receptor's QM region and the
+        ligand).
+        (This file will be saved in the current working directory)
+    mm_pdb : str
+        PDB file for the MM region.
+        (This file will be saved in the current working directory)
+    host_mm_region_I_atoms : str
+        A text file of the atom numbers of the receptors in the MM
+        region preceeding the QM region.
+        (This file will be saved in the current working directory)
+    host_mm_region_II_atoms : str
+        A text file of the atom numbers of the receptors in the MM
+        region following the QM region.
+        (This file will be saved in the current working directory)
+    host_mm_region_I_pdb : str
+        PDB file of the receptor in the MM region preceeding the
+        QM region.
+        (This file will be saved in the current working directory)
+    host_mm_region_II_pdb : str
+        PDB file of the receptor in the MM region following the
+        QM region.
+        (This file will be saved in the current working directory)
+    num_residues : int
+        Number of residues required in the QM region of the receptor.
+        """
  
     def __init__(self, init_pdb, distance, num_residues, guest_resname, cleaned_pdb = "system.pdb", guest_init_pdb = "guest_init.pdb", host_pdb = "host.pdb", guest_pdb = "guest_init_II.pdb", guest_xyz = "guest_coord.txt", residue_list = "residue_list.txt", host_qm_atoms = "host_qm.txt", host_mm_atoms = "host_mm.txt", host_qm_pdb = "host_qm.pdb", host_mm_pdb = "host_mm.pdb", qm_pdb = "qm.pdb", mm_pdb = "mm.pdb", host_mm_region_I_atoms = "host_mm_region_I.txt", host_mm_region_II_atoms = "host_mm_region_II.txt", host_mm_region_I_pdb = "host_mm_region_I.pdb", host_mm_region_II_pdb = "host_mm_region_II.pdb"):
+
+        """
+        Parameters
+        ----------
+        init_pdb : str
+            Initial PDB file containing the receptor-ligand complex with 
+            solvent, ions, etc.
+
+        cleaned_pdb : str
+            Formatted PDB file containing only the receptor and the ligand.
+            (This file will be saved in the current working directory)
+
+        guest_init_pdb : str
+            A separate ligand PDB file with atom numbers not beginning from 1.
+            (This file will be saved in the current working directory)
+
+        host_pdb : str
+            A separate receptor PDB file with atom numbers beginning from 1.
+
+        guest_resname : str
+            Three letter residue ID for the ligand.
+
+        guest_pdb : str
+            Ligand PDB file with atom numbers beginning from 1.
+            (This file will be saved in the current working directory)
+
+        guest_xyz : str
+            A text file of the XYZ corordinates of the ligand.
+            (This file will be saved in the current working directory)
+        distance : float
+            The distance required to define the QM region of the receptor.
+            This is the distance between the atoms of the ligand and the
+            atoms of the receptor.
+
+        residue_list : str
+            A text file of the residue numbers of the receptor within the
+            proximity (as defined by the distance) from the ligand.
+            (This file will be saved in the current working directory)
+
+        host_qm_atoms : str
+            A text file of the atom numbers of the receptors in the QM
+            region.
+            (This file will be saved in the current working directory)
+
+        host_mm_atoms : str
+            A text file of the atom numbers of the receptors in the MM
+            region (all atoms except atoms in the QM region)
+            (This file will be saved in the current working directory)
+
+        host_qm_pdb : str
+            PDB file for the receptor's QM region.
+            (This file will be saved in the current working directory)
+
+        host_mm_pdb : str
+            PDB file for the receptor's MM region.
+            (This file will be saved in the current working directory)
+
+        qm_pdb : str
+            PDB file for the QM region (receptor's QM region and the
+            ligand).
+            (This file will be saved in the current working directory)
+
+        mm_pdb : str
+            PDB file for the MM region.
+            (This file will be saved in the current working directory)
+
+        host_mm_region_I_atoms : str
+            A text file of the atom numbers of the receptors in the MM
+            region preceeding the QM region.
+            (This file will be saved in the current working directory)
+
+        host_mm_region_II_atoms : str
+            A text file of the atom numbers of the receptors in the MM
+            region following the QM region.
+            (This file will be saved in the current working directory)
+
+        host_mm_region_I_pdb : str
+            PDB file of the receptor in the MM region preceeding the
+            QM region.
+            (This file will be saved in the current working directory)
+
+        host_mm_region_II_pdb : str
+            PDB file of the receptor in the MM region following the
+            QM region.
+            (This file will be saved in the current working directory)
+
+        num_residues : int
+            Number of residues required in the QM region of the receptor.
+
+        """
         self.init_pdb = init_pdb
         self.distance = distance
         self.num_residues = num_residues
@@ -552,7 +743,8 @@ class PrepareQMMM:
 
     def clean_up(self):   
         """
-        This function removes everything from the initial pdb file except the host and guest molecules from the system and saves a pdb file.
+        Reads the given PDB file, removes all entities except the
+        receptor and ligand and saves a new pdb file.
         """
         ions = ["Na+", "Cs+", "K+","Li+", "Rb+", "Cl-", "Br-", "F-", "I-", "Ca2"]
         intermediate_file_1 = self.cleaned_pdb[:-4] + "_intermediate_1.pdb"
@@ -575,7 +767,7 @@ class PrepareQMMM:
     
     def create_host_guest(self):   
         """
-        This function creates separate host and guest pdb files.
+        Saves separate receptor and ligand PDB files.
         """
         with open(self.cleaned_pdb) as f1, open(self.host_pdb, 'w') as f2:
             for line in f1:
@@ -588,7 +780,7 @@ class PrepareQMMM:
                     
     def realign_guest(self):   
         """
-        This function realigns the atom numbers in the initial guest pdb file given the assumption that the original pdb file had the host molecule followed by the guest molecule.
+        Saves a ligand PDB file with atom numbers beginning from 1.
         """
         ppdb = PandasPdb()
         ppdb.read_pdb(self.guest_init_pdb)
@@ -611,7 +803,7 @@ class PrepareQMMM:
         
     def get_guest_coord(self):   
         """
-        This function saves a list of xyz coordinates from the pdb file.
+        Saves a text file of the XYZ corordinates of the ligand.
         """
         ppdb = PandasPdb()
         ppdb.read_pdb(self.guest_pdb)
@@ -621,7 +813,8 @@ class PrepareQMMM:
         
     def get_qm_resids(self):  
         """
-        This function saves a list of residue numbers of the residues in the host molecule surrounding the guest within a mentioned distance from any of the atom in the guest molecule.
+        Saves a text file of the residue numbers of the receptor within the
+        proximity (as defined by the distance) from the ligand.
         """
         guest_coord_list = np.loadtxt(self.guest_xyz)
         host_atom_list = []
@@ -654,7 +847,8 @@ class PrepareQMMM:
         
     def get_host_qm_mm_atoms(self):  
         """
-        This function saves a list of atom numbers of the residues in the host molecule surrounding the guest within a certain mentioned distance from any of the atom in the guest molecule.
+        Saves a text file of the atom numbers of the receptors in the QM
+        region and MM region separately.
         """
         resid_num = np.loadtxt(self.residue_list)
         #approximated_res_list = [int(i) for i in resid_num]
@@ -691,7 +885,8 @@ class PrepareQMMM:
         
     def save_host_pdbs(self):  
         """
-        This function saves a host pdb file of selected region and another host pdb file non-selected region. 
+        Saves a PDB file for the receptor's QM region and MM
+        region separately.
         """
         selected_atoms = np.loadtxt(self.host_qm_atoms)
         selected_atoms = [int(i) for i in selected_atoms]
@@ -710,7 +905,9 @@ class PrepareQMMM:
 
     def get_host_mm_region_atoms(self):  
         """
-        This function divides the host MM region into two sections, i.e. one preceding the QM region and one successing the QM region.
+        Saves a text file for the atoms of the receptor's MM region
+        preceding the QM region and saves another text file for the
+        atoms of the receptor's MM region folllowing the QM region.
         """
         resid_num = np.loadtxt(self.residue_list)
         approximated_res_list = []
@@ -771,7 +968,9 @@ class PrepareQMMM:
 
     def save_host_mm_regions_pdbs(self):  
         """
-        This function saves two pdb files, one pdb preceding the QM region and one pdb file succeeding the QM region.
+        Saves a PDB file for the receptor's MM region preceding
+        the QM region and saves another PDB file for the receptor's
+        MM region folllowing the QM region.
         """
         mm_region_I_atoms = np.loadtxt(self.host_mm_region_I_atoms)
         mm_region_I_atoms = [int(i) for i in mm_region_I_atoms]
@@ -790,7 +989,10 @@ class PrepareQMMM:
         
     def get_qm_mm_regions(self):  
         """
-        This function saves a qm region comprising of the guest molecule and the selected atoms of the host molecule and a mm region comprising of the unselected atoms of the host molecule. When merging two pdb files, all lines beginning from "ATOM" will be selected and it would end with the "END"
+        Saves separate PDB files for the QM and MM regions.
+        QM regions comprise the QM region of the receptor
+        and the entire ligand where the MM region comprise
+        the non-selected QM regions of the receptor.
         """
         with open(self.host_qm_pdb) as f1, open(self.qm_pdb, 'w') as f2:
             for line in f1:
@@ -809,7 +1011,7 @@ class PrepareQMMM:
         with open(self.mm_pdb, 'a') as f:
             f.write("END")  
 
-####################################################################################################################################################################################
+
 class PrepareGaussianGuest:
     
     def __init__(self, charge, multiplicity, guest_pdb = "guest_init_II.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "OPT", frequency = "FREQ", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_out_file = "guest.out", fchk_out_file = "guest_fchk.out"):
@@ -871,7 +1073,7 @@ class PrepareGaussianGuest:
         execute_command = "formchk"+ " " + self.guest_pdb[:-4] + ".chk" + " " + self.guest_pdb[:-4] + ".fchk"
         with open(self.fchk_out_file, "w+") as f:
             sp.run(execute_command, shell = True, stdout = f, stderr = sp.STDOUT)
-####################################################################################################################################################################################
+
 class PrepareGaussianHostGuest:
 
     def __init__(self, charge, multiplicity, guest_pdb = "guest_init_II.pdb", host_qm_pdb = "host_qm.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "", frequency = "", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_system_out_file = "system_qm.out", fchk_system_out_file = "system_qm_fchk.out", host_guest_input = "host_guest.com", qm_guest_charge_parameter_file = "guest_qm_surround_charges.txt", qm_host_charge_parameter_file = "host_qm_surround_charges.txt", qm_guest_atom_charge_parameter_file = "guest_qm_atom_surround_charges.txt"):
@@ -982,7 +1184,7 @@ class PrepareGaussianHostGuest:
         df_charge_guest.to_csv (self.qm_guest_charge_parameter_file, index = False, header = False, sep = ' ')
         df_charge_host.to_csv (self.qm_host_charge_parameter_file, index = False, header = False, sep = ' ')
         df_charge_only_guest.to_csv (self.qm_guest_atom_charge_parameter_file, index = False, header = False, sep = ' ')
-####################################################################################################################################################################################
+
 class ParameterizeGuest:
     
     def __init__(self, vibrational_scaling, xyz_file = "guest_coords.xyz", coordinate_file = "guest_coordinates.txt", unprocessed_hessian_file = "guest_unprocessed_hessian.txt", bond_list_file = "guest_bond_list.txt", angle_list_file = "guest_angle_list.txt", hessian_file = "guest_hessian.txt", atom_names_file = "guest_atom_names.txt", bond_parameter_file = "guest_bonds.txt", angle_parameter_file = "guest_angles.txt", charge_parameter_file = "guest_charges.txt", guest_pdb = "guest_init_II.pdb", proper_dihedral_file = "proper_dihedrals.txt"):
@@ -1364,7 +1566,7 @@ class ParameterizeGuest:
         #print(len_repeated_dihed_list == len_non_repeated_dihed_list * 2)  
         np.savetxt(self.proper_dihedral_file, proper_dihedrals, fmt='%s')
         #return(proper_dihedrals)
-####################################################################################################################################################################################
+
 class PrepareGaussianHost:
   
     def __init__(self, charge, multiplicity, host_qm_pdb = "host_qm.pdb", n_processors = 12, memory = 50, functional = "B3LYP", basis_set = "6-31G", optimisation = "OPT", frequency = "FREQ", add_keywords_I = "Integral=(Grid=UltraFine)", add_keywords_II = "Pop(MK,ReadRadii)", add_keywords_III = "IOp(6/33=2,6/42=6)", gauss_out_file = "host_qm.out", fchk_out_file = "host_qm_fchk.out"):
@@ -1426,7 +1628,7 @@ class PrepareGaussianHost:
         execute_command = "formchk"+ " " + self.host_qm_pdb[:-4] + ".chk" + " " + self.host_qm_pdb[:-4] + ".fchk"
         with open(self.fchk_out_file, "w+") as f:
             sp.run(execute_command, shell = True, stdout = f, stderr = sp.STDOUT)
-####################################################################################################################################################################################
+
 class ParameterizeHost:
 
     def __init__(self, vibrational_scaling, xyz_file = "host_qm_coords.xyz", coordinate_file = "host_qm_coordinates.txt", unprocessed_hessian_file = "host_qm_unprocessed_hessian.txt", bond_list_file = "host_qm_bond_list.txt", angle_list_file = "host_qm_angle_list.txt", hessian_file = "host_qm_hessian.txt", atom_names_file = "host_qm_atom_names.txt", bond_parameter_file = "host_qm_bonds.txt", angle_parameter_file = "host_qm_angles.txt", charge_parameter_file = "host_qm_surround_charges.txt", host_qm_pdb = "host_qm.pdb"):
@@ -1764,7 +1966,7 @@ class ParameterizeHost:
         data_tuples = list(zip(atom_list,charge_list_value))
         df_charge = pd.DataFrame(data_tuples, columns=['Atom','Charge'])
         df_charge.to_csv (self.charge_parameter_file, index = False, header = False, sep = ' ')
-####################################################################################################################################################################################
+
 class GuestAmberXMLAmber:
 
     def __init__(self, charge, num_charge_atoms, charge_atom_1, index_charge_atom_1, system_pdb = "guest_init_II.pdb", system_mol2 = "guest.mol2", system_in = "guest.in", system_frcmod = "guest.frcmod", prmtop_system = "guest.prmtop", inpcrd_system = "guest.inpcrd", system_leap = "guest.leap", system_xml = "guest_init.xml",  system_smi =  "guest.smi",  system_sdf =  "guest.sdf", system_init_sdf = "guest_init.sdf", index_charge_atom_2 = " ", charge_atom_2 = " ", charge_parameter_file = "guest_charges.txt", system_qm_pdb = "guest_init_II.pdb", bond_parameter_file = "guest_bonds.txt", angle_parameter_file = "guest_angles.txt", system_qm_params_file = "guest_qm_params.txt", reparameterised_intermediate_system_xml_file = "guest_intermediate_reparameterised.xml", system_xml_non_bonded_file = "guest_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "guest_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "guest_reparameterised.xml", non_reparameterised_system_xml_file = "guest_init.xml", prmtop_system_non_params = "guest_non_params.prmtop", inpcrd_system_non_params = "guest_non_params.inpcrd", prmtop_system_params = "guest_params.prmtop", inpcrd_system_params = "guest_params.inpcrd", load_topology = "openmm"):   
@@ -2245,7 +2447,7 @@ class GuestAmberXMLAmber:
         df_compare = pd.concat([df_energy_non_params, df_energy_params], axis=1)
         df_compare['Energy_difference'] = df_compare['Energy_parm_non_params'].sub(df_compare['Energy_parm_params'], axis = 0)
         print(df_compare)
-####################################################################################################################################################################################
+
 class HostAmberXMLAmber:
 
     def __init__(self, system_pdb = "host.pdb", system_xml = "host.xml", sim_output = "sim_output.pdb", sim_steps = 1000, charge_parameter_file = "host_qm_surround_charges.txt", system_qm_pdb = "host_qm.pdb", bond_parameter_file = "host_qm_bonds.txt", angle_parameter_file = "host_qm_angles.txt", system_qm_params_file = "host_qm_params.txt", reparameterised_intermediate_system_xml_file = "host_intermediate_reparameterised.xml", system_xml_non_bonded_file = "host_xml_non_bonded.txt", system_xml_non_bonded_reparams_file = "host_xml_non_bonded_reparams.txt", reparameterised_system_xml_file = "host_reparameterised.xml", non_reparameterised_system_xml_file = "host.xml", prmtop_system_non_params = "host_non_params.prmtop", inpcrd_system_non_params = "host_non_params.inpcrd", prmtop_system_params = "host_params.prmtop", inpcrd_system_params = "host_params.inpcrd", load_topology = "openmm"):   
@@ -2624,7 +2826,7 @@ class HostAmberXMLAmber:
         df_compare = pd.concat([df_energy_non_params, df_energy_params], axis=1)
         df_compare['Energy_difference'] = df_compare['Energy_parm_non_params'].sub(df_compare['Energy_parm_params'], axis = 0)
         print(df_compare)
-####################################################################################################################################################################################
+
 class RunOpenMMSims:
 
     def __init__(self, system_prmtop, system_inpcrd, system_pdb, system_output =  "sim_output.pdb", sim_steps = 1000):   
@@ -2665,7 +2867,7 @@ class RunOpenMMSims:
         simulation.step(self.sim_steps)
         command = "rm -rf " + self.system_output
         os.system(command)  
-####################################################################################################################################################################################
+
 class MergeHostGuestTopology:
 
     def __init__(self, host_prmtop, guest_prmtop, host_inpcrd, guest_inpcrd, system_prmtop, system_inpcrd):  
@@ -2684,7 +2886,7 @@ class MergeHostGuestTopology:
         system = host_system + guest_system
         system.save(self.system_prmtop, overwrite = True)
         system.save(self.system_inpcrd, overwrite = True)
-####################################################################################################################################################################################
+
 class TorsionDriveSims:
 
     def __init__(self, charge, multiplicity, reparameterised_system_xml_file = "guest_reparameterised.xml", torsion_xml_file = "guest_torsion_xml.txt", xyz_file = "guest_coords.xyz", psi_input_file = "torsion_drive_input.dat", memory = 50, basis_set = "STO-3G", functional = "BLYP", iterations = 2000, method_torsion_drive = "native_opt", system_bonds_file = "guest_bonds.txt", tor_dir = "torsion_dir", dihedral_text_file = "dihedrals.txt", template_pdb = "guest_init_II.pdb", torsion_drive_run_file = "run_command", dihedral_interval = 15, engine = "psi4", energy_threshold = 0.001):  
@@ -3010,7 +3212,7 @@ class TorsionDriveSims:
             #os.system(run_command)
             print(run_command)
             os.chdir(parent_cwd) 
-####################################################################################################################################################################################
+
 class TorsionDriveParams:
 
     def __init__(self, num_charge_atoms, index_charge_atom_1, charge_atom_1, tor_dir = "torsion_dir", reparameterized_torsional_params_file = "reparameterized_torsional_params.txt", psi_input_file = "torsion_drive_input.dat", xyz_file = "torsion_drive_input.xyz", coords_file = "torsion_drive_input.txt", template_pdb = "guest_init_II.pdb", system_pdb = "torsion_drive_input.pdb", system_sdf = "torsion_drive_input.sdf", system_xml = "torsion_drive_input.xml", qm_scan_file = "scan.xyz", load_topology = "openmm", method = "L-BFGS-B", dihedral_text_file = "dihedrals.txt", system_init_sdf = "torsion_drive_input_init.sdf", reparameterised_system_xml_file = "guest_reparameterised.xml", reparameterised_torsional_system_xml_file = "guest_torsional_reparameterized.xml"):  
@@ -3114,4 +3316,4 @@ class TorsionDriveParams:
         with open(self.reparameterised_torsional_system_xml_file, 'w') as f:
             for i in xml_tor_reparams_lines:
                 f.write(i)
-####################################################################################################################################################################################
+
