@@ -18,20 +18,10 @@
 * Create a new conda environment with python version 3.8 :
 ```bash
 conda create -n qmmmrebind python=3.8
-```
-* Activate the conda environment:
-```bash
-conda activate qmmmrebind
-```
-* Install git, openforcefield and openbabel with the following commands :
-```bash
-conda install openforcefield
-```
-```bash
-conda install -c conda-forge openbabel 
-```
-```bash
-conda install git
+conda activate qmmmrebind # activate the conda environment
+conda install openforcefield # install openforcefield
+conda install -c conda-forge openbabel # install openbabel
+conda install git # install git
 ```
 * Clone the *QMMMReBind* repository :
 ```bash
@@ -40,13 +30,8 @@ git clone https://github.com/anandojha/qmmmrebind.git
 * Perform the following steps to get this package installed quickly on a local linux machine (Installation in the home directory is recommended) : 
 ```bash
 cd qmmmrebind
-```
-```bash
 python setup.py install
-```
-* Optionally run tests to check for proper installation : 
-```bash
-python setup.py test 
+python setup.py test  # optionally run tests to check for proper installation 
 ```
 
 Documentation can be found [here](https://github.com/anandojha/qmmmrebind/blob/main/qmmmrebind/html/parameterize.pdf)
