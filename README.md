@@ -49,7 +49,7 @@ python setup.py install
 python setup.py test 
 ```
 
-Documentation can be found [here](file:///https://github.com/anandojha/qmmmrebind/blob/main/qmmmrebind/html/parameterize.html) .
+Documentation can be found [here](https://github.com/anandojha/qmmmrebind/blob/main/qmmmrebind/html/parameterize.pdf)
 
 ### Copyright
 Copyright (c) 2021, Anupam Anand Ojha
