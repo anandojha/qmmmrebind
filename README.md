@@ -37,14 +37,14 @@ conda install git
 ```bash
 git clone https://github.com/anandojha/qmmmrebind.git
 ```
-* Perform the following steps to get this package installed quickly on a local linux machine. Installation in the home directory is recommended. 
+* Perform the following steps to get this package installed quickly on a local linux machine (Installation in the home directory is recommended) : 
 ```bash
 cd qmmmrebind
 ```
 ```bash
 python setup.py install
 ```
-* Optionally run tests to check for proper installation. 
+* Optionally run tests to check for proper installation : 
 ```bash
 python setup.py test 
 ```
