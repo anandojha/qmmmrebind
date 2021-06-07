@@ -2165,7 +2165,7 @@ class ParameterizeGuest:
         in the bond parameters.
 
     xyz_file: str, optional
-        XYZ file for guest coordinates obtained from its corresponding 
+        XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
         (This file will be saved in the current working directory)
 
@@ -2243,7 +2243,7 @@ class ParameterizeGuest:
             in the bond parameters.
 
         xyz_file: str, optional
-            XYZ file for guest coordinates obtained from its corresponding 
+            XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
             (This file will be saved in the current working directory)
 
@@ -3127,7 +3127,7 @@ class ParameterizeHost:
         in the bond parameters.
 
     xyz_file: str, optional
-        XYZ file for guest coordinates obtained from its corresponding 
+        XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
         (This file will be saved in the current working directory)
 
@@ -3200,7 +3200,7 @@ class ParameterizeHost:
             in the bond parameters.
 
         xyz_file: str, optional
-            XYZ file for guest coordinates obtained from its corresponding 
+            XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
             (This file will be saved in the current working directory)
 
@@ -6540,6 +6540,88 @@ class MergeHostGuestTopology:
 
 
 class TorsionDriveSims:
+    &#34;&#34;&#34;
+    This class is used to create a filetree for torsion scan 
+    using torsionsdrive for the dihedral angles of the ligand.
+
+    This class creates a directory for carrying out torsiondrive 
+    calculations followed by fitting of torsional parameters. Methods 
+    in this class are used to run torsiondrive calculations either for
+    all of the torsional angles, or for non-hydrogen / heavy atoms 
+    contributing to the torsional angle.
+    
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Charge of the ligand. 
+
+    multiplicity: int
+        Spin Multiplicity (2S+1) of the ligand where S represents 
+        the total spin of the ligand. 
+
+    reparameterised_system_xml_file : str, optional
+        Reparamaterixed XML force field for the ligand.
+
+    torsion_xml_file : str, optional
+        A text file containing torsional parameters from
+        reparametrised XML file.
+
+    xyz_file : str, optional
+        XYZ file containing the coordinates of the guest molecule.
+
+    psi_input_file : str, optional
+        XYZ file for ligand coordinates.
+
+    memory : int, optional
+        Memory (in GB) to be used.
+
+    basis_set: str, optional
+        Basis set to use for the QM engine.
+
+    functional: str, optional
+        Exchange/Correlation or hybrid Functional for the QM engine. 
+
+    iterations : int, optional
+        Maximum number of geometry optimization steps.
+
+    method_torsion_drive : str, optional
+        The algorithm/package to use while running the torsiondrive
+        scan. Using --native_opt uses QM program native constrained
+        optimization algorithm and turns off geomeTRIC package.
+
+    system_bonds_file : str, optional
+        Text file containing bond parameters for the ligand.
+
+    tor_dir : str, optional
+        Torsiondrive directory containing separate torsiondrive
+        folders, each containing files for a separate torsiondrive 
+        calculation for a particular dihedral angle. 
+
+    dihedral_text_file : str, optional
+       Dihedral information file for torsiondrive.
+
+    template_pdb : str, optional
+        Guest PDB with atoms beginning from 1 to be used as a
+        template PDB to retrieve atom indices and symbols.
+
+    torsion_drive_run_file : str, optional
+        bash file for torsiondrive calculations. 
+
+    dihedral_interval : int, optional
+        Grid spacing for dihedral scan, i.e. every n degrees 
+        (where n is an integer), multiple values will be mapped 
+        to each dihedral angle.
+
+    engine : str, optional
+        Engine for running torsiondrive scan. 
+
+    energy_threshold : float, optional
+        Only activate grid points if the new optimization is lower than
+        the previous lowest energy (in a.u.).
+
+    &#34;&#34;&#34;
     def __init__(
         self,
         charge,
@@ -6562,6 +6644,77 @@ class TorsionDriveSims:
         engine=&#34;psi4&#34;,
         energy_threshold=0.001,
     ):
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+
+        charge : int
+            Charge of the ligand. 
+
+        multiplicity: int
+            Spin Multiplicity (2S+1) of the ligand where S represents 
+            the total spin of the ligand. 
+
+        reparameterised_system_xml_file : str, optional
+            Reparamaterixed XML force field for the ligand.
+
+        torsion_xml_file : str, optional
+            A text file containing torsional parameters from
+            reparametrised XML file.
+
+        xyz_file : str, optional
+            XYZ file containing the coordinates of the guest molecule.
+
+        psi_input_file : str, optional
+            XYZ file for ligand coordinates.
+
+        memory : int, optional
+            Memory (in GB) to be used.
+
+        basis_set: str, optional
+            Basis set to use for the QM engine.
+
+        functional: str, optional
+            Exchange/Correlation or hybrid Functional for the QM engine. 
+
+        iterations : int, optional
+            Maximum number of geometry optimization steps.
+
+        method_torsion_drive : str, optional
+            The algorithm/package to use while running the torsiondrive
+            scan. Using --native_opt uses QM program native constrained
+            optimization algorithm and turns off geomeTRIC package.
+
+        system_bonds_file : str, optional
+            Text file containing bond parameters for the ligand.
+
+        tor_dir : str, optional
+            Torsiondrive directory containing separate torsiondrive
+            folders, each containing files for a separate torsiondrive 
+            calculation for a particular dihedral angle. 
+
+        dihedral_text_file : str, optional
+           Dihedral information file for torsiondrive.
+
+        template_pdb : str, optional
+            Guest PDB with atoms beginning from 1 to be used as a
+            template PDB to retrieve atom indices and symbols.
+
+        torsion_drive_run_file : str, optional
+            bash file for torsiondrive calculations. 
+
+        dihedral_interval : int, optional
+            Grid spacing for dihedral scan, i.e. every n degrees 
+            (where n is an integer), multiple values will be mapped 
+            to each dihedral angle.
+
+        engine : str, optional
+            Engine for running torsiondrive scan. 
+
+        energy_threshold : float, optional
+            Only activate grid points if the new optimization is lower than
+            the previous lowest energy (in a.u.).
+        &#34;&#34;&#34;
         self.charge = charge
         self.multiplicity = multiplicity
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
@@ -6583,6 +6736,9 @@ class TorsionDriveSims:
         self.energy_threshold = energy_threshold
 
     def write_torsion_drive_run_file(self):
+        &#34;&#34;&#34;
+        Saves a bash file for running torsion scans for torsiondrive. 
+        &#34;&#34;&#34;
         if self.method_torsion_drive == &#34;geometric&#34;:
             torsion_command = (
                 &#34;torsiondrive-launch&#34;
@@ -6635,6 +6791,10 @@ class TorsionDriveSims:
             f.write(torsion_command)
 
     def write_tor_params_txt(self):
+        &#34;&#34;&#34;
+        Saves a text file containing torsional parameters from the reparameterized XML 
+        force field file.
+        &#34;&#34;&#34;
         xml_off = open(self.reparameterised_system_xml_file, &#34;r&#34;)
         xml_off_lines = xml_off.readlines()
         for i in range(len(xml_off_lines)):
@@ -6693,6 +6853,9 @@ class TorsionDriveSims:
         )
 
     def write_psi4_input(self):
+        &#34;&#34;&#34; 
+        Writes a psi4 input QM file.
+        &#34;&#34;&#34;
         xyz_lines = open(self.xyz_file, &#34;r&#34;).readlines()[2:]
         with open(self.psi_input_file, &#34;w&#34;) as f:
             f.write(&#34;memory&#34; + &#34; &#34; + str(self.memory) + &#34; &#34; + &#34;GB&#34; + &#34;\n&#34;)
@@ -6716,6 +6879,10 @@ class TorsionDriveSims:
                 )
 
     def create_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all the proper dihedral angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -6809,6 +6976,10 @@ class TorsionDriveSims:
         os.chdir(parent_cwd)
 
     def create_non_H_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all non-hydrogen torsional angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -6952,6 +7123,10 @@ class TorsionDriveSims:
         os.chdir(parent_cwd)
 
     def create_non_H_bonded_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all non-hydrogen bonded torsional angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -7148,6 +7323,9 @@ class TorsionDriveSims:
         os.chdir(parent_cwd)
 
     def run_torsion_sim(self):
+        &#34;&#34;&#34;
+        Run torsion scans using torsiondrive locally. \
+        &#34;&#34;&#34;
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + &#34;/&#34; + self.tor_dir
         num_folders = 0
@@ -7163,6 +7341,16 @@ class TorsionDriveSims:
 
 
 class TorsionDriveParams:
+    &#34;&#34;&#34;
+    This class is used to parameterize the torsional parameters 
+    of the ligand by fitting the torsional parameters obtained 
+    from torsiondrive calculations. 
+
+    ...
+    Attributes
+    ----------
+    &#34;&#34;&#34;
+
     def __init__(
         self,
         num_charge_atoms,
@@ -7189,9 +7377,7 @@ class TorsionDriveParams:
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
         self.tor_dir = tor_dir
-        self.reparameterized_torsional_params_file = (
-            reparameterized_torsional_params_file
-        )
+        self.reparameterized_torsional_params_file = reparameterized_torsional_params_file
         self.psi_input_file = psi_input_file
         self.xyz_file = xyz_file
         self.coords_file = coords_file
@@ -13687,7 +13873,7 @@ class also extracts the QM charges from the log file.</p>
 <dd>Vibrational scaling factor for the DFT deficits/anharmonicities
 in the bond parameters.</dd>
 <dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>XYZ file for guest coordinates obtained from its corresponding
+<dd>XYZ file for ligand coordinates obtained from its corresponding
 formatted checkpoint file.
 (This file will be saved in the current working directory)</dd>
 <dt><strong><code>coordinate_file</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -13735,7 +13921,7 @@ using the Modified Seminario method..
 <dd>Vibrational scaling factor for the DFT deficits/anharmonicities
 in the bond parameters.</dd>
 <dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>XYZ file for guest coordinates obtained from its corresponding
+<dd>XYZ file for ligand coordinates obtained from its corresponding
 formatted checkpoint file.
 (This file will be saved in the current working directory)</dd>
 <dt><strong><code>coordinate_file</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -13801,7 +13987,7 @@ using the Modified Seminario method.
         in the bond parameters.
 
     xyz_file: str, optional
-        XYZ file for guest coordinates obtained from its corresponding 
+        XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
         (This file will be saved in the current working directory)
 
@@ -13879,7 +14065,7 @@ using the Modified Seminario method.
             in the bond parameters.
 
         xyz_file: str, optional
-            XYZ file for guest coordinates obtained from its corresponding 
+            XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
             (This file will be saved in the current working directory)
 
@@ -15150,7 +15336,7 @@ class also extracts the QM charges from the log file.</p>
 <dd>Vibrational scaling factor for the DFT deficits/anharmonicities
 in the bond parameters.</dd>
 <dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>XYZ file for guest coordinates obtained from its corresponding
+<dd>XYZ file for ligand coordinates obtained from its corresponding
 formatted checkpoint file.
 (This file will be saved in the current working directory)</dd>
 <dt><strong><code>coordinate_file</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -15194,7 +15380,7 @@ obtained using the Modified Seminario method.
 <dd>Vibrational scaling factor for the DFT deficits/anharmonicities
 in the bond parameters.</dd>
 <dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>XYZ file for guest coordinates obtained from its corresponding
+<dd>XYZ file for ligand coordinates obtained from its corresponding
 formatted checkpoint file.
 (This file will be saved in the current working directory)</dd>
 <dt><strong><code>coordinate_file</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -15258,7 +15444,7 @@ obtained using the Modified Seminario method.
         in the bond parameters.
 
     xyz_file: str, optional
-        XYZ file for guest coordinates obtained from its corresponding 
+        XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
         (This file will be saved in the current working directory)
 
@@ -15331,7 +15517,7 @@ obtained using the Modified Seminario method.
             in the bond parameters.
 
         xyz_file: str, optional
-            XYZ file for guest coordinates obtained from its corresponding 
+            XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
             (This file will be saved in the current working directory)
 
@@ -19624,12 +19810,27 @@ simulation.</dd>
 <span>(</span><span>num_charge_atoms, index_charge_atom_1, charge_atom_1, tor_dir='torsion_dir', reparameterized_torsional_params_file='reparameterized_torsional_params.txt', psi_input_file='torsion_drive_input.dat', xyz_file='torsion_drive_input.xyz', coords_file='torsion_drive_input.txt', template_pdb='guest_init_II.pdb', system_pdb='torsion_drive_input.pdb', system_sdf='torsion_drive_input.sdf', system_xml='torsion_drive_input.xml', qm_scan_file='scan.xyz', load_topology='openmm', method='L-BFGS-B', dihedral_text_file='dihedrals.txt', system_init_sdf='torsion_drive_input_init.sdf', reparameterised_system_xml_file='guest_reparameterised.xml', reparameterised_torsional_system_xml_file='guest_torsional_reparameterized.xml')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This class is used to parameterize the torsional parameters
+of the ligand by fitting the torsional parameters obtained
+from torsiondrive calculations. </p>
+<p>&hellip;
+Attributes</p>
+<hr></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TorsionDriveParams:
+    &#34;&#34;&#34;
+    This class is used to parameterize the torsional parameters 
+    of the ligand by fitting the torsional parameters obtained 
+    from torsiondrive calculations. 
+
+    ...
+    Attributes
+    ----------
+    &#34;&#34;&#34;
+
     def __init__(
         self,
         num_charge_atoms,
@@ -19656,9 +19857,7 @@ simulation.</dd>
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
         self.tor_dir = tor_dir
-        self.reparameterized_torsional_params_file = (
-            reparameterized_torsional_params_file
-        )
+        self.reparameterized_torsional_params_file = reparameterized_torsional_params_file
         self.psi_input_file = psi_input_file
         self.xyz_file = xyz_file
         self.coords_file = coords_file
@@ -20027,12 +20226,209 @@ simulation.</dd>
 <span>(</span><span>charge, multiplicity, reparameterised_system_xml_file='guest_reparameterised.xml', torsion_xml_file='guest_torsion_xml.txt', xyz_file='guest_coords.xyz', psi_input_file='torsion_drive_input.dat', memory=50, basis_set='STO-3G', functional='BLYP', iterations=2000, method_torsion_drive='native_opt', system_bonds_file='guest_bonds.txt', tor_dir='torsion_dir', dihedral_text_file='dihedrals.txt', template_pdb='guest_init_II.pdb', torsion_drive_run_file='run_command', dihedral_interval=15, engine='psi4', energy_threshold=0.001)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This class is used to create a filetree for torsion scan
+using torsionsdrive for the dihedral angles of the ligand.</p>
+<p>This class creates a directory for carrying out torsiondrive
+calculations followed by fitting of torsional parameters. Methods
+in this class are used to run torsiondrive calculations either for
+all of the torsional angles, or for non-hydrogen / heavy atoms
+contributing to the torsional angle.</p>
+<p>&hellip;</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>charge</code></strong> :&ensp;<code>int</code></dt>
+<dd>Charge of the ligand.</dd>
+<dt><strong><code>multiplicity</code></strong> :&ensp;<code>int</code></dt>
+<dd>Spin Multiplicity (2S+1) of the ligand where S represents
+the total spin of the ligand.</dd>
+<dt><strong><code>reparameterised_system_xml_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Reparamaterixed XML force field for the ligand.</dd>
+<dt><strong><code>torsion_xml_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>A text file containing torsional parameters from
+reparametrised XML file.</dd>
+<dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>XYZ file containing the coordinates of the guest molecule.</dd>
+<dt><strong><code>psi_input_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>XYZ file for ligand coordinates.</dd>
+<dt><strong><code>memory</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Memory (in GB) to be used.</dd>
+<dt><strong><code>basis_set</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Basis set to use for the QM engine.</dd>
+<dt><strong><code>functional</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Exchange/Correlation or hybrid Functional for the QM engine.</dd>
+<dt><strong><code>iterations</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Maximum number of geometry optimization steps.</dd>
+<dt><strong><code>method_torsion_drive</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The algorithm/package to use while running the torsiondrive
+scan. Using &ndash;native_opt uses QM program native constrained
+optimization algorithm and turns off geomeTRIC package.</dd>
+<dt><strong><code>system_bonds_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Text file containing bond parameters for the ligand.</dd>
+<dt><strong><code>tor_dir</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Torsiondrive directory containing separate torsiondrive
+folders, each containing files for a separate torsiondrive
+calculation for a particular dihedral angle.</dd>
+<dt><strong><code>dihedral_text_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Dihedral information file for torsiondrive.</p>
+<dl>
+<dt><strong><code>template_pdb</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Guest PDB with atoms beginning from 1 to be used as a
+template PDB to retrieve atom indices and symbols.</dd>
+<dt><strong><code>torsion_drive_run_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>bash file for torsiondrive calculations.</dd>
+<dt><strong><code>dihedral_interval</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Grid spacing for dihedral scan, i.e. every n degrees
+(where n is an integer), multiple values will be mapped
+to each dihedral angle.</dd>
+<dt><strong><code>engine</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Engine for running torsiondrive scan.</dd>
+<dt><strong><code>energy_threshold</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Only activate grid points if the new optimization is lower than
+the previous lowest energy (in a.u.).</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>charge</code></strong> :&ensp;<code>int</code></dt>
+<dd>Charge of the ligand.</dd>
+<dt><strong><code>multiplicity</code></strong> :&ensp;<code>int</code></dt>
+<dd>Spin Multiplicity (2S+1) of the ligand where S represents
+the total spin of the ligand.</dd>
+<dt><strong><code>reparameterised_system_xml_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Reparamaterixed XML force field for the ligand.</dd>
+<dt><strong><code>torsion_xml_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>A text file containing torsional parameters from
+reparametrised XML file.</dd>
+<dt><strong><code>xyz_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>XYZ file containing the coordinates of the guest molecule.</dd>
+<dt><strong><code>psi_input_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>XYZ file for ligand coordinates.</dd>
+<dt><strong><code>memory</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Memory (in GB) to be used.</dd>
+<dt><strong><code>basis_set</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Basis set to use for the QM engine.</dd>
+<dt><strong><code>functional</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Exchange/Correlation or hybrid Functional for the QM engine.</dd>
+<dt><strong><code>iterations</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Maximum number of geometry optimization steps.</dd>
+<dt><strong><code>method_torsion_drive</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The algorithm/package to use while running the torsiondrive
+scan. Using &ndash;native_opt uses QM program native constrained
+optimization algorithm and turns off geomeTRIC package.</dd>
+<dt><strong><code>system_bonds_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Text file containing bond parameters for the ligand.</dd>
+<dt><strong><code>tor_dir</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Torsiondrive directory containing separate torsiondrive
+folders, each containing files for a separate torsiondrive
+calculation for a particular dihedral angle.</dd>
+<dt><strong><code>dihedral_text_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Dihedral information file for torsiondrive.</p>
+<dl>
+<dt><strong><code>template_pdb</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Guest PDB with atoms beginning from 1 to be used as a
+template PDB to retrieve atom indices and symbols.</dd>
+<dt><strong><code>torsion_drive_run_file</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>bash file for torsiondrive calculations.</dd>
+<dt><strong><code>dihedral_interval</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Grid spacing for dihedral scan, i.e. every n degrees
+(where n is an integer), multiple values will be mapped
+to each dihedral angle.</dd>
+<dt><strong><code>engine</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Engine for running torsiondrive scan.</dd>
+<dt><strong><code>energy_threshold</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Only activate grid points if the new optimization is lower than
+the previous lowest energy (in a.u.).</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TorsionDriveSims:
+    &#34;&#34;&#34;
+    This class is used to create a filetree for torsion scan 
+    using torsionsdrive for the dihedral angles of the ligand.
+
+    This class creates a directory for carrying out torsiondrive 
+    calculations followed by fitting of torsional parameters. Methods 
+    in this class are used to run torsiondrive calculations either for
+    all of the torsional angles, or for non-hydrogen / heavy atoms 
+    contributing to the torsional angle.
+    
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Charge of the ligand. 
+
+    multiplicity: int
+        Spin Multiplicity (2S+1) of the ligand where S represents 
+        the total spin of the ligand. 
+
+    reparameterised_system_xml_file : str, optional
+        Reparamaterixed XML force field for the ligand.
+
+    torsion_xml_file : str, optional
+        A text file containing torsional parameters from
+        reparametrised XML file.
+
+    xyz_file : str, optional
+        XYZ file containing the coordinates of the guest molecule.
+
+    psi_input_file : str, optional
+        XYZ file for ligand coordinates.
+
+    memory : int, optional
+        Memory (in GB) to be used.
+
+    basis_set: str, optional
+        Basis set to use for the QM engine.
+
+    functional: str, optional
+        Exchange/Correlation or hybrid Functional for the QM engine. 
+
+    iterations : int, optional
+        Maximum number of geometry optimization steps.
+
+    method_torsion_drive : str, optional
+        The algorithm/package to use while running the torsiondrive
+        scan. Using --native_opt uses QM program native constrained
+        optimization algorithm and turns off geomeTRIC package.
+
+    system_bonds_file : str, optional
+        Text file containing bond parameters for the ligand.
+
+    tor_dir : str, optional
+        Torsiondrive directory containing separate torsiondrive
+        folders, each containing files for a separate torsiondrive 
+        calculation for a particular dihedral angle. 
+
+    dihedral_text_file : str, optional
+       Dihedral information file for torsiondrive.
+
+    template_pdb : str, optional
+        Guest PDB with atoms beginning from 1 to be used as a
+        template PDB to retrieve atom indices and symbols.
+
+    torsion_drive_run_file : str, optional
+        bash file for torsiondrive calculations. 
+
+    dihedral_interval : int, optional
+        Grid spacing for dihedral scan, i.e. every n degrees 
+        (where n is an integer), multiple values will be mapped 
+        to each dihedral angle.
+
+    engine : str, optional
+        Engine for running torsiondrive scan. 
+
+    energy_threshold : float, optional
+        Only activate grid points if the new optimization is lower than
+        the previous lowest energy (in a.u.).
+
+    &#34;&#34;&#34;
     def __init__(
         self,
         charge,
@@ -20055,6 +20451,77 @@ simulation.</dd>
         engine=&#34;psi4&#34;,
         energy_threshold=0.001,
     ):
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+
+        charge : int
+            Charge of the ligand. 
+
+        multiplicity: int
+            Spin Multiplicity (2S+1) of the ligand where S represents 
+            the total spin of the ligand. 
+
+        reparameterised_system_xml_file : str, optional
+            Reparamaterixed XML force field for the ligand.
+
+        torsion_xml_file : str, optional
+            A text file containing torsional parameters from
+            reparametrised XML file.
+
+        xyz_file : str, optional
+            XYZ file containing the coordinates of the guest molecule.
+
+        psi_input_file : str, optional
+            XYZ file for ligand coordinates.
+
+        memory : int, optional
+            Memory (in GB) to be used.
+
+        basis_set: str, optional
+            Basis set to use for the QM engine.
+
+        functional: str, optional
+            Exchange/Correlation or hybrid Functional for the QM engine. 
+
+        iterations : int, optional
+            Maximum number of geometry optimization steps.
+
+        method_torsion_drive : str, optional
+            The algorithm/package to use while running the torsiondrive
+            scan. Using --native_opt uses QM program native constrained
+            optimization algorithm and turns off geomeTRIC package.
+
+        system_bonds_file : str, optional
+            Text file containing bond parameters for the ligand.
+
+        tor_dir : str, optional
+            Torsiondrive directory containing separate torsiondrive
+            folders, each containing files for a separate torsiondrive 
+            calculation for a particular dihedral angle. 
+
+        dihedral_text_file : str, optional
+           Dihedral information file for torsiondrive.
+
+        template_pdb : str, optional
+            Guest PDB with atoms beginning from 1 to be used as a
+            template PDB to retrieve atom indices and symbols.
+
+        torsion_drive_run_file : str, optional
+            bash file for torsiondrive calculations. 
+
+        dihedral_interval : int, optional
+            Grid spacing for dihedral scan, i.e. every n degrees 
+            (where n is an integer), multiple values will be mapped 
+            to each dihedral angle.
+
+        engine : str, optional
+            Engine for running torsiondrive scan. 
+
+        energy_threshold : float, optional
+            Only activate grid points if the new optimization is lower than
+            the previous lowest energy (in a.u.).
+        &#34;&#34;&#34;
         self.charge = charge
         self.multiplicity = multiplicity
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
@@ -20076,6 +20543,9 @@ simulation.</dd>
         self.energy_threshold = energy_threshold
 
     def write_torsion_drive_run_file(self):
+        &#34;&#34;&#34;
+        Saves a bash file for running torsion scans for torsiondrive. 
+        &#34;&#34;&#34;
         if self.method_torsion_drive == &#34;geometric&#34;:
             torsion_command = (
                 &#34;torsiondrive-launch&#34;
@@ -20128,6 +20598,10 @@ simulation.</dd>
             f.write(torsion_command)
 
     def write_tor_params_txt(self):
+        &#34;&#34;&#34;
+        Saves a text file containing torsional parameters from the reparameterized XML 
+        force field file.
+        &#34;&#34;&#34;
         xml_off = open(self.reparameterised_system_xml_file, &#34;r&#34;)
         xml_off_lines = xml_off.readlines()
         for i in range(len(xml_off_lines)):
@@ -20186,6 +20660,9 @@ simulation.</dd>
         )
 
     def write_psi4_input(self):
+        &#34;&#34;&#34; 
+        Writes a psi4 input QM file.
+        &#34;&#34;&#34;
         xyz_lines = open(self.xyz_file, &#34;r&#34;).readlines()[2:]
         with open(self.psi_input_file, &#34;w&#34;) as f:
             f.write(&#34;memory&#34; + &#34; &#34; + str(self.memory) + &#34; &#34; + &#34;GB&#34; + &#34;\n&#34;)
@@ -20209,6 +20686,10 @@ simulation.</dd>
                 )
 
     def create_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all the proper dihedral angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -20302,6 +20783,10 @@ simulation.</dd>
         os.chdir(parent_cwd)
 
     def create_non_H_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all non-hydrogen torsional angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -20445,6 +20930,10 @@ simulation.</dd>
         os.chdir(parent_cwd)
 
     def create_non_H_bonded_torsion_drive_dir(self):
+        &#34;&#34;&#34;
+        Creates a directory for carrying out torsiondrive 
+        calculations for all non-hydrogen bonded torsional angles. 
+        &#34;&#34;&#34;
         df_tor = pd.read_csv(
             self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
         )
@@ -20641,6 +21130,9 @@ simulation.</dd>
         os.chdir(parent_cwd)
 
     def run_torsion_sim(self):
+        &#34;&#34;&#34;
+        Run torsion scans using torsiondrive locally. \
+        &#34;&#34;&#34;
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + &#34;/&#34; + self.tor_dir
         num_folders = 0
@@ -20660,12 +21152,17 @@ simulation.</dd>
 <span>def <span class="ident">create_non_H_bonded_torsion_drive_dir</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Creates a directory for carrying out torsiondrive
+calculations for all non-hydrogen bonded torsional angles.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_non_H_bonded_torsion_drive_dir(self):
+    &#34;&#34;&#34;
+    Creates a directory for carrying out torsiondrive 
+    calculations for all non-hydrogen bonded torsional angles. 
+    &#34;&#34;&#34;
     df_tor = pd.read_csv(
         self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
     )
@@ -20866,12 +21363,17 @@ simulation.</dd>
 <span>def <span class="ident">create_non_H_torsion_drive_dir</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Creates a directory for carrying out torsiondrive
+calculations for all non-hydrogen torsional angles.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_non_H_torsion_drive_dir(self):
+    &#34;&#34;&#34;
+    Creates a directory for carrying out torsiondrive 
+    calculations for all non-hydrogen torsional angles. 
+    &#34;&#34;&#34;
     df_tor = pd.read_csv(
         self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
     )
@@ -21019,12 +21521,17 @@ simulation.</dd>
 <span>def <span class="ident">create_torsion_drive_dir</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Creates a directory for carrying out torsiondrive
+calculations for all the proper dihedral angles.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_torsion_drive_dir(self):
+    &#34;&#34;&#34;
+    Creates a directory for carrying out torsiondrive 
+    calculations for all the proper dihedral angles. 
+    &#34;&#34;&#34;
     df_tor = pd.read_csv(
         self.torsion_xml_file, header=None, delimiter=r&#34;\s+&#34;
     )
@@ -21122,12 +21629,15 @@ simulation.</dd>
 <span>def <span class="ident">run_torsion_sim</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Run torsion scans using torsiondrive locally.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def run_torsion_sim(self):
+    &#34;&#34;&#34;
+    Run torsion scans using torsiondrive locally. \
+    &#34;&#34;&#34;
     parent_cwd = os.getcwd()
     target_dir = parent_cwd + &#34;/&#34; + self.tor_dir
     num_folders = 0
@@ -21146,12 +21656,15 @@ simulation.</dd>
 <span>def <span class="ident">write_psi4_input</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Writes a psi4 input QM file.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write_psi4_input(self):
+    &#34;&#34;&#34; 
+    Writes a psi4 input QM file.
+    &#34;&#34;&#34;
     xyz_lines = open(self.xyz_file, &#34;r&#34;).readlines()[2:]
     with open(self.psi_input_file, &#34;w&#34;) as f:
         f.write(&#34;memory&#34; + &#34; &#34; + str(self.memory) + &#34; &#34; + &#34;GB&#34; + &#34;\n&#34;)
@@ -21179,12 +21692,17 @@ simulation.</dd>
 <span>def <span class="ident">write_tor_params_txt</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Saves a text file containing torsional parameters from the reparameterized XML
+force field file.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write_tor_params_txt(self):
+    &#34;&#34;&#34;
+    Saves a text file containing torsional parameters from the reparameterized XML 
+    force field file.
+    &#34;&#34;&#34;
     xml_off = open(self.reparameterised_system_xml_file, &#34;r&#34;)
     xml_off_lines = xml_off.readlines()
     for i in range(len(xml_off_lines)):
@@ -21247,12 +21765,15 @@ simulation.</dd>
 <span>def <span class="ident">write_torsion_drive_run_file</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Saves a bash file for running torsion scans for torsiondrive.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write_torsion_drive_run_file(self):
+    &#34;&#34;&#34;
+    Saves a bash file for running torsion scans for torsiondrive. 
+    &#34;&#34;&#34;
     if self.method_torsion_drive == &#34;geometric&#34;:
         torsion_command = (
             &#34;torsiondrive-launch&#34;
