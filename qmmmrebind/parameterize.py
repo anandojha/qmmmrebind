@@ -918,11 +918,9 @@ class PrepareQMMM:
 
     cleaned_pdb : str
         Formatted PDB file containing only the receptor and the ligand.
-        (This file will be saved in the current working directory)
 
     guest_init_pdb : str
         A separate ligand PDB file with atom numbers not beginning from 1.
-        (This file will be saved in the current working directory)
 
     host_pdb : str
         A separate receptor PDB file with atom numbers beginning from 1.
@@ -932,12 +930,10 @@ class PrepareQMMM:
 
     guest_pdb : str, optional
         Ligand PDB file with atom numbers beginning from 1.
-        (This file will be saved in the current working directory)
-
+        
     guest_xyz : str, optional
         A text file of the XYZ corordinates of the ligand.
-        (This file will be saved in the current working directory)
-
+        
     distance : float, optional
         The distance required to define the QM region of the receptor.
         This is the distance between the atoms of the ligand and the
@@ -946,54 +942,43 @@ class PrepareQMMM:
     residue_list : str, optional
         A text file of the residue numbers of the receptor within the
         proximity (as defined by the distance) from the ligand.
-        (This file will be saved in the current working directory)
-
+        
     host_qm_atoms : str, optional
         A text file of the atom numbers of the receptors in the QM
         region.
-        (This file will be saved in the current working directory)
 
     host_mm_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region (all atoms except atoms in the QM region)
-        (This file will be saved in the current working directory)
-
+        
     host_qm_pdb : str, optional
         PDB file for the receptor's QM region.
-        (This file will be saved in the current working directory)
-
+        
     host_mm_pdb : str, optional
         PDB file for the receptor's MM region.
-        (This file will be saved in the current working directory)
-
+        
     qm_pdb : str, optional
         PDB file for the QM region (receptor's QM region and the
         ligand).
-        (This file will be saved in the current working directory)
-
+        
     mm_pdb : str, optional
         PDB file for the MM region.
-        (This file will be saved in the current working directory)
-
+        
     host_mm_region_I_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region preceeding the QM region.
-        (This file will be saved in the current working directory)
 
     host_mm_region_II_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region following the QM region.
-        (This file will be saved in the current working directory)
 
     host_mm_region_I_pdb : str, optional
         PDB file of the receptor in the MM region preceeding the
         QM region.
-        (This file will be saved in the current working directory)
 
     host_mm_region_II_pdb : str, optional
         PDB file of the receptor in the MM region following the
-        QM region.
-        (This file will be saved in the current working directory)
+        QM region.   
 
     num_residues : int, optional
         Number of residues required in the QM region of the receptor.
@@ -1032,11 +1017,9 @@ class PrepareQMMM:
 
         cleaned_pdb : str
             Formatted PDB file containing only the receptor and the ligand.
-            (This file will be saved in the current working directory)
-
+            
         guest_init_pdb : str
-            A separate ligand PDB file with atom numbers not beginning from 1.
-            (This file will be saved in the current working directory)
+            A separate ligand PDB file with atom numbers not beginning from 1.           
 
         host_pdb : str
             A separate receptor PDB file with atom numbers beginning from 1.
@@ -1045,12 +1028,11 @@ class PrepareQMMM:
             Three letter residue ID for the ligand.
 
         guest_pdb : str
-            Ligand PDB file with atom numbers beginning from 1.
-            (This file will be saved in the current working directory)
+            Ligand PDB file with atom numbers beginning from 1.           
 
         guest_xyz : str
             A text file of the XYZ corordinates of the ligand.
-            (This file will be saved in the current working directory)
+            
         distance : float
             The distance required to define the QM region of the receptor.
             This is the distance between the atoms of the ligand and the
@@ -1059,54 +1041,43 @@ class PrepareQMMM:
         residue_list : str
             A text file of the residue numbers of the receptor within the
             proximity (as defined by the distance) from the ligand.
-            (This file will be saved in the current working directory)
-
+         
         host_qm_atoms : str
             A text file of the atom numbers of the receptors in the QM
-            region.
-            (This file will be saved in the current working directory)
+            region.          
 
         host_mm_atoms : str
             A text file of the atom numbers of the receptors in the MM
             region (all atoms except atoms in the QM region)
-            (This file will be saved in the current working directory)
-
+            
         host_qm_pdb : str
             PDB file for the receptor's QM region.
-            (This file will be saved in the current working directory)
-
+            
         host_mm_pdb : str
             PDB file for the receptor's MM region.
-            (This file will be saved in the current working directory)
 
         qm_pdb : str
             PDB file for the QM region (receptor's QM region and the
             ligand).
-            (This file will be saved in the current working directory)
 
         mm_pdb : str
             PDB file for the MM region.
-            (This file will be saved in the current working directory)
 
         host_mm_region_I_atoms : str
             A text file of the atom numbers of the receptors in the MM
             region preceeding the QM region.
-            (This file will be saved in the current working directory)
 
         host_mm_region_II_atoms : str
             A text file of the atom numbers of the receptors in the MM
             region following the QM region.
-            (This file will be saved in the current working directory)
-
+            
         host_mm_region_I_pdb : str
             PDB file of the receptor in the MM region preceeding the
             QM region.
-            (This file will be saved in the current working directory)
 
         host_mm_region_II_pdb : str
             PDB file of the receptor in the MM region following the
             QM region.
-            (This file will be saved in the current working directory)
 
         num_residues : int
             Number of residues required in the QM region of the receptor.
@@ -1564,12 +1535,11 @@ class PrepareGaussianGuest:
     gauss_out_file: str, optional
         This file contains the output script obtained after running
         the Gaussian QM calculation.
-        (This file will be saved in the current working directory)
 
     fchk_out_file: str, optional
         Formatted checkpoint file obtained from the checkpoint file
         using formchk command.
-        (This file will be saved in the current working directory)
+
 
     """
     def __init__(
@@ -1639,12 +1609,10 @@ class PrepareGaussianGuest:
     	gauss_out_file: str, optional
             This file contains the output script obtained after running
             the Gaussian QM calculation.
-            (This file will be saved in the current working directory)
 
     	fchk_out_file: str, optional
             Formatted checkpoint file obtained from the checkpoint file
             using formchk command.
-            (This file will be saved in the current working directory)
 
         """
 
@@ -1816,32 +1784,26 @@ class PrepareGaussianHostGuest:
     gauss_system_out_file : str, optional
         This file contains the output script obtained after running
         the Gaussian QM calculation.
-        (This file will be saved in the current working directory)
 
     fchk_system_out_file : str, optional
         Formatted checkpoint file obtained from the checkpoint file
         using formchk command.
-        (This file will be saved in the current working directory)
 
     host_guest_input : str, optional
         Gaussian input file (.com extension) for the receptor - ligand 
         QM region.
-        (This file will be saved in the current working directory)
 
     qm_guest_charge_parameter_file : str, optional
         File containing the charges of ligand atoms and their corresponding
         atoms. Charge obtained are the polarised charged due to the 
         surrounding receptor's region.
-        (This file will be saved in the current working directory)
 
     qm_host_charge_parameter_file : str, optional
         File containing the charges of the QM region of the receptor. 
-        (This file will be saved in the current working directory)
 
     qm_guest_atom_charge_parameter_file : str, optional
         File containing the charges of ligand atoms. Charge obtained 
         are the polarised charged due to the surrounding receptor's region.
-        (This file will be saved in the current working directory)
 
     """
     def __init__(
@@ -1918,32 +1880,26 @@ class PrepareGaussianHostGuest:
         gauss_system_out_file : str, optional
             This file contains the output script obtained after running
             the Gaussian QM calculation.
-            (This file will be saved in the current working directory)
 
         fchk_system_out_file : str, optional
             Formatted checkpoint file obtained from the checkpoint file
             using formchk command.
-            (This file will be saved in the current working directory)
 
         host_guest_input : str, optional
             Gaussian input file (.com extension) for the receptor - ligand 
             QM region.
-            (This file will be saved in the current working directory)
 
         qm_guest_charge_parameter_file : str, optional
             File containing the charges of ligand atoms and their corresponding
             atoms. Charge obtained are the polarised charged due to the 
             surrounding receptor's region.
-            (This file will be saved in the current working directory)
 
         qm_host_charge_parameter_file : str, optional
             File containing the charges of the QM region of the receptor. 
-            (This file will be saved in the current working directory)
 
         qm_guest_atom_charge_parameter_file : str, optional
             File containing the charges of ligand atoms. Charge obtained 
             are the polarised charged due to the surrounding receptor's region.
-            (This file will be saved in the current working directory)
   
         """
         self.charge = charge
@@ -2136,56 +2092,45 @@ class ParameterizeGuest:
     xyz_file: str, optional
         XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
-        (This file will be saved in the current working directory)
 
     coordinate_file: str, optional
         Text file containing the ligand coordinates (extracted
         from the formatted checkpoint file).
-        (This file will be saved in the current working directory)
 
     unprocessed_hessian_file: str, optional
         Unprocessed hessian matrix of the ligand obtained from the 
         formatted checkpoint file.
-        (This file will be saved in the current working directory)
 
     bond_list_file: str, optional
         Text file containing the bond information of the ligand extracted 
         from the log file.
-        (This file will be saved in the current working directory)
 
     angle_list_file: str, optional
         Text file containing the angle information of the ligand extracted 
         from the log file.
-        (This file will be saved in the current working directory)
 
     hessian_file: str, optional
         Processed hessian matrix of the ligand.
-        (This file will be saved in the current working directory)
 
     atom_names_file: str, optional
         Text file containing the list of atom names from the fchk file.
-        (This file will be saved in the current working directory)
 
     bond_parameter_file: str, optional
         Text file containing the bond parameters for the ligand obtained 
         using the Modified Seminario method.
-        (This file will be saved in the current working directory)
 
     angle_parameter_file: str, optional
         Text file containing the angle parameters of the ligand obtained 
         using the Modified Seminario method..
-        (This file will be saved in the current working directory)
 
     charge_parameter_file: str, optional
         Text file containing the QM charges of the ligand.
-        (This file will be saved in the current working directory)
 
     guest_pdb: str, optional
         Ligand PDB file with atom numbers beginning from 1.
 
     proper_dihedral_file: str, optional
         A text file containing proper dihedral angles of the ligand.
-        (This file will be saved in the current working directory)
 
     """
     def __init__(
@@ -2214,55 +2159,45 @@ class ParameterizeGuest:
         xyz_file: str, optional
             XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
-            (This file will be saved in the current working directory)
 
         coordinate_file: str, optional
             Text file containing the ligand coordinates (extracted
             from the formatted checkpoint file).
-            (This file will be saved in the current working directory)
 
         unprocessed_hessian_file: str, optional
             Unprocessed hessian matrix of the ligand obtained from the 
             formatted checkpoint file.
-            (This file will be saved in the current working directory)
 
         bond_list_file: str, optional
             Text file containing the bond information of the ligand extracted 
             from the log file.
-            (This file will be saved in the current working directory)
+
         angle_list_file: str, optional
 
             Text file containing the angle information of the ligand extracted 
             from the log file.
-            (This file will be saved in the current working directory)
 
         hessian_file: str, optional
             Processed hessian matrix of the ligand.
-            (This file will be saved in the current working directory)
 
         atom_names_file: str, optional
             Text file containing the list of atom names from the fchk file.
-            (This file will be saved in the current working directory)
 
         bond_parameter_file: str, optional
             Text file containing the bond parameters for the ligand obtained 
             using the Modified Seminario method.
-            (This file will be saved in the current working directory)
 
         angle_parameter_file: str, optional
             Text file containing the angle parameters of the ligand.
-            (This file will be saved in the current working directory)
 
         charge_parameter_file: str, optional
             Text file containing the QM charges of the ligand.
-            (This file will be saved in the current working directory)
 
         guest_pdb: str, optional
             Ligand PDB file with atom numbers beginning from 1.
 
         proper_dihedral_file: str, optional
             A text file containing proper dihedral angles of the ligand.
-            (This file will be saved in the current working directory)
 
         """
         self.vibrational_scaling = vibrational_scaling
@@ -2889,12 +2824,10 @@ class PrepareGaussianHost:
     gauss_out_file: str, optional
         This file contains the output script obtained after running
         the Gaussian QM calculation.
-        (This file will be saved in the current working directory)
 
     fchk_out_file: str, optional
         Formatted checkpoint file obtained from the checkpoint file
         using formchk command.
-        (This file will be saved in the current working directory)
 
     """
 
@@ -2965,12 +2898,10 @@ class PrepareGaussianHost:
         gauss_out_file: str, optional
             This file contains the output script obtained after running
             the Gaussian QM calculation.
-            (This file will be saved in the current working directory)
 
         fchk_out_file: str, optional
             Formatted checkpoint file obtained from the checkpoint file
             using formchk command.
-            (This file will be saved in the current working directory)
 
         """
         self.charge = charge
@@ -3098,48 +3029,38 @@ class ParameterizeHost:
     xyz_file: str, optional
         XYZ file for ligand coordinates obtained from its corresponding 
         formatted checkpoint file.
-        (This file will be saved in the current working directory)
 
     coordinate_file: str, optional
         Text file containing the receptor coordinates (extracted
         from the formatted checkpoint file).
-        (This file will be saved in the current working directory)
 
     unprocessed_hessian_file: str, optional
         Unprocessed hessian matrix of the receptor obtained from the 
         formatted checkpoint file.
-        (This file will be saved in the current working directory)
 
     bond_list_file: str, optional
         Text file containing the bond information of the receptor 
         extracted from the log file.
-        (This file will be saved in the current working directory)
 
     angle_list_file: str, optional
         Text file containing the angle information of the receptor 
         extracted from the log file.
-        (This file will be saved in the current working directory)
 
     hessian_file: str, optional
         Processed hessian matrix of the receptor.
-        (This file will be saved in the current working directory)
 
     atom_names_file: str, optional
         Text file containing the list of atom names from the fchk file.
-        (This file will be saved in the current working directory)
 
     bond_parameter_file: str, optional
         Text file containing the bond parameters for the receptor 
         obtained using the Modified Seminario method.
-        (This file will be saved in the current working directory)
 
     angle_parameter_file: str, optional
         Text file containing the angle parameters of the receptor.
-        (This file will be saved in the current working directory)
 
     charge_parameter_file: str, optional
         Text file containing the QM charges of the receptor.
-        (This file will be saved in the current working directory)
 
     host_qm_pdb: str, optional
         PDB file for the receptor's QM region.
@@ -3171,48 +3092,38 @@ class ParameterizeHost:
         xyz_file: str, optional
             XYZ file for ligand coordinates obtained from its corresponding 
             formatted checkpoint file.
-            (This file will be saved in the current working directory)
 
         coordinate_file: str, optional
             Text file containing the receptor coordinates (extracted
             from the formatted checkpoint file).
-            (This file will be saved in the current working directory)
 
         unprocessed_hessian_file: str, optional
             Unprocessed hessian matrix of the receptor obtained from the 
             formatted checkpoint file.
-            (This file will be saved in the current working directory)
 
         bond_list_file: str, optional
             Text file containing the bond information of the receptor 
             extracted from the log file.
-            (This file will be saved in the current working directory)
 
         angle_list_file: str, optional
             Text file containing the angle information of the receptor 
             extracted from the log file.
-            (This file will be saved in the current working directory)
 
         hessian_file: str, optional
             Processed hessian matrix of the receptor.
-            (This file will be saved in the current working directory)
 
         atom_names_file: str, optional
             Text file containing the list of atom names from the fchk file.
-            (This file will be saved in the current working directory)
 
         bond_parameter_file: str, optional
             Text file containing the bond parameters for the receptor 
             obtained using the Modified Seminario method.
-            (This file will be saved in the current working directory)
 
         angle_parameter_file: str, optional
             Text file containing the angle parameters of the receptor.
-            (This file will be saved in the current working directory)
 
         charge_parameter_file: str, optional
             Text file containing the QM charges of the receptor.
-            (This file will be saved in the current working directory)
 
         host_qm_pdb: str, optional
             PDB file for the receptor's QM region.
@@ -3748,46 +3659,36 @@ class GuestAmberXMLAmber:
 
     system_mol2: str, optional
         Ligand Mol2 file obtained from PDB file.
-        (This file will be saved in the current working directory)
 
     system_in: str, optional
         Prepi file as required by antechamber.
-        (This file will be saved in the current working directory)
 
     system_frcmod: str, optional
         FRCMOD file as required by antechamber.
-        (This file will be saved in the current working directory)
 
     prmtop_system : str, optional
         Topology file obtained from the ligand PDB.
-        (This file will be saved in the current working directory)
 
     inpcrd_system : str, optional
         Coordinate file obtained from the Ligand PDB using the
         command saveamberparm.
-        (This file will be saved in the current working directory)
 
     system_leap : str, optional
         Amber generated leap file for generating and saving topology 
         and coordinate files. 
-        (This file will be saved in the current working directory)
 
     system_xml: str, optional
         Serialized XML force field file of the ligand.
-        (This file will be saved in the current working directory)
 
     system_smi: str, optional
         Ligand SMILES format file. 
-        (This file will be saved in the current working directory)
 
     system_sdf: str, optional
         Ligand SDF (structure-data) format file. 
-        (This file will be saved in the current working directory)
 
     system_init_sdf: str, optional
         Ligand SDF (structure-data) format file. This file will be 
         generated only if the ligand is charged.
-        (This file will be saved in the current working directory)
 
     index_charge_atom_2: int, optional
         Index of the second charged atom of the ligand.
@@ -3811,12 +3712,10 @@ class GuestAmberXMLAmber:
     system_qm_params_file: str, optional
         A text file containing the QM obtained parameters for the 
         ligand. 
-        (This file will be saved in the current working directory)
 
     reparameterised_intermediate_system_xml_file: str, optional
         XML foce field file with bond and angle parameter lines replaced by
         corresponding values obtained from the QM calculations.
-        (This file will be saved in the current working directory)
 
     system_xml_non_bonded_file: str, optional
         A text file to write the NonBondedForce Charge Parameters from
@@ -3825,37 +3724,30 @@ class GuestAmberXMLAmber:
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the 
         XML force field file.
-        (This file will be saved in the current working directory)
 
     reparameterised_system_xml_file: str, optional
         Reparameterized force field XML file obtained using 
         openforcefield.
-        (This file will be saved in the current working directory)
 
     non_reparameterised_system_xml_file: str, optional
         Non-reparameterized force field XML file obtained using 
         openforcefield.
-        (This file will be saved in the current working directory)
 
     prmtop_system_non_params: str, optional
         Amber generated topology file saved from the non-reparameterized 
         force field XML file for the ligand.
-        (This file will be saved in the current working directory)
 
     inpcrd_system_non_params: str, optional
         Amber generated coordinate file saved from the non-reparameterized 
         force field XML file for the ligand.
-        (This file will be saved in the current working directory)
 
     prmtop_system_params: str, optional
         Amber generated topology file saved from the reparameterized 
         force field XML file for the ligand.
-        (This file will be saved in the current working directory)
 
     inpcrd_system_params: str, optional
         Amber generated coordinate file saved from the reparameterized 
         force field XML file for the ligand.
-        (This file will be saved in the current working directory)
 
     load_topology: str, optional
         Argument to specify how to load the topology. Can either be "openmm"
@@ -3918,46 +3810,36 @@ class GuestAmberXMLAmber:
 
         system_mol2: str, optional
             Ligand Mol2 file obtained from PDB file.
-            (This file will be saved in the current working directory)
 
         system_in: str, optional
             Prepi file as required by antechamber.
-            (This file will be saved in the current working directory)
 
         system_frcmod: str, optional
             FRCMOD file as required by antechamber.
-            (This file will be saved in the current working directory)
 
         prmtop_system : str, optional
             Topology file obtained from the ligand PDB.
-            (This file will be saved in the current working directory)
 
         inpcrd_system : str, optional
             Coordinate file obtained from the Ligand PDB using the
             command saveamberparm.
-            (This file will be saved in the current working directory)
 
         system_leap : str, optional
             Amber generated leap file for generating and saving topology 
             and coordinate files. 
-            (This file will be saved in the current working directory)
 
         system_xml: str, optional
             Serilazed XML force field file of the ligand.
-            (This file will be saved in the current working directory)
 
         system_smi: str, optional
             Ligand SMILES format file. 
-            (This file will be saved in the current working directory)
 
         system_sdf: str, optional
             Ligand SDF (structure-data) format file. 
-            (This file will be saved in the current working directory)
 
         system_init_sdf: str, optional
             Ligand SDF (structure-data) format file. This file will be 
             generated only if the ligand is charged.
-            (This file will be saved in the current working directory)
 
         index_charge_atom_2: int, optional
             Index of the second charged atom of the ligand.
@@ -3981,12 +3863,10 @@ class GuestAmberXMLAmber:
         system_qm_params_file: str, optional
             A text file containing the QM obtained parameters for the 
             ligand. 
-            (This file will be saved in the current working directory)
 
         reparameterised_intermediate_system_xml_file: str, optional
             XML foce field file with bond and angle parameter lines replaced by
             corresponding values obtained from the QM calculations.
-            (This file will be saved in the current working directory)
 
         system_xml_non_bonded_file: str, optional
             A text file to write the NonBondedForce Charge Parameters from
@@ -3995,37 +3875,30 @@ class GuestAmberXMLAmber:
         system_xml_non_bonded_reparams_file: str, optional
             Text file containing the non-bonded parameters parsed from the 
             XML force field file.
-            (This file will be saved in the current working directory)
 
         reparameterised_system_xml_file: str, optional
             Reparameterized force field XML file obtained using 
             openforcefield.
-            (This file will be saved in the current working directory)
 
         non_reparameterised_system_xml_file: str, optional
             Non-reparameterized force field XML file obtained using 
             openforcefield.
-            (This file will be saved in the current working directory)
 
         prmtop_system_non_params: str, optional
             Amber generated topology file saved from the non-reparameterized 
             force field XML file for the ligand.
-            (This file will be saved in the current working directory)
 
         inpcrd_system_non_params: str, optional
             Amber generated coordinate file saved from the non-reparameterized 
             force field XML file for the ligand.
-            (This file will be saved in the current working directory)
 
         prmtop_system_params: str, optional
             Amber generated topology file saved from the reparameterized 
             force field XML file for the ligand.
-            (This file will be saved in the current working directory)
 
         inpcrd_system_params: str, optional
             Amber generated coordinate file saved from the reparameterized 
             force field XML file for the ligand.
-            (This file will be saved in the current working directory)
 
         load_topology: str, optional
             Argument to specify how to load the topology. Can either be "openmm"
@@ -5184,7 +5057,6 @@ class HostAmberXMLAmber:
 
     system_xml: str, optional
         Serilazed XML force field file of the receptor.
-        (This file will be saved in the current working directory)
 
     sim_output: str, optional
         PDB file containing the trajectory coordinates for the OpenMM
@@ -5209,12 +5081,10 @@ class HostAmberXMLAmber:
     system_qm_params_file: str, optional
         A text file containing the QM obtained parameters for the 
         receptor. 
-        (This file will be saved in the current working directory)
 
     reparameterised_intermediate_system_xml_file: str, optional
         XML foce field file with bond and angle parameter lines replaced by
         corresponding values obtained from the QM calculations.
-        (This file will be saved in the current working directory)
 
     system_xml_non_bonded_file: str, optional
         A text file to write the NonBondedForce Charge Parameters from
@@ -5223,37 +5093,30 @@ class HostAmberXMLAmber:
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the 
         XML force field file.
-        (This file will be saved in the current working directory)
 
     reparameterised_system_xml_file: str, optional
         Reparameterized force field XML file obtained using 
         openforcefield.
-        (This file will be saved in the current working directory)
 
     non_reparameterised_system_xml_file: str, optional
         Non-reparameterized force field XML file obtained using 
         openforcefield.
-        (This file will be saved in the current working directory)
 
     prmtop_system_non_params: str, optional
         Amber generated topology file saved from the non-reparameterized 
         force field XML file for the receptor.
-        (This file will be saved in the current working directory)
 
     inpcrd_system_non_params: str, optional
         Amber generated coordinate file saved from the non-reparameterized 
         force field XML file for the receptor.
-        (This file will be saved in the current working directory)
 
     prmtop_system_params: str, optional
         Amber generated topology file saved from the reparameterized 
         force field XML file for the receptor.
-        (This file will be saved in the current working directory)
 
     inpcrd_system_params: str, optional
         Amber generated coordinate file saved from the reparameterized 
         force field XML file for the receptor.
-        (This file will be saved in the current working directory)
 
     load_topology: str, optional
         Argument to specify how to load the topology. Can either be "openmm"
@@ -6436,11 +6299,9 @@ class MergeHostGuestTopology:
 
     system_prmtop : str
         Topology file of the receptor - ligand complex. 
-        (This file will be saved in the current working directory)
 
     system_inpcrd : str
         Coordinate file of the receptor - ligand complex. 
-        (This file will be saved in the current working directory)
 
     """
     def __init__(
@@ -6541,7 +6402,7 @@ class TorsionDriveSims:
         XYZ file containing the coordinates of the guest molecule.
 
     psi_input_file : str, optional
-        XYZ file for ligand coordinates.
+        Input file for psi4 QM engine. 
 
     memory : int, optional
         Memory (in GB) to be used.
@@ -6635,7 +6496,7 @@ class TorsionDriveSims:
             XYZ file containing the coordinates of the guest molecule.
 
         psi_input_file : str, optional
-            XYZ file for ligand coordinates.
+            Input file for psi4 QM engine. 
 
         memory : int, optional
             Memory (in GB) to be used.
@@ -7318,6 +7179,72 @@ class TorsionDriveParams:
     ...
     Attributes
     ----------
+    num_charge_atoms : int
+        Number of charged atoms in the molecule.
+
+    index_charge_atom_1 : int
+        Index of the first charged atom.
+
+    charge_atom_1 : int
+        Charge on the first charged atom.
+
+    tor_dir : str, optional
+        Torsiondrive directory containing separate torsiondrive folders, 
+        each containing files for a separate torsiondrive calculation 
+        for a particular dihedral angle.
+
+    reparameterized_torsional_params_file : str, optional
+        Text file containing the forcefield parameters for the 
+        ligand previously obtained without torsional reparameterization. 
+
+    psi_input_file : str, optional
+        Input file for psi4 QM engine. 
+
+    xyz_file : str, optional
+        XYZ file for ligand coordinates.
+
+    coords_file : str, optional
+        Text file containing the XYZ coordinates of the ligand.
+
+    template_pdb : str, optional
+        Guest PDB with atoms beginning from 1 to be used as a template PDB 
+        to retrieve atom indices and symbols.
+
+    system_pdb : str, optional
+        PDB file for the torsiondrive torsion scans.
+
+    system_sdf : str, optional
+        SDF file for the ligand.
+
+    system_xml : str, optional
+        XML force field file for the ligand.
+
+    qm_scan_file : str, optional
+        Output scan file for the torsiondrive scans.
+
+    load_topology : str, optional
+        Argument to specify how to load the topology. Can either 
+        be "openmm" or "parmed".
+
+    method : str, optional
+        Minimization method for fitting of torsional 
+        parameters. 
+
+    dihedral_text_file : str, optional
+        Dihedral information file for torsiondrive.
+ 
+    system_init_sdf : str, optional
+        Ligand SDF (structure-data) format file. This file will be generated 
+        only if the ligand is charged.
+
+    reparameterised_system_xml_file : str, optional
+        Reparameterized force field XML file obtained using 
+        openforcefield without torsional reparamaterization.
+
+    reparameterised_torsional_system_xml_file : str, optional
+        XML force field file for the ligand obtained with 
+        torsional reparamaterization. 
+
     """
 
     def __init__(
@@ -7342,6 +7269,75 @@ class TorsionDriveParams:
         reparameterised_system_xml_file="guest_reparameterised.xml",
         reparameterised_torsional_system_xml_file="guest_torsional_reparameterized.xml",
     ):
+        """
+        Parameters
+        ----------
+        num_charge_atoms : int
+            Number of charged atoms in the molecule.
+
+        index_charge_atom_1 : int
+            Index of the first charged atom.
+
+        charge_atom_1 : int
+            Charge on the first charged atom.
+
+        tor_dir : str, optional
+            Torsiondrive directory containing separate torsiondrive folders, 
+            each containing files for a separate torsiondrive calculation 
+            for a particular dihedral angle.
+
+        reparameterized_torsional_params_file : str, optional
+            Text file containing the forcefield parameters for the 
+            ligand previously obtained without torsional reparameterization. 
+
+        psi_input_file : str, optional
+            Input file for psi4 QM engine. 
+    
+        xyz_file : str, optional
+            XYZ file for ligand coordinates.
+
+        coords_file : str, optional
+            Text file containing the XYZ coordinates of the ligand.
+
+        template_pdb : str, optional
+            Guest PDB with atoms beginning from 1 to be used as a template PDB 
+            to retrieve atom indices and symbols.
+
+        system_pdb : str, optional
+            PDB file for the torsiondrive torsion scans.
+
+        system_sdf : str, optional
+            SDF file for the ligand.
+
+        system_xml : str, optional
+            XML force field file for the ligand.
+
+        qm_scan_file : str, optional
+            Output scan file for the torsiondrive scans.
+
+        load_topology : str, optional
+            Argument to specify how to load the topology. Can either 
+            be "openmm" or "parmed".
+
+        method : str, optional
+           Minimization method for fitting of torsional 
+            parameters. 
+
+        dihedral_text_file : str, optional
+            Dihedral information file for torsiondrive.
+ 
+        system_init_sdf : str, optional
+            Ligand SDF (structure-data) format file. This file will be generated 
+            only if the ligand is charged.
+
+        reparameterised_system_xml_file : str, optional
+            Reparameterized force field XML file obtained using 
+            openforcefield without torsional reparamaterization.
+
+    	reparameterised_torsional_system_xml_file : str, optional
+            XML force field file for the ligand obtained with 
+            torsional reparamaterization. 
+        """
         self.num_charge_atoms = num_charge_atoms
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
@@ -7360,11 +7356,13 @@ class TorsionDriveParams:
         self.system_init_sdf = system_init_sdf
         self.load_topology = load_topology
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
-        self.reparameterised_torsional_system_xml_file = (
-            reparameterised_torsional_system_xml_file
-        )
+        self.reparameterised_torsional_system_xml_file = reparameterised_torsional_system_xml_file
 
     def write_reparams_torsion_lines(self):
+        """
+        Saves a text file containing torsional parameters for the ligand
+        obtained through openforcefield.
+        """
         torsional_parameters_list = []
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + "/" + self.tor_dir
@@ -7409,6 +7407,10 @@ class TorsionDriveParams:
                 f.write(i + "\n")
 
     def write_reparams_torsion_lines_charged(self):
+        """
+        Saves a text file containing torsional parameters for a charged ligand
+        obtained through openforcefield.
+        """
         torsional_parameters_list = []
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + "/" + self.tor_dir
@@ -7453,6 +7455,10 @@ class TorsionDriveParams:
                 f.write(i + "\n")
 
     def write_torsional_reparams(self):
+        """
+        Generates a XML force field file for the ligand with reparameterized 
+        torsional parameters.
+        """
         xml_tor = open(self.reparameterized_torsional_params_file, "r")
         xml_tor_lines = xml_tor.readlines()
         non_zero_k_tor = []
