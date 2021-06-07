@@ -1,5 +1,6 @@
 """
-QMMMReBind : Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield *Re*paramaterisation of the *Bind*ing site for the receptor-ligand complexes
+QMMMReBind : Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield 
+*Re*paramaterisation of the *Bind*ing site for the receptor-ligand complexes
 """
 
 import openforcefield.typing.engines.smirnoff
@@ -169,7 +170,8 @@ def force_angle_constant(
     scaling_1,
     scaling_2,
 ):
-    # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle (in kcal/mol/rad^2) and equilibrium angle in degrees
+    # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle 
+    # (in kcal/mol/rad^2) and equilibrium angle in degrees
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
@@ -255,7 +257,8 @@ def force_angle_constant_special_case(
     scaling_1,
     scaling_2,
 ):
-    # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle (in kcal/mol/rad^2) and equilibrium angle in degrees
+    # Force Constant- Equation 14 of seminario calculation paper - gives force constant for angle 
+    # (in kcal/mol/rad^2) and equilibrium angle in degrees
     # Deals with cases when u_N cannot be defined and instead takes samples of u_N across a unit sphere.
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
@@ -318,7 +321,8 @@ def force_angle_constant_special_case(
 
 
 def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
-    # Force Constant - Equation 10 of Seminario paper - gives force constant for bond
+    # Force Constant - Equation 10 of Seminario paper - gives force 
+    # constant for bond
     # Eigenvalues and eigenvectors calculated
     eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
     eigenvectors_AB = eigenvectors[:, :, atom_A, atom_B]
@@ -364,7 +368,10 @@ def uniq(input_):
 
 
 def search_in_file(file: str, word: str) -> list:
-    """Search for the given string in file and return lines containing that string along with line numbers"""
+    """
+    Search for the given string in file and return lines containing 
+    that string along with line numbers
+    """
     line_number = 0
     list_of_results = []
     with open(file, "r") as f:
@@ -500,7 +507,8 @@ def generate_xml_from_charged_pdb_sdf(
     system_xml,
 ):
     """
-    This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
+    This function generates an openforcefield xml file from the pdb 
+    file via SDF file and openforcefield.
     """
     command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
     os.system(command)
@@ -907,68 +915,87 @@ class PrepareQMMM:
     init_pdb : str
         Initial PDB file containing the receptor-ligand complex with
         solvent, ions, etc.
+
     cleaned_pdb : str
         Formatted PDB file containing only the receptor and the ligand.
         (This file will be saved in the current working directory)
+
     guest_init_pdb : str
         A separate ligand PDB file with atom numbers not beginning from 1.
         (This file will be saved in the current working directory)
+
     host_pdb : str
         A separate receptor PDB file with atom numbers beginning from 1.
+
     guest_resname : str
-        Three letter residue ID for the ligand
-    guest_pdb : str
+        Three letter residue ID for the ligand.
+
+    guest_pdb : str, optional
         Ligand PDB file with atom numbers beginning from 1.
         (This file will be saved in the current working directory)
-    guest_xyz : str
+
+    guest_xyz : str, optional
         A text file of the XYZ corordinates of the ligand.
         (This file will be saved in the current working directory)
-    distance : float
+
+    distance : float, optional
         The distance required to define the QM region of the receptor.
         This is the distance between the atoms of the ligand and the
         atoms of the receptor.
-    residue_list : str
+
+    residue_list : str, optional
         A text file of the residue numbers of the receptor within the
         proximity (as defined by the distance) from the ligand.
         (This file will be saved in the current working directory)
-    host_qm_atoms : str
+
+    host_qm_atoms : str, optional
         A text file of the atom numbers of the receptors in the QM
         region.
         (This file will be saved in the current working directory)
-    host_mm_atoms : str
+
+    host_mm_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region (all atoms except atoms in the QM region)
         (This file will be saved in the current working directory)
-    host_qm_pdb : str
+
+    host_qm_pdb : str, optional
         PDB file for the receptor's QM region.
         (This file will be saved in the current working directory)
-    host_mm_pdb : str
+
+    host_mm_pdb : str, optional
         PDB file for the receptor's MM region.
         (This file will be saved in the current working directory)
-    qm_pdb : str
+
+    qm_pdb : str, optional
         PDB file for the QM region (receptor's QM region and the
         ligand).
         (This file will be saved in the current working directory)
-    mm_pdb : str
+
+    mm_pdb : str, optional
         PDB file for the MM region.
         (This file will be saved in the current working directory)
-    host_mm_region_I_atoms : str
+
+    host_mm_region_I_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region preceeding the QM region.
         (This file will be saved in the current working directory)
-    host_mm_region_II_atoms : str
+
+    host_mm_region_II_atoms : str, optional
         A text file of the atom numbers of the receptors in the MM
         region following the QM region.
         (This file will be saved in the current working directory)
-    host_mm_region_I_pdb : str
+
+    host_mm_region_I_pdb : str, optional
         PDB file of the receptor in the MM region preceeding the
         QM region.
         (This file will be saved in the current working directory)
-    host_mm_region_II_pdb : str
+
+    host_mm_region_II_pdb : str, optional
         PDB file of the receptor in the MM region following the
         QM region.
         (This file will be saved in the current working directory)
-    num_residues : int
+
+    num_residues : int, optional
         Number of residues required in the QM region of the receptor.
     """
 
@@ -1302,7 +1329,8 @@ class PrepareQMMM:
         non_selected_atoms = list(set(len_atoms).difference(selected_atoms))
         if len(non_selected_atoms) + len(selected_atoms) == len(len_atoms):
             print(
-                "Sum of the selected and non-selected region equals the length of list of total atoms"
+                "Sum of the atoms in the selected and non-selected region \
+                 equals the length of list of total atoms"
             )
         else:
             print("Error")
@@ -1406,7 +1434,8 @@ class PrepareQMMM:
             len_atoms.append(i + 1)
         if len(mm_region_I_atoms) + len(mm_region_II_atoms) == len(len_atoms):
             print(
-                "Sum of the MM region I atoms and  MM region II atoms equals the length of list of total MM atoms"
+                "Sum of the MM region I atoms and  MM region II atoms equals \
+                 the length of list of total MM atoms"
             )
         else:
             print("Error")
@@ -1474,6 +1503,75 @@ class PrepareQMMM:
 
 
 class PrepareGaussianGuest:
+    """
+    A class used to prepare the QM engine input file (Gaussian) 
+    for the ligand and run QM calculations with appropriate 
+    keywords. 
+
+    This class contain methods to write an input file (.com extension)
+    for the QM engine. It then runs a QM calculation with the given
+    basis set and functional. Checkpoint file is then converted to 
+    a formatted checkpoint file. Output files (.log, .chk, and .fhck)
+    will then be used to extract ligand's force field parameters. 
+
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Charge of the ligand. 
+
+    multiplicity: int
+        Spin Multiplicity (2S+1) of the ligand where S represents 
+        the total spin of the ligand. 
+
+    guest_pdb: str, optional
+        Ligand PDB file with atom numbers beginning from 1.
+
+    n_processors : int, optional
+        Number of processors to be used for Gaussian program to run and 
+        set in %NProcShared command of Gaussian.
+
+    memory : int, optional
+        Memory (in GB) to be used set in %Mem command of Gaussian.
+
+    functional: str, optional
+        Exchange/Correlation or hybrid functional to use in the Gaussian
+        QM calculation.
+
+    basis_set: str, optional
+        Basis set to use for the Gaussian QM calculation.
+
+    optimisation: str, optional
+        set to "OPT" to perform a geometry optimization on the ligand
+        specified in the system; else set to an empty string.
+
+    frequency: str, optional
+        set to "FREQ" for Gaussian to perform a frequency calculation;
+        else set to an empty string.
+
+    add_keywords_I: str, optional
+        Specifies the integration grid.
+
+    add_keywords_II: str, optional
+        Specifies the Gaussian described options for generating
+        population.
+
+    add_keywords_III: str, optional
+        Used to include the IOp keyword (to set the internal options to
+        specific values) in the Gaussian command.
+
+    gauss_out_file: str, optional
+        This file contains the output script obtained after running
+        the Gaussian QM calculation.
+        (This file will be saved in the current working directory)
+
+    fchk_out_file: str, optional
+        Formatted checkpoint file obtained from the checkpoint file
+        using formchk command.
+        (This file will be saved in the current working directory)
+
+    """
     def __init__(
         self,
         charge,
@@ -1491,6 +1589,65 @@ class PrepareGaussianGuest:
         gauss_out_file="guest.out",
         fchk_out_file="guest_fchk.out",
     ):
+
+        """
+        Parameters
+        ----------
+    	charge : int
+            Charge of the ligand. 
+
+    	multiplicity: int
+            Spin Multiplicity (2S+1) of the ligand where S represents 
+            the total spin of the ligand. 
+
+    	guest_pdb: str, optional
+            Ligand PDB file with atom numbers beginning from 1.
+
+    	n_processors : int, optional
+            Number of processors to be used for Gaussian program to run and 
+            set in %NProcShared command of Gaussian.
+
+    	memory : int, optional
+            Memory (in GB) to be used set in %Mem command of Gaussian.
+
+    	functional: str, optional
+            Exchange/Correlation or hybrid functional to use in the Gaussian
+            QM calculation.
+
+    	basis_set: str, optional
+            Basis set to use for the Gaussian QM calculation.
+
+    	optimisation: str, optional
+            set to "OPT" to perform a geometry optimization on the ligand
+            specified in the system; else set to an empty string.
+
+    	frequency: str, optional
+            set to "FREQ" for Gaussian to perform a frequency calculation;
+            else set to an empty string.
+
+    	add_keywords_I: str, optional
+            Specifies the integration grid.
+
+    	add_keywords_II: str, optional
+            Specifies the Gaussian described options for generating
+            population.
+
+    	add_keywords_III: str, optional
+            Used to include the IOp keyword (to set the internal options to
+            specific values) in the Gaussian command.
+
+    	gauss_out_file: str, optional
+            This file contains the output script obtained after running
+            the Gaussian QM calculation.
+            (This file will be saved in the current working directory)
+
+    	fchk_out_file: str, optional
+            Formatted checkpoint file obtained from the checkpoint file
+            using formchk command.
+            (This file will be saved in the current working directory)
+
+        """
+
         self.charge = charge
         self.multiplicity = multiplicity
         self.guest_pdb = guest_pdb
@@ -1508,8 +1665,9 @@ class PrepareGaussianGuest:
 
     def write_input(self):
         """
-        This function prints out the commands section of the gaussian input file.
+        Writes a Gaussian input file for the ligand. 
         """
+
         command_line_1 = "%Chk = " + self.guest_pdb[:-4] + ".chk"
         command_line_2 = "%Mem = " + str(self.memory) + "GB"
         command_line_3 = "%NProcShared = " + str(self.n_processors)
@@ -1560,7 +1718,7 @@ class PrepareGaussianGuest:
 
     def run_gaussian(self):
         """
-        This function runs the gaussian QM calculation.
+        Runs the Gaussian QM calculation for the ligand locally.
         """
         execute_command = (
             "g16"
@@ -1576,7 +1734,8 @@ class PrepareGaussianGuest:
 
     def get_fchk(self):
         """
-        This function converts the checkpoint file file into the formatted chechkpoint file.
+        Converts the Gaussian checkpoint file (.chk) to a formatted checkpoint
+        file (.fchk).
         """
         execute_command = (
             "formchk"
@@ -1592,6 +1751,99 @@ class PrepareGaussianGuest:
 
 
 class PrepareGaussianHostGuest:
+    """
+    A class used to prepare the QM engine input file (Gaussian) for 
+    the receptor - ligand complex and run the QM calculations with 
+    the appropriate keywords. 
+
+    This class contain methods to write an input file (.com extension)
+    for the QM engine for the receptor - ligand complex. It then runs 
+    a QM calculation with the given basis set and functional. Checkpoint
+    file is then converted to a formatted checkpoint file. Output files
+    (.log, .chk, and .fhck) will then be used to extract charges for the 
+    ligand and the receptor.
+
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Total charge of the receptor - ligand complex.
+
+    multiplicity : int
+        Spin Multiplicity (2S+1) of the ligand where S represents 
+        the total spin of the ligand. 
+
+    guest_pdb : str, optional
+        Ligand PDB file with atom numbers beginning from 1.
+
+    host_qm_pdb : str, optional
+        PDB file for the receptor's QM region.
+
+    n_processors : int, optional
+        Number of processors to be used for Gaussian program to run and 
+        set in %NProcShared command of Gaussian.
+
+    memory : int, optional
+        Memory (in GB) to be used set in %Mem command of Gaussian.
+
+    functional: str, optional
+        Exchange/Correlation or hybrid functional to use in the Gaussian
+        QM calculation.
+
+    basis_set: str, optional
+        Basis set to use for the Gaussian QM calculation.
+
+    optimisation: str, optional
+        set to "OPT" to perform a geometry optimization on the ligand
+        specified in the system; else set to an empty string.
+
+    frequency: str, optional
+        set to "FREQ" for Gaussian to perform a frequency calculation;
+        else set to an empty string.
+
+    add_keywords_I: str, optional
+        Specifies the integration grid.
+
+    add_keywords_II: str, optional
+        Specifies the Gaussian described options for generating
+        population.
+
+    add_keywords_III: str, optional
+        Used to include the IOp keyword (to set the internal options to
+        specific values) in the Gaussian command.
+
+    gauss_system_out_file : str, optional
+        This file contains the output script obtained after running
+        the Gaussian QM calculation.
+        (This file will be saved in the current working directory)
+
+    fchk_system_out_file : str, optional
+        Formatted checkpoint file obtained from the checkpoint file
+        using formchk command.
+        (This file will be saved in the current working directory)
+
+    host_guest_input : str, optional
+        Gaussian input file (.com extension) for the receptor - ligand 
+        QM region.
+        (This file will be saved in the current working directory)
+
+    qm_guest_charge_parameter_file : str, optional
+        File containing the charges of ligand atoms and their corresponding
+        atoms. Charge obtained are the polarised charged due to the 
+        surrounding receptor's region.
+        (This file will be saved in the current working directory)
+
+    qm_host_charge_parameter_file : str, optional
+        File containing the charges of the QM region of the receptor. 
+        (This file will be saved in the current working directory)
+
+    qm_guest_atom_charge_parameter_file : str, optional
+        File containing the charges of ligand atoms. Charge obtained 
+        are the polarised charged due to the surrounding receptor's region.
+        (This file will be saved in the current working directory)
+
+    """
     def __init__(
         self,
         charge,
@@ -1614,6 +1866,86 @@ class PrepareGaussianHostGuest:
         qm_host_charge_parameter_file="host_qm_surround_charges.txt",
         qm_guest_atom_charge_parameter_file="guest_qm_atom_surround_charges.txt",
     ):
+        """
+        Parameters
+        ----------
+        charge : int
+            Total charge of the receptor - ligand complex.
+
+        multiplicity : int
+            Spin Multiplicity (2S+1) of the ligand where S represents 
+            the total spin of the ligand. 
+
+        guest_pdb : str, optional
+            Ligand PDB file with atom numbers beginning from 1.
+
+        host_qm_pdb : str, optional
+            PDB file for the receptor's QM region.
+
+        n_processors : int, optional
+            Number of processors to be used for Gaussian program to run and 
+            set in %NProcShared command of Gaussian.
+
+        memory : int, optional
+            Memory (in GB) to be used set in %Mem command of Gaussian.
+
+        functional: str, optional
+            Exchange/Correlation or hybrid functional to use in the Gaussian
+            QM calculation.
+
+        basis_set: str, optional
+            Basis set to use for the Gaussian QM calculation.
+
+        optimisation: str, optional
+            set to "OPT" to perform a geometry optimization on the ligand
+            specified in the system; else set to an empty string.
+
+        frequency: str, optional
+            set to "FREQ" for Gaussian to perform a frequency calculation;
+            else set to an empty string.
+
+        add_keywords_I: str, optional
+            Specifies the integration grid.
+
+        add_keywords_II: str, optional
+            Specifies the Gaussian described options for generating
+            population.
+
+        add_keywords_III: str, optional
+            Used to include the IOp keyword (to set the internal options to
+            specific values) in the Gaussian command.
+
+        gauss_system_out_file : str, optional
+            This file contains the output script obtained after running
+            the Gaussian QM calculation.
+            (This file will be saved in the current working directory)
+
+        fchk_system_out_file : str, optional
+            Formatted checkpoint file obtained from the checkpoint file
+            using formchk command.
+            (This file will be saved in the current working directory)
+
+        host_guest_input : str, optional
+            Gaussian input file (.com extension) for the receptor - ligand 
+            QM region.
+            (This file will be saved in the current working directory)
+
+        qm_guest_charge_parameter_file : str, optional
+            File containing the charges of ligand atoms and their corresponding
+            atoms. Charge obtained are the polarised charged due to the 
+            surrounding receptor's region.
+            (This file will be saved in the current working directory)
+
+        qm_host_charge_parameter_file : str, optional
+            File containing the charges of the QM region of the receptor. 
+            (This file will be saved in the current working directory)
+
+        qm_guest_atom_charge_parameter_file : str, optional
+            File containing the charges of ligand atoms. Charge obtained 
+            are the polarised charged due to the surrounding receptor's region.
+            (This file will be saved in the current working directory)
+  
+        """
         self.charge = charge
         self.multiplicity = multiplicity
         self.guest_pdb = guest_pdb
@@ -1632,13 +1964,11 @@ class PrepareGaussianHostGuest:
         self.host_guest_input = host_guest_input
         self.qm_guest_charge_parameter_file = qm_guest_charge_parameter_file
         self.qm_host_charge_parameter_file = qm_host_charge_parameter_file
-        self.qm_guest_atom_charge_parameter_file = (
-            qm_guest_atom_charge_parameter_file
-        )
+        self.qm_guest_atom_charge_parameter_file = qm_guest_atom_charge_parameter_file
 
     def write_input(self):
         """
-        This function prints out the commands section of the gaussian input file.
+        Writes a Gaussian input file for the receptor - ligand QM region. 
         """
         command_line_1 = "%Chk = " + self.host_guest_input[:-4] + ".chk"
         command_line_2 = "%Mem = " + str(self.memory) + "GB"
@@ -1701,7 +2031,8 @@ class PrepareGaussianHostGuest:
 
     def run_gaussian(self):
         """
-        This function runs the gaussian QM calculation.
+        Runs the Gaussian QM calculation for the ligand - receptor region 
+        locally.
         """
         execute_command = (
             "g16"
@@ -1716,7 +2047,8 @@ class PrepareGaussianHostGuest:
 
     def get_fchk(self):
         """
-        This function converts the checkpoint file file into the formatted chechkpoint file.
+        Converts the Gaussian checkpoint file (.chk) to a formatted checkpoint
+        file (.fchk).
         """
         execute_command = (
             "formchk"
@@ -1731,7 +2063,9 @@ class PrepareGaussianHostGuest:
             sp.run(execute_command, shell=True, stdout=f, stderr=sp.STDOUT)
 
     def get_qm_host_guest_charges(self):
-        """This function extracts charges and saves them separately for the host and guest"""
+        """
+        Extract charge information for the receptor - ligand QM region.
+        """
         log_file = self.host_guest_input[:-4] + ".log"
         with open(log_file, "r") as f:
             lines = f.readlines()
@@ -1780,6 +2114,80 @@ class PrepareGaussianHostGuest:
 
 
 class ParameterizeGuest:
+    """
+    A class used to obtain force field parameters for the ligand (bond, 
+    angle and charge parameters) from QM calculations.
+
+    This class contain methods to process the output files of the 
+    Gaussian QM output files (.chk, .fchk and .log files). Methods 
+    in the class extract the unprocessed hessian matrix from the 
+    Gaussian QM calculations, processes it and uses the Modified 
+    Seminario Method to ontain the bond and angle parameters. The 
+    class also extracts the QM charges from the log file.
+
+    ...
+
+    Attributes
+    ----------
+    vibrational_scaling: float
+        Vibrational scaling factor for the DFT deficits/anharmonicities
+        in the bond parameters.
+
+    xyz_file: str, optional
+        XYZ file for guest coordinates obtained from its corresponding 
+        formatted checkpoint file.
+        (This file will be saved in the current working directory)
+
+    coordinate_file: str, optional
+        Text file containing the ligand coordinates (extracted
+        from the formatted checkpoint file).
+        (This file will be saved in the current working directory)
+
+    unprocessed_hessian_file: str, optional
+        Unprocessed hessian matrix of the ligand obtained from the 
+        formatted checkpoint file.
+        (This file will be saved in the current working directory)
+
+    bond_list_file: str, optional
+        Text file containing the bond information of the ligand extracted 
+        from the log file.
+        (This file will be saved in the current working directory)
+
+    angle_list_file: str, optional
+        Text file containing the angle information of the ligand extracted 
+        from the log file.
+        (This file will be saved in the current working directory)
+
+    hessian_file: str, optional
+        Processed hessian matrix of the ligand.
+        (This file will be saved in the current working directory)
+
+    atom_names_file: str, optional
+        Text file containing the list of atom names from the fchk file.
+        (This file will be saved in the current working directory)
+
+    bond_parameter_file: str, optional
+        Text file containing the bond parameters for the ligand obtained 
+        using the Modified Seminario method.
+        (This file will be saved in the current working directory)
+
+    angle_parameter_file: str, optional
+        Text file containing the angle parameters of the ligand obtained 
+        using the Modified Seminario method..
+        (This file will be saved in the current working directory)
+
+    charge_parameter_file: str, optional
+        Text file containing the QM charges of the ligand.
+        (This file will be saved in the current working directory)
+
+    guest_pdb: str, optional
+        Ligand PDB file with atom numbers beginning from 1.
+
+    proper_dihedral_file: str, optional
+        A text file containing proper dihedral angles of the ligand.
+        (This file will be saved in the current working directory)
+
+    """
     def __init__(
         self,
         vibrational_scaling,
@@ -1796,6 +2204,67 @@ class ParameterizeGuest:
         guest_pdb="guest_init_II.pdb",
         proper_dihedral_file="proper_dihedrals.txt",
     ):
+        """
+        Parameters
+        ----------
+        vibrational_scaling: float
+            Vibrational scaling factor for the DFT deficits/anharmonicities
+            in the bond parameters.
+
+        xyz_file: str, optional
+            XYZ file for guest coordinates obtained from its corresponding 
+            formatted checkpoint file.
+            (This file will be saved in the current working directory)
+
+        coordinate_file: str, optional
+            Text file containing the ligand coordinates (extracted
+            from the formatted checkpoint file).
+            (This file will be saved in the current working directory)
+
+        unprocessed_hessian_file: str, optional
+            Unprocessed hessian matrix of the ligand obtained from the 
+            formatted checkpoint file.
+            (This file will be saved in the current working directory)
+
+        bond_list_file: str, optional
+            Text file containing the bond information of the ligand extracted 
+            from the log file.
+            (This file will be saved in the current working directory)
+        angle_list_file: str, optional
+
+            Text file containing the angle information of the ligand extracted 
+            from the log file.
+            (This file will be saved in the current working directory)
+
+        hessian_file: str, optional
+            Processed hessian matrix of the ligand.
+            (This file will be saved in the current working directory)
+
+        atom_names_file: str, optional
+            Text file containing the list of atom names from the fchk file.
+            (This file will be saved in the current working directory)
+
+        bond_parameter_file: str, optional
+            Text file containing the bond parameters for the ligand obtained 
+            using the Modified Seminario method.
+            (This file will be saved in the current working directory)
+
+        angle_parameter_file: str, optional
+            Text file containing the angle parameters of the ligand.
+            (This file will be saved in the current working directory)
+
+        charge_parameter_file: str, optional
+            Text file containing the QM charges of the ligand.
+            (This file will be saved in the current working directory)
+
+        guest_pdb: str, optional
+            Ligand PDB file with atom numbers beginning from 1.
+
+        proper_dihedral_file: str, optional
+            A text file containing proper dihedral angles of the ligand.
+            (This file will be saved in the current working directory)
+
+        """
         self.vibrational_scaling = vibrational_scaling
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
@@ -1812,7 +2281,7 @@ class ParameterizeGuest:
 
     def get_xyz(self):
         """
-        This function saves a xyz file from the formatted checkpoint file.
+        Saves XYZ file from the formatted checkpoint file.
         """
         fchk_file = self.guest_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -1873,7 +2342,8 @@ class ParameterizeGuest:
 
     def get_unprocessed_hessian(self):
         """
-        This function saves a text file of the unprocessed hessian from the formatted checkpoint file.
+        Saves a text file of the unprocessed hessian matrix from the 
+        formatted checkpoint file.
         """
         fchk_file = self.guest_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -1900,7 +2370,8 @@ class ParameterizeGuest:
 
     def get_bond_angles(self):
         """
-        This function saves a text file of the bonds and angles from the gaussian log file.
+        Saves a text file containing bonds and angles from the gaussian 
+        log file.
         """
         log_file = self.guest_pdb[:-4] + ".log"
         fid = open(log_file, "r")
@@ -1949,7 +2420,8 @@ class ParameterizeGuest:
 
     def get_hessian(self):
         """
-        This function extracts hessian from the unprocessed hessian and saves into a new file.
+        Extracts hessian matrix from the unprocessed hessian matrix 
+        and saves into a new file.
         """
         unprocessed_Hessian = np.loadtxt(self.unprocessed_hessian_file)
         fchk_file = self.guest_pdb[:-4] + ".fchk"
@@ -1976,7 +2448,7 @@ class ParameterizeGuest:
 
     def get_atom_names(self):
         """
-        This function saves a list of atom names from the formatted checkpoint file.
+        Saves a list of atom names from the formatted checkpoint file.
         """
         fchk_file = self.guest_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2002,7 +2474,8 @@ class ParameterizeGuest:
 
     def get_bond_angle_params(self):
         """
-        This function saves the bond and angle parameter files obtained from the formatted checkpoint file.
+        Saves the bond and angle parameter files obtained from 
+        the formatted checkpoint file.
         """
         fchk_file = self.guest_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2096,7 +2569,8 @@ class ParameterizeGuest:
         # Modified Seminario part goes here ...
         # Connectivity information for Modified Seminario Method
         central_atoms_angles = []
-        # A structure is created with the index giving the central atom of the angle, an array then lists the angles with that central atom.
+        # A structure is created with the index giving the central atom of the angle, 
+        # an array then lists the angles with that central atom.
         # i.e. central_atoms_angles{3} contains an array of angles with central atom 3
         for i in range(0, len(coords)):
             central_atoms_angles.append([])
@@ -2118,7 +2592,9 @@ class ParameterizeGuest:
         for i in range(0, len(central_atoms_angles)):
             unit_PA_all_angles.append([])
             for j in range(0, len(central_atoms_angles[i])):
-                # For the angle at central_atoms_angles[i][j,:] the corresponding u_PA value is found for the plane ABC and bond AB, where ABC corresponds to the order of the arguements. This is why the reverse order was also added
+                # For the angle at central_atoms_angles[i][j,:] the corresponding u_PA value
+                # is found for the plane ABC and bond AB, where ABC corresponds to the order 
+                # of the arguements. This is why the reverse order was also added
                 unit_PA_all_angles[i].append(
                     u_PA_from_angles(
                         central_atoms_angles[i][j][0],
@@ -2127,7 +2603,9 @@ class ParameterizeGuest:
                         coords,
                     )
                 )
-        # Finds the contributing factors from the other angle terms scaling_factor_all_angles = cell(max(max(angle_list))); %This array will contain scaling factor and angle list position
+        # Finds the contributing factors from the other angle terms scaling_factor_all_angles 
+        # = cell(max(max(angle_list))); %This array will contain scaling factor and angle
+        # list position
         scaling_factor_all_angles = []
         for i in range(0, len(central_atoms_angles)):
             scaling_factor_all_angles.append([])
@@ -2141,7 +2619,8 @@ class ParameterizeGuest:
                 scaling_factor_all_angles[i][j][1] = central_atoms_angles[i][
                     j
                 ][2]
-                # Goes through the list of angles with the same central atom and computes the term need for the modified Seminario method
+                # Goes through the list of angles with the same central atom and computes the 
+                # term need for the modified Seminario method
                 # Forwards directions, finds the same bonds with the central atom i
                 while (
                     (j + n) < len(central_atoms_angles[i])
@@ -2183,7 +2662,8 @@ class ParameterizeGuest:
                     m = m + 1
                     angles_around = angles_around + 1
                 if n != 1 or m != 1:
-                    # Finds the mean value of the additional contribution to change to normal Seminario method comment out + part
+                    # Finds the mean value of the additional contribution to change to normal 
+                    # Seminario method comment out + part
                     scaling_factor_all_angles[i][j][0] = 1 + (
                         additional_contributions / (m + n - 2)
                     )
@@ -2261,7 +2741,8 @@ class ParameterizeGuest:
 
     def get_charges(self):
         """
-        This function saves the charges in a text file obtained from the Gaussian log file.
+        Saves the atomic charges in a text file obtained from
+        the Gaussian log file.
         """
         log_file = self.guest_pdb[:-4] + ".log"
         with open(log_file, "r") as f:
@@ -2288,7 +2769,7 @@ class ParameterizeGuest:
 
     def get_proper_dihedrals(self):
         """
-        This function saves proper dihedral angles of the guest molecule in a text file.
+        Saves proper dihedral angles of the ligand in a text file.
         """
         ppdb = PandasPdb()
         ppdb.read_pdb(self.guest_pdb)
@@ -2347,6 +2828,76 @@ class ParameterizeGuest:
 
 
 class PrepareGaussianHost:
+    """
+    A class used to prepare the QM engine input file (Gaussian) 
+    for the receptor and run QM calculations with appropriate keywords. 
+
+    This class contain methods to write an input file (.com extension)
+    for the QM engine. It then runs a QM calculation with the given
+    basis set and functional. Checkpoint file is then converted to 
+    a formatted checkpoint file. Output files (.log, .chk, and .fhck)
+    will then be used to extract receptors's force field parameters. 
+
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Charge of the receptor. 
+
+    multiplicity: int
+        Spin Multiplicity (2S+1) of the receptor where S represents 
+        the total spin of the receptor. 
+
+    host_qm_pdb: str, optional
+        PDB file of the receptor's QM region with atom numbers 
+        beginning from 1.
+
+    n_processors : int, optional
+        Number of processors to be used for Gaussian program to run and 
+        set in %NProcShared command of Gaussian.
+
+    memory : int, optional
+        Memory (in GB) to be used set in %Mem command of Gaussian.
+
+    functional: str, optional
+        Exchange/Correlation or hybrid functional to use in the Gaussian
+        QM calculation.
+
+    basis_set: str, optional
+        Basis set to use for the Gaussian QM calculation.
+
+    optimisation: str, optional
+        set to "OPT" to perform a geometry optimization on the receptor
+        specified in the system; else set to an empty string.
+
+    frequency: str, optional
+        set to "FREQ" for Gaussian to perform a frequency calculation;
+        else set to an empty string.
+
+    add_keywords_I: str, optional
+        Specifies the integration grid.
+
+    add_keywords_II: str, optional
+        Specifies the Gaussian described options for generating
+        population.
+
+    add_keywords_III: str, optional
+        Used to include the IOp keyword (to set the internal options to
+        specific values) in the Gaussian command.
+
+    gauss_out_file: str, optional
+        This file contains the output script obtained after running
+        the Gaussian QM calculation.
+        (This file will be saved in the current working directory)
+
+    fchk_out_file: str, optional
+        Formatted checkpoint file obtained from the checkpoint file
+        using formchk command.
+        (This file will be saved in the current working directory)
+
+    """
+
     def __init__(
         self,
         charge,
@@ -2364,6 +2915,64 @@ class PrepareGaussianHost:
         gauss_out_file="host_qm.out",
         fchk_out_file="host_qm_fchk.out",
     ):
+        """
+        Parameters
+        ----------
+        charge : int
+            Charge of the receptor. 
+
+        multiplicity: int
+            Spin Multiplicity (2S+1) of the receptor where S represents 
+            the total spin of the receptor. 
+
+        host_qm_pdb: str, optional
+            PDB file of the receptor's QM region with atom numbers 
+            beginning from 1.
+
+        n_processors : int, optional
+            Number of processors to be used for Gaussian program to run and 
+            set in %NProcShared command of Gaussian.
+
+        memory : int, optional
+            Memory (in GB) to be used set in %Mem command of Gaussian.
+
+        functional: str, optional
+            Exchange/Correlation or hybrid functional to use in the Gaussian
+            QM calculation.
+
+        basis_set: str, optional
+            Basis set to use for the Gaussian QM calculation.
+
+        optimisation: str, optional
+            set to "OPT" to perform a geometry optimization on the receptor
+            specified in the system; else set to an empty string.
+
+        frequency: str, optional
+            set to "FREQ" for Gaussian to perform a frequency calculation;
+            else set to an empty string.
+
+        add_keywords_I: str, optional
+            Specifies the integration grid.
+
+        add_keywords_II: str, optional
+            Specifies the Gaussian described options for generating
+            population.
+
+        add_keywords_III: str, optional
+            Used to include the IOp keyword (to set the internal options to
+            specific values) in the Gaussian command.
+
+        gauss_out_file: str, optional
+            This file contains the output script obtained after running
+            the Gaussian QM calculation.
+            (This file will be saved in the current working directory)
+
+        fchk_out_file: str, optional
+            Formatted checkpoint file obtained from the checkpoint file
+            using formchk command.
+            (This file will be saved in the current working directory)
+
+        """
         self.charge = charge
         self.multiplicity = multiplicity
         self.host_qm_pdb = host_qm_pdb
@@ -2381,7 +2990,7 @@ class PrepareGaussianHost:
 
     def write_input(self):
         """
-        This function prints out the commands section of the gaussian input file.
+        Writes a Gaussian input file for the receptor QM region. 
         """
         command_line_1 = "%Chk = " + self.host_qm_pdb[:-4] + ".chk"
         command_line_2 = "%Mem = " + str(self.memory) + "GB"
@@ -2433,7 +3042,7 @@ class PrepareGaussianHost:
 
     def run_gaussian(self):
         """
-        This function runs the gaussian QM calculation.
+        Runs the Gaussian QM calculation for the receptor locally.
         """
         execute_command = (
             "g16"
@@ -2449,7 +3058,8 @@ class PrepareGaussianHost:
 
     def get_fchk(self):
         """
-        This function converts the checkpoint file file into the formatted chechkpoint file.
+        Converts the Gaussian checkpoint file (.chk) to a formatted checkpoint
+        file (.fchk).
         """
         execute_command = (
             "formchk"
@@ -2465,6 +3075,77 @@ class PrepareGaussianHost:
 
 
 class ParameterizeHost:
+    """
+    A class used to obtain force field parameters for the QM region 
+    of the receptor (bond, angle and charge parameters) from QM 
+    calculations.
+
+    This class contain methods to process the output files of the 
+    Gaussian QM output files (.chk, .fchk and .log files). Methods 
+    in the class extract the unprocessed hessian matrix from the 
+    Gaussian QM calculations, processes it and uses the Modified 
+    Seminario Method to ontain the bond and angle parameters. The 
+    class also extracts the QM charges from the log file.
+
+    ...
+
+    Attributes
+    ----------
+    vibrational_scaling: float
+        Vibrational scaling factor for the DFT deficits/anharmonicities
+        in the bond parameters.
+
+    xyz_file: str, optional
+        XYZ file for guest coordinates obtained from its corresponding 
+        formatted checkpoint file.
+        (This file will be saved in the current working directory)
+
+    coordinate_file: str, optional
+        Text file containing the receptor coordinates (extracted
+        from the formatted checkpoint file).
+        (This file will be saved in the current working directory)
+
+    unprocessed_hessian_file: str, optional
+        Unprocessed hessian matrix of the receptor obtained from the 
+        formatted checkpoint file.
+        (This file will be saved in the current working directory)
+
+    bond_list_file: str, optional
+        Text file containing the bond information of the receptor 
+        extracted from the log file.
+        (This file will be saved in the current working directory)
+
+    angle_list_file: str, optional
+        Text file containing the angle information of the receptor 
+        extracted from the log file.
+        (This file will be saved in the current working directory)
+
+    hessian_file: str, optional
+        Processed hessian matrix of the receptor.
+        (This file will be saved in the current working directory)
+
+    atom_names_file: str, optional
+        Text file containing the list of atom names from the fchk file.
+        (This file will be saved in the current working directory)
+
+    bond_parameter_file: str, optional
+        Text file containing the bond parameters for the receptor 
+        obtained using the Modified Seminario method.
+        (This file will be saved in the current working directory)
+
+    angle_parameter_file: str, optional
+        Text file containing the angle parameters of the receptor.
+        (This file will be saved in the current working directory)
+
+    charge_parameter_file: str, optional
+        Text file containing the QM charges of the receptor.
+        (This file will be saved in the current working directory)
+
+    host_qm_pdb: str, optional
+        PDB file for the receptor's QM region.
+
+    """
+
     def __init__(
         self,
         vibrational_scaling,
@@ -2480,6 +3161,63 @@ class ParameterizeHost:
         charge_parameter_file="host_qm_surround_charges.txt",
         host_qm_pdb="host_qm.pdb",
     ):
+        """
+        Parameters
+        ----------
+        vibrational_scaling: float
+            Vibrational scaling factor for the DFT deficits/anharmonicities
+            in the bond parameters.
+
+        xyz_file: str, optional
+            XYZ file for guest coordinates obtained from its corresponding 
+            formatted checkpoint file.
+            (This file will be saved in the current working directory)
+
+        coordinate_file: str, optional
+            Text file containing the receptor coordinates (extracted
+            from the formatted checkpoint file).
+            (This file will be saved in the current working directory)
+
+        unprocessed_hessian_file: str, optional
+            Unprocessed hessian matrix of the receptor obtained from the 
+            formatted checkpoint file.
+            (This file will be saved in the current working directory)
+
+        bond_list_file: str, optional
+            Text file containing the bond information of the receptor 
+            extracted from the log file.
+            (This file will be saved in the current working directory)
+
+        angle_list_file: str, optional
+            Text file containing the angle information of the receptor 
+            extracted from the log file.
+            (This file will be saved in the current working directory)
+
+        hessian_file: str, optional
+            Processed hessian matrix of the receptor.
+            (This file will be saved in the current working directory)
+
+        atom_names_file: str, optional
+            Text file containing the list of atom names from the fchk file.
+            (This file will be saved in the current working directory)
+
+        bond_parameter_file: str, optional
+            Text file containing the bond parameters for the receptor 
+            obtained using the Modified Seminario method.
+            (This file will be saved in the current working directory)
+
+        angle_parameter_file: str, optional
+            Text file containing the angle parameters of the receptor.
+            (This file will be saved in the current working directory)
+
+        charge_parameter_file: str, optional
+            Text file containing the QM charges of the receptor.
+            (This file will be saved in the current working directory)
+
+        host_qm_pdb: str, optional
+            PDB file for the receptor's QM region.
+
+        """
         self.vibrational_scaling = vibrational_scaling
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
@@ -2495,7 +3233,7 @@ class ParameterizeHost:
 
     def get_xyz(self):
         """
-        This function saves a xyz file from the formatted checkpoint file.
+        Saves XYZ file from the formatted checkpoint file.
         """
         fchk_file = self.host_qm_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2556,7 +3294,8 @@ class ParameterizeHost:
 
     def get_unprocessed_hessian(self):
         """
-        This function saves a text file of the unprocessed hessian from the formatted checkpoint file.
+        Saves a text file of the unprocessed hessian matrix from the 
+        formatted checkpoint file.
         """
         fchk_file = self.host_qm_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2583,7 +3322,8 @@ class ParameterizeHost:
 
     def get_bond_angles(self):
         """
-        This function saves a text file of the bonds and angles from the gaussian log file.
+        Saves a text file containing bonds and angles from the gaussian 
+        log file.
         """
         log_file = self.host_qm_pdb[:-4] + ".log"
         fid = open(log_file, "r")
@@ -2632,7 +3372,8 @@ class ParameterizeHost:
 
     def get_hessian(self):
         """
-        This function extracts hessian from the unprocessed hessian and saves into a new file.
+        Extracts hessian matrix from the unprocessed hessian matrix 
+        and saves into a new file.
         """
         unprocessed_Hessian = np.loadtxt(self.unprocessed_hessian_file)
         fchk_file = self.host_qm_pdb[:-4] + ".fchk"
@@ -2659,7 +3400,7 @@ class ParameterizeHost:
 
     def get_atom_names(self):
         """
-        This function saves a list of atom names from the formatted checkpoint file.
+        Saves a list of atom names from the formatted checkpoint file.
         """
         fchk_file = self.host_qm_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2685,7 +3426,8 @@ class ParameterizeHost:
 
     def get_bond_angle_params(self):
         """
-        This function saves the bond and angle parameter files obtained from the formatted checkpoint file.
+        Saves the bond and angle parameter files obtained from 
+        the formatted checkpoint file.
         """
         fchk_file = self.host_qm_pdb[:-4] + ".fchk"
         with open(fchk_file, "r") as f:
@@ -2944,7 +3686,8 @@ class ParameterizeHost:
 
     def get_charges(self):
         """
-        This function saves the charges in a text file obtained from the Gaussian log file.
+        Saves the atomic charges in a text file obtained from
+        the Gaussian log file.
         """
         log_file = self.host_qm_pdb[:-4] + ".log"
         with open(log_file, "r") as f:
@@ -2971,6 +3714,155 @@ class ParameterizeHost:
 
 
 class GuestAmberXMLAmber:
+    """
+    A class used to generate a template force field XML file for the ligand 
+    in order regenerate the reparametrised forcefield XML file.
+
+    This class contains methods to generate a template XML force field through 
+    openforcefield. XML template generation can be obtained through different
+    file formats such as PDB, SDF, and SMI. Methods support charged ligands as 
+    well. Re-parameterized XML force field files are then generated from the 
+    template files. Different energy components such as the bond, angle, 
+    torsional and non-bonded energies are computed for the non-reparametrized 
+    and the reparameterized force fields. Difference between the 
+    non-reparameterized and reparameterized force field energies can then be 
+    analyzed. 
+    ...
+
+    Attributes
+    ----------
+    charge : int
+        Charge of the ligand. 
+
+    num_charge_atoms: int
+        Number of charged atoms in the molecule.
+
+    charge_atom_1: int
+        Charge on the first charged atom.
+
+    index_charge_atom_1: int
+        Index of the first charged atom.
+
+    system_pdb: str, optional
+        Ligand PDB file with atom numbers beginning from 1.
+
+    system_mol2: str, optional
+        Ligand Mol2 file obtained from PDB file.
+        (This file will be saved in the current working directory)
+
+    system_in: str, optional
+        Prepi file as required by antechamber.
+        (This file will be saved in the current working directory)
+
+    system_frcmod: str, optional
+        FRCMOD file as required by antechamber.
+        (This file will be saved in the current working directory)
+
+    prmtop_system : str, optional
+        Topology file obtained from the ligand PDB.
+        (This file will be saved in the current working directory)
+
+    inpcrd_system : str, optional
+        Coordinate file obtained from the Ligand PDB using the
+        command saveamberparm.
+        (This file will be saved in the current working directory)
+
+    system_leap : str, optional
+        Amber generated leap file for generating and saving topology 
+        and coordinate files. 
+        (This file will be saved in the current working directory)
+
+    system_xml: str, optional
+        Serialized XML force field file of the ligand.
+        (This file will be saved in the current working directory)
+
+    system_smi: str, optional
+        Ligand SMILES format file. 
+        (This file will be saved in the current working directory)
+
+    system_sdf: str, optional
+        Ligand SDF (structure-data) format file. 
+        (This file will be saved in the current working directory)
+
+    system_init_sdf: str, optional
+        Ligand SDF (structure-data) format file. This file will be 
+        generated only if the ligand is charged.
+        (This file will be saved in the current working directory)
+
+    index_charge_atom_2: int, optional
+        Index of the second charged atom of the ligand.
+
+    charge_atom_2: int, optional
+        Charge on the second charged atom of the ligand.
+
+    charge_parameter_file: str, optional
+        File containing the charges of ligand atoms and their corresponding
+        atoms.
+
+    system_qm_pdb: str, optional
+        Ligand PDB file with atom numbers beginning from 1.
+
+    bond_parameter_file: str, optional
+        Text file containing the bond parameters for the ligand.
+
+    angle_parameter_file: str, optional
+        Text file containing the angle parameters of the ligand.
+
+    system_qm_params_file: str, optional
+        A text file containing the QM obtained parameters for the 
+        ligand. 
+        (This file will be saved in the current working directory)
+
+    reparameterised_intermediate_system_xml_file: str, optional
+        XML foce field file with bond and angle parameter lines replaced by
+        corresponding values obtained from the QM calculations.
+        (This file will be saved in the current working directory)
+
+    system_xml_non_bonded_file: str, optional
+        A text file to write the NonBondedForce Charge Parameters from
+        the non-parametrised system XML file.
+
+    system_xml_non_bonded_reparams_file: str, optional
+        Text file containing the non-bonded parameters parsed from the 
+        XML force field file.
+        (This file will be saved in the current working directory)
+
+    reparameterised_system_xml_file: str, optional
+        Reparameterized force field XML file obtained using 
+        openforcefield.
+        (This file will be saved in the current working directory)
+
+    non_reparameterised_system_xml_file: str, optional
+        Non-reparameterized force field XML file obtained using 
+        openforcefield.
+        (This file will be saved in the current working directory)
+
+    prmtop_system_non_params: str, optional
+        Amber generated topology file saved from the non-reparameterized 
+        force field XML file for the ligand.
+        (This file will be saved in the current working directory)
+
+    inpcrd_system_non_params: str, optional
+        Amber generated coordinate file saved from the non-reparameterized 
+        force field XML file for the ligand.
+        (This file will be saved in the current working directory)
+
+    prmtop_system_params: str, optional
+        Amber generated topology file saved from the reparameterized 
+        force field XML file for the ligand.
+        (This file will be saved in the current working directory)
+
+    inpcrd_system_params: str, optional
+        Amber generated coordinate file saved from the reparameterized 
+        force field XML file for the ligand.
+        (This file will be saved in the current working directory)
+
+    load_topology: str, optional
+        Argument to specify how to load the topology. Can either be "openmm"
+        or "parmed".
+
+    """
+
     def __init__(
         self,
         charge,
@@ -3006,6 +3898,140 @@ class GuestAmberXMLAmber:
         inpcrd_system_params="guest_params.inpcrd",
         load_topology="openmm",
     ):
+        """
+        Parameters
+        ----------
+        charge : int
+            Charge of the ligand. 
+
+        num_charge_atoms: int
+            Number of charged atoms in the molecule.
+
+        charge_atom_1: int
+            Charge on the first charged atom.
+
+        index_charge_atom_1: int
+            Index of the first charged atom.
+
+        system_pdb: str, optional
+            Ligand PDB file with atom numbers beginning from 1.
+
+        system_mol2: str, optional
+            Ligand Mol2 file obtained from PDB file.
+            (This file will be saved in the current working directory)
+
+        system_in: str, optional
+            Prepi file as required by antechamber.
+            (This file will be saved in the current working directory)
+
+        system_frcmod: str, optional
+            FRCMOD file as required by antechamber.
+            (This file will be saved in the current working directory)
+
+        prmtop_system : str, optional
+            Topology file obtained from the ligand PDB.
+            (This file will be saved in the current working directory)
+
+        inpcrd_system : str, optional
+            Coordinate file obtained from the Ligand PDB using the
+            command saveamberparm.
+            (This file will be saved in the current working directory)
+
+        system_leap : str, optional
+            Amber generated leap file for generating and saving topology 
+            and coordinate files. 
+            (This file will be saved in the current working directory)
+
+        system_xml: str, optional
+            Serilazed XML force field file of the ligand.
+            (This file will be saved in the current working directory)
+
+        system_smi: str, optional
+            Ligand SMILES format file. 
+            (This file will be saved in the current working directory)
+
+        system_sdf: str, optional
+            Ligand SDF (structure-data) format file. 
+            (This file will be saved in the current working directory)
+
+        system_init_sdf: str, optional
+            Ligand SDF (structure-data) format file. This file will be 
+            generated only if the ligand is charged.
+            (This file will be saved in the current working directory)
+
+        index_charge_atom_2: int, optional
+            Index of the second charged atom of the ligand.
+
+        charge_atom_2: int, optional
+            Charge on the second charged atom of the ligand.
+
+        charge_parameter_file: str, optional
+            File containing the charges of ligand atoms and their corresponding
+            atoms.
+
+        system_qm_pdb: str, optional
+            Ligand PDB file with atom numbers beginning from 1.
+
+        bond_parameter_file: str, optional
+            Text file containing the bond parameters for the ligand.
+
+        angle_parameter_file: str, optional
+            Text file containing the angle parameters of the ligand.
+
+        system_qm_params_file: str, optional
+            A text file containing the QM obtained parameters for the 
+            ligand. 
+            (This file will be saved in the current working directory)
+
+        reparameterised_intermediate_system_xml_file: str, optional
+            XML foce field file with bond and angle parameter lines replaced by
+            corresponding values obtained from the QM calculations.
+            (This file will be saved in the current working directory)
+
+        system_xml_non_bonded_file: str, optional
+            A text file to write the NonBondedForce Charge Parameters from
+            the non-parametrised system XML file.
+
+        system_xml_non_bonded_reparams_file: str, optional
+            Text file containing the non-bonded parameters parsed from the 
+            XML force field file.
+            (This file will be saved in the current working directory)
+
+        reparameterised_system_xml_file: str, optional
+            Reparameterized force field XML file obtained using 
+            openforcefield.
+            (This file will be saved in the current working directory)
+
+        non_reparameterised_system_xml_file: str, optional
+            Non-reparameterized force field XML file obtained using 
+            openforcefield.
+            (This file will be saved in the current working directory)
+
+        prmtop_system_non_params: str, optional
+            Amber generated topology file saved from the non-reparameterized 
+            force field XML file for the ligand.
+            (This file will be saved in the current working directory)
+
+        inpcrd_system_non_params: str, optional
+            Amber generated coordinate file saved from the non-reparameterized 
+            force field XML file for the ligand.
+            (This file will be saved in the current working directory)
+
+        prmtop_system_params: str, optional
+            Amber generated topology file saved from the reparameterized 
+            force field XML file for the ligand.
+            (This file will be saved in the current working directory)
+
+        inpcrd_system_params: str, optional
+            Amber generated coordinate file saved from the reparameterized 
+            force field XML file for the ligand.
+            (This file will be saved in the current working directory)
+
+        load_topology: str, optional
+            Argument to specify how to load the topology. Can either be "openmm"
+            or "parmed".
+
+        """
         self.charge = charge
         self.num_charge_atoms = num_charge_atoms
         self.charge_atom_1 = charge_atom_1
@@ -3028,17 +4054,11 @@ class GuestAmberXMLAmber:
         self.bond_parameter_file = bond_parameter_file
         self.angle_parameter_file = angle_parameter_file
         self.system_qm_params_file = system_qm_params_file
-        self.reparameterised_intermediate_system_xml_file = (
-            reparameterised_intermediate_system_xml_file
-        )
+        self.reparameterised_intermediate_system_xml_file = reparameterised_intermediate_system_xml_file
         self.system_xml_non_bonded_file = system_xml_non_bonded_file
-        self.system_xml_non_bonded_reparams_file = (
-            system_xml_non_bonded_reparams_file
-        )
+        self.system_xml_non_bonded_reparams_file = system_xml_non_bonded_reparams_file
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
-        self.non_reparameterised_system_xml_file = (
-            non_reparameterised_system_xml_file
-        )
+        self.non_reparameterised_system_xml_file = non_reparameterised_system_xml_file
         self.prmtop_system_non_params = prmtop_system_non_params
         self.inpcrd_system_non_params = inpcrd_system_non_params
         self.prmtop_system_params = prmtop_system_params
@@ -3047,7 +4067,7 @@ class GuestAmberXMLAmber:
 
     def generate_xml_antechamber(self):
         """
-        This function generates an xml file from the pdb file through antechamber
+        Generates an XML forcefield file from the PDB file through antechamber.
         """
         command = (
             "babel -ipdb " + self.system_pdb + " -omol2 " + self.system_mol2
@@ -3099,7 +4119,8 @@ class GuestAmberXMLAmber:
 
     def generate_xml_from_pdb_smi(self):
         """
-        This function generates an openforcefield xml file from the pdb file
+        Generates an XML forcefield file from the SMILES file through 
+        openforcefield.
         """
         off_molecule = openforcefield.topology.Molecule(self.system_smi)
         force_field = openforcefield.typing.engines.smirnoff.ForceField(
@@ -3115,7 +4136,8 @@ class GuestAmberXMLAmber:
 
     def generate_xml_from_pdb_sdf(self):
         """
-        This function generates an openforcefield xml file from the pdb file
+        Generates an XML forcefield file from the SDF file through 
+        openforcefield.
         """
         command = (
             "babel -ipdb " + self.system_pdb + " -osdf " + self.system_sdf
@@ -3135,7 +4157,8 @@ class GuestAmberXMLAmber:
 
     def generate_xml_from_charged_pdb_sdf(self):
         """
-        This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
+        Generates an XML forcefield file for a singly charged ligand molecule 
+        from the SDF file through openforcefield.
         """
         command = (
             "babel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
@@ -3175,7 +4198,8 @@ class GuestAmberXMLAmber:
 
     def generate_xml_from_doubly_charged_pdb_sdf(self):
         """
-        This function generates an openforcefield xml file from the pdb file via SDF file and openforcefield.
+        Generates an XML forcefield file for a singly charged ligand molecule 
+        from the SDF file through openforcefield.
         """
         command = (
             "babel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
@@ -3219,7 +4243,7 @@ class GuestAmberXMLAmber:
 
     def write_system_params(self):
         """
-        This function saves the parameters obtained from the QM log files in a text file.
+        Saves the parameters obtained from the QM log files in a text file.
         """
         # Charges from QM files
         df_charges = pd.read_csv(
@@ -3383,6 +4407,9 @@ class GuestAmberXMLAmber:
         xml.close()
 
     def write_reparameterised_system_xml(self):
+        """
+        Writes a reparameterised XML force field file for the ligand.
+        """
         # Bond Parameters
         f_params = open(self.system_qm_params_file, "r")
         lines_params = f_params.readlines()
@@ -3702,7 +4729,9 @@ class GuestAmberXMLAmber:
         f_reparams_xml.close()
 
     def save_amber_params(self):
-
+        """
+        Saves amber generated topology files for the ligand.
+        """
         if self.load_topology == "parmed":
             openmm_system = parmed.openmm.load_topology(
                 parmed.load_file(self.system_pdb, structure=True).topology,
@@ -3986,6 +5015,10 @@ class GuestAmberXMLAmber:
         print(df_compare)
 
     def analyze_diff_energies(self):
+        """
+        Compares the energies of the ligand obtained from the non-parameterized 
+        and the parameterized force field files.
+        """
         parm_non_params = parmed.load_file(
             self.prmtop_system_non_params, self.inpcrd_system_non_params
         )
@@ -4130,6 +5163,104 @@ class GuestAmberXMLAmber:
 
 
 class HostAmberXMLAmber:
+    """
+    A class used to generate a template force field XML file for the receptor 
+    in order regenerate the reparametrised forcefield XML file.
+
+    This class contains methods to generate a template XML force field through 
+    openforcefield. Re-parameterized XML force field files are then 
+    generated from the template files. Different energy components such as 
+    the bond,angle, torsional and non-bonded energies are computed for the 
+    non-reparametrized and the reparameterized force fields. Difference 
+    between the non-reparameterized and reparameterized force field energies 
+    can then be analyzed. 
+    ...
+
+    Attributes
+    ----------
+
+    system_pdb: str, optional
+        Receptor PDB file with atom numbers beginning from 1.
+
+    system_xml: str, optional
+        Serilazed XML force field file of the receptor.
+        (This file will be saved in the current working directory)
+
+    sim_output: str, optional
+        PDB file containing the trajectory coordinates for the OpenMM
+        simulation. 
+
+    sim_steps: str, optional
+        Number of steps in the OpenMM MD simulation.
+
+    charge_parameter_file: str, optional
+        File containing the charges of receptor atoms and their 
+        corresponding atoms.
+
+    system_qm_pdb: str, optional
+        Receptor QM region's PDB file with atom numbers beginning from 1.
+
+    bond_parameter_file: str, optional
+        Text file containing the bond parameters for the receptor.
+
+    angle_parameter_file: str, optional
+        Text file containing the angle parameters of the receptor.
+
+    system_qm_params_file: str, optional
+        A text file containing the QM obtained parameters for the 
+        receptor. 
+        (This file will be saved in the current working directory)
+
+    reparameterised_intermediate_system_xml_file: str, optional
+        XML foce field file with bond and angle parameter lines replaced by
+        corresponding values obtained from the QM calculations.
+        (This file will be saved in the current working directory)
+
+    system_xml_non_bonded_file: str, optional
+        A text file to write the NonBondedForce Charge Parameters from
+        the non-parametrised system XML file.
+
+    system_xml_non_bonded_reparams_file: str, optional
+        Text file containing the non-bonded parameters parsed from the 
+        XML force field file.
+        (This file will be saved in the current working directory)
+
+    reparameterised_system_xml_file: str, optional
+        Reparameterized force field XML file obtained using 
+        openforcefield.
+        (This file will be saved in the current working directory)
+
+    non_reparameterised_system_xml_file: str, optional
+        Non-reparameterized force field XML file obtained using 
+        openforcefield.
+        (This file will be saved in the current working directory)
+
+    prmtop_system_non_params: str, optional
+        Amber generated topology file saved from the non-reparameterized 
+        force field XML file for the receptor.
+        (This file will be saved in the current working directory)
+
+    inpcrd_system_non_params: str, optional
+        Amber generated coordinate file saved from the non-reparameterized 
+        force field XML file for the receptor.
+        (This file will be saved in the current working directory)
+
+    prmtop_system_params: str, optional
+        Amber generated topology file saved from the reparameterized 
+        force field XML file for the receptor.
+        (This file will be saved in the current working directory)
+
+    inpcrd_system_params: str, optional
+        Amber generated coordinate file saved from the reparameterized 
+        force field XML file for the receptor.
+        (This file will be saved in the current working directory)
+
+    load_topology: str, optional
+        Argument to specify how to load the topology. Can either be "openmm"
+        or "parmed".
+
+    """
+
     def __init__(
         self,
         system_pdb="host.pdb",
@@ -4161,17 +5292,11 @@ class HostAmberXMLAmber:
         self.bond_parameter_file = bond_parameter_file
         self.angle_parameter_file = angle_parameter_file
         self.system_qm_params_file = system_qm_params_file
-        self.reparameterised_intermediate_system_xml_file = (
-            reparameterised_intermediate_system_xml_file
-        )
+        self.reparameterised_intermediate_system_xml_file = reparameterised_intermediate_system_xml_file
         self.system_xml_non_bonded_file = system_xml_non_bonded_file
-        self.system_xml_non_bonded_reparams_file = (
-            system_xml_non_bonded_reparams_file
-        )
+        self.system_xml_non_bonded_reparams_file = system_xml_non_bonded_reparams_file
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
-        self.non_reparameterised_system_xml_file = (
-            non_reparameterised_system_xml_file
-        )
+        self.non_reparameterised_system_xml_file = non_reparameterised_system_xml_file
         self.prmtop_system_non_params = prmtop_system_non_params
         self.inpcrd_system_non_params = inpcrd_system_non_params
         self.prmtop_system_params = prmtop_system_params
@@ -4215,7 +5340,7 @@ class HostAmberXMLAmber:
 
     def write_system_params(self):
         """
-        This function saves the parameters obtained from the QM log files in a text file.
+        Saves the parameters obtained from the QM log files in a text file.
         """
         # Charges from QM files
         df_charges = pd.read_csv(
@@ -4379,6 +5504,9 @@ class HostAmberXMLAmber:
         xml.close()
 
     def write_reparameterised_system_xml(self):
+        """
+        Writes a reparameterised XML force field file for the ligand.
+        """
         # Bond Parameters
         f_params = open(self.system_qm_params_file, "r")
         lines_params = f_params.readlines()
@@ -4698,7 +5826,9 @@ class HostAmberXMLAmber:
         f_reparams_xml.close()
 
     def save_amber_params(self):
-
+        """
+        Saves amber generated topology files for the ligand.
+        """
         if self.load_topology == "parmed":
             openmm_system = parmed.openmm.load_topology(
                 parmed.load_file(self.system_pdb, structure=True).topology,
@@ -4982,6 +6112,10 @@ class HostAmberXMLAmber:
         print(df_compare)
 
     def analyze_diff_energies(self):
+        """
+        Compares the energies of the ligand obtained from the non-parameterized 
+        and the parameterized force field files. 
+        """
         parm_non_params = parmed.load_file(
             self.prmtop_system_non_params, self.inpcrd_system_non_params
         )
@@ -5126,6 +6260,38 @@ class HostAmberXMLAmber:
 
 
 class RunOpenMMSims:
+    """
+    A class used to run the OpenMM simulation on any specified system.
+
+    This class contains methods to run a MD simulation to confirm the 
+    proper structure of the reparameterized forcefield files. 
+
+
+    ...
+
+    Attributes
+    ----------
+    system_prmtop : str
+        Topology file of the system (receptor, ligand or 
+        receptor - ligand complex)
+
+    system_inpcrd : str
+        Coordinate file of the system (receptor, ligand or 
+        receptor - ligand complex)
+
+    system_pdb: str
+        PDB file of the system to run MD simulation (receptor, 
+        ligand or receptor - ligand complex).
+
+    sim_output: str, optional
+        PDB file containing the trajectory coordinates for the OpenMM
+        simulation. 
+
+    sim_steps: str, optional
+        Number of steps in the OpenMM MD simulation.
+
+    """
+
     def __init__(
         self,
         system_prmtop,
@@ -5134,6 +6300,28 @@ class RunOpenMMSims:
         system_output="sim_output.pdb",
         sim_steps=1000,
     ):
+        """
+        Parameters
+        ----------
+        system_prmtop : str
+            Topology file of the system (receptor, ligand or 
+            receptor - ligand complex)
+
+        system_inpcrd : str
+            Coordinate file of the system (receptor, ligand or 
+            receptor - ligand complex)
+
+        system_pdb: str
+            PDB file of the system to run MD simulation (receptor, 
+            ligand or receptor - ligand complex).
+
+        sim_output: str, optional
+            PDB file containing the trajectory coordinates for the OpenMM
+            simulation. 
+
+        sim_steps: str, optional
+            Number of steps in the OpenMM MD simulation.
+        """
         self.system_prmtop = system_prmtop
         self.system_inpcrd = system_inpcrd
         self.system_pdb = system_pdb
@@ -5141,6 +6329,9 @@ class RunOpenMMSims:
         self.sim_steps = sim_steps
 
     def run_openmm_prmtop_inpcrd(self):
+        """
+        Run a OpenMM MD simulation with prmtop and inpcrd file"
+        """
         print(
             "Running OpenMM simulation for "
             + self.system_prmtop
@@ -5181,6 +6372,9 @@ class RunOpenMMSims:
         os.system(command)
 
     def run_openmm_prmtop_pdb(self):
+        """
+        Run a OpenMM MD simulation with prmtop and PDB file"
+        """
         print(
             "Running OpenMM simulation for "
             + self.system_prmtop
@@ -5220,6 +6414,35 @@ class RunOpenMMSims:
 
 
 class MergeHostGuestTopology:
+    """
+    This class is used to merge the host and guest topology and coordinate
+    files.
+
+    ...
+
+    Attributes
+    ----------
+    host_prmtop : str
+        Topology file of the receptor.
+
+    guest_prmtop : str
+        Topology file of the ligand.
+
+    host_inpcrd : str
+        Coordinate file of the receptor. 
+
+    guest_inpcrd : str
+        Coordinate file of the ligand. 
+
+    system_prmtop : str
+        Topology file of the receptor - ligand complex. 
+        (This file will be saved in the current working directory)
+
+    system_inpcrd : str
+        Coordinate file of the receptor - ligand complex. 
+        (This file will be saved in the current working directory)
+
+    """
     def __init__(
         self,
         host_prmtop,
@@ -5229,6 +6452,28 @@ class MergeHostGuestTopology:
         system_prmtop,
         system_inpcrd,
     ):
+        """
+        Parameters
+        ----------
+        host_prmtop : str
+            Topology file of the receptor.
+
+        guest_prmtop : str
+            Topology file of the ligand.
+
+        host_inpcrd : str
+            Coordinate file of the receptor. 
+
+        guest_inpcrd : str
+            Coordinate file of the ligand. 
+
+        system_prmtop : str
+            Topology file of the receptor - ligand complex. 
+
+        system_inpcrd : str
+            Coordinate file of the receptor - ligand complex. 
+
+        """
         self.host_prmtop = host_prmtop
         self.guest_prmtop = guest_prmtop
         self.host_inpcrd = host_inpcrd
@@ -5237,6 +6482,9 @@ class MergeHostGuestTopology:
         self.system_inpcrd = system_inpcrd
 
     def merge_topology_files(self):
+        """
+        Merge the host and guest topology and coordinate files.
+        """
         print(
             "Merging the "
             + self.host_prmtop
