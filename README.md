@@ -34,7 +34,7 @@ python setup.py install
 python setup.py test  # optionally run tests to check for proper installation 
 ```
 
-Documentation can be found [here](https://www.dropbox.com/s/l4u64k2u18a3m1m/parameterize.html?dl=0)
+Documentation can be found [here](https://qmmmrebind.tiiny.site/)
 
 ### Copyright
 Copyright (c) 2021, Anupam Anand Ojha
