@@ -61,7 +61,7 @@ jobs:
         conda install -c conda-forge mendeleev
         conda install -c conda-forge openmm
         conda install -c conda-forge parmed
-        conda install -c omnia/label/broken openforcefield
+        conda install -c omnia/label/benchmark openforcefield
         conda install -c conda-forge openbabel
         conda list
 
