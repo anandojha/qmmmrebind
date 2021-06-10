@@ -65,6 +65,7 @@ jobs:
         conda install openforcefield
         conda install -c conda-forge openbabel
         conda install -c conda-forge babel
+        pip install openbabel
         conda list
 
 
