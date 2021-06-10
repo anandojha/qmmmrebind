@@ -62,7 +62,7 @@ jobs:
         conda install -c conda-forge openmm
         conda install -c conda-forge parmed
         conda install -c omnia openforcefield
-        conda install -c conda-forge openbabeL
+        conda install -c conda-forge openbabel
         conda list
 
 
