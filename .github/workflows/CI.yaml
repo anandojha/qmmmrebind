@@ -13,7 +13,7 @@ on:
       - "master"
       - "main"
   schedule:
-    # Nightly tests run on master by default:
+    #   Nightly tests run on master by default:
     #   Scheduled workflows run on the latest commit on the default or base branch.
     #   (from https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule)
     - cron: "0 0 * * *"
@@ -63,11 +63,8 @@ jobs:
         conda install -c conda-forge parmed
         conda config --add channels omnia --add channels conda-forge
         conda install openforcefield
-        conda install -c conda-forge openbabel
-        conda install -c conda-forge/label/cf202003 openbabel
-        conda install -c conda-forge babel
         conda list
-
+        sudo apt install openbabel
 
     - name: Run tests
 
