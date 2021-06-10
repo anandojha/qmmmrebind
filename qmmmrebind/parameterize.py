@@ -966,7 +966,7 @@ def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     """
     This function generates an openforcefield xml file from the pdb file
     """
-    command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
+    command = "obabel -ipdb " + system_pdb + " -osdf " + system_sdf
     os.system(command)
     off_molecule = openforcefield.topology.Molecule(system_sdf)
     force_field = openforcefield.typing.engines.smirnoff.ForceField(
@@ -994,7 +994,7 @@ def generate_xml_from_charged_pdb_sdf(
     This function generates an openforcefield xml file from the pdb 
     file via SDF file and openforcefield.
     """
-    command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
+    command = "obabel -ipdb " + system_pdb + " -osdf " + system_init_sdf
     os.system(command)
     with open(system_init_sdf, "r") as f1:
         filedata = f1.readlines()
@@ -4427,7 +4427,7 @@ class GuestAmberXMLAmber:
         Generates an XML forcefield file from the PDB file through antechamber.
         """
         command = (
-            "babel -ipdb " + self.system_pdb + " -omol2 " + self.system_mol2
+            "obabel -ipdb " + self.system_pdb + " -omol2 " + self.system_mol2
         )
         os.system(command)
         command = (
@@ -4497,7 +4497,7 @@ class GuestAmberXMLAmber:
         openforcefield.
         """
         command = (
-            "babel -ipdb " + self.system_pdb + " -osdf " + self.system_sdf
+            "obabel -ipdb " + self.system_pdb + " -osdf " + self.system_sdf
         )
         os.system(command)
         off_molecule = openforcefield.topology.Molecule(self.system_sdf)
@@ -4518,7 +4518,7 @@ class GuestAmberXMLAmber:
         from the SDF file through openforcefield.
         """
         command = (
-            "babel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
+            "obabel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
         )
         os.system(command)
         with open(self.system_init_sdf, "r") as f1:
@@ -4559,7 +4559,7 @@ class GuestAmberXMLAmber:
         from the SDF file through openforcefield.
         """
         command = (
-            "babel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
+            "obabel -ipdb " + self.system_pdb + " -osdf " + self.system_init_sdf
         )
         os.system(command)
         with open(self.system_init_sdf, "r") as f1:
