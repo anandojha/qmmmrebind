@@ -57,6 +57,8 @@ jobs:
       shell: bash -l {0}
       run: |
         python -m pip install . --no-deps
+        conda install openforcefield
+        conda install -c conda-forge openbabel 
         conda list
 
 
