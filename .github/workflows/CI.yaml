@@ -61,7 +61,8 @@ jobs:
         conda install -c conda-forge mendeleev
         conda install -c conda-forge openmm
         conda install -c conda-forge parmed
-        conda install -c omnia/label/rc openforcefield
+        conda config --add channels omnia --add channels conda-forge
+        conda install openforcefield
         conda install -c conda-forge openbabel
         conda list
 
