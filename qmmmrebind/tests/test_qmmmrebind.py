@@ -167,13 +167,13 @@ def test_get_xyz():
     guest_pdb = "test_guest_init_ii.pdb"
     coordinate_file = "test_guest_coordinates.txt"
     xyz_file = "test_guest_coords.xyz"
-    get_get_xyz = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = xyz_file, coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_xyz = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = xyz_file, coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_xyz.get_xyz() 
 
 def test_get_unprocessed_hessian(): 
     guest_pdb = "test_guest_init_ii.pdb"
     unprocessed_hessian_file = "test_guest_unprocessed_hessian.txt"
-    get_get_unprocessed_hessian = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_unprocessed_hessian = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_unprocessed_hessian.get_unprocessed_hessian() 
 
 #drop in a log file here
@@ -188,20 +188,20 @@ def test_get_bond_angles():
     guest_pdb = "test_guest_init_ii.pdb"
     bond_list_file = "test_guest_bond_list.txt"
     angle_list_file = "test_guest_angle_list.txt"
-    get_get_bond_angles = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_bond_angles = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_bond_angles.get_bond_angles() 
 
 def test_get_hessian(): 
     unprocessed_hessian_file = "test_guest_unprocessed_hessian.txt"
     hessian_file = "test_guest_hessian.txt"
     guest_pdb = "test_guest_init_ii.pdb"
-    get_get_hessian = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = hessian_file, atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_hessian = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = hessian_file, atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_hessian.get_hessian() 
 
 def test_get_atom_names(): 
     guest_pdb = "test_guest_init_ii.pdb"
     atom_names_file = "test_guest_atom_names.txt"
-    get_get_atom_names = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = atom_names_file, bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_atom_names = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = atom_names_file, bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_atom_names.get_atom_names() 
 
 def test_get_bond_angle_params(): 
@@ -211,23 +211,22 @@ def test_get_bond_angle_params():
     bond_list_file = "test_guest_bond_list.txt"
     atom_names_file = "test_guest_atom_names.txt"
     bond_parameter_file = "test_guest_bonds.txt"
-    vibrational_scaling = 1.00
     angle_list_file = "test_guest_angle_list.txt"
     angle_parameter_file = "test_guest_angles.txt"
-    get_get_bond_angle_params = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = hessian_file, atom_names_file = atom_names_file, bond_parameter_file = bond_parameter_file, vibrational_scaling = vibrational_scaling, angle_parameter_file = angle_parameter_file, charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_bond_angle_params = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = hessian_file, atom_names_file = atom_names_file, bond_parameter_file = bond_parameter_file, angle_parameter_file = angle_parameter_file, charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_bond_angle_params.get_bond_angle_params() 
 
 def test_get_charges(): 
     guest_pdb = "test_guest_init_ii.pdb"
     charge_parameter_file = "test_guest_charges.txt"
-    get_get_charges = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = charge_parameter_file, guest_pdb = guest_pdb, proper_dihedral_file = "")
+    get_get_charges = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = charge_parameter_file, guest_pdb = guest_pdb, proper_dihedral_file = "")
     get_get_charges.get_charges() 
 
 def test_get_proper_dihedrals(): 
     guest_pdb = "test_guest_init_ii.pdb"
     bond_parameter_file = "test_guest_bonds.txt"
     proper_dihedral_file = "test_proper_dihedrals.txt"
-    get_get_proper_dihedrals = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = bond_parameter_file, vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = proper_dihedral_file)
+    get_get_proper_dihedrals = qmmmrebind.parameterize.ParameterizeGuest(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = "", bond_parameter_file = bond_parameter_file, angle_parameter_file = "", charge_parameter_file = "", guest_pdb = guest_pdb, proper_dihedral_file = proper_dihedral_file)
     get_get_proper_dihedrals.get_proper_dihedrals() 
 
 ##############################PrepareGaussianHostGuest############################## 
@@ -269,13 +268,13 @@ def test_get_xyz_host():
     host_qm_pdb = "test_host_qm.pdb"
     xyz_file = "test_host_qm_coords.xyz"
     coordinate_file = "test_host_qm_coordinates.txt"
-    get_get_xyz_host = qmmmrebind.parameterize.ParameterizeHost(xyz_file = xyz_file, coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_xyz_host = qmmmrebind.parameterize.ParameterizeHost(xyz_file = xyz_file, coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_xyz_host.get_xyz() 
 
 def test_get_unprocessed_hessian_host(): 
     host_qm_pdb = "test_host_qm.pdb"
     unprocessed_hessian_file = "test_host_qm_unprocessed_hessian.txt"
-    get_get_unprocessed_hessian = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_unprocessed_hessian = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_unprocessed_hessian.get_unprocessed_hessian()
 
 #drop in a log file here
@@ -290,20 +289,20 @@ def test_get_bond_angles_host():
     host_qm_pdb = "test_host_qm.pdb"
     bond_list_file = "test_host_qm_bond_list.txt"
     angle_list_file = "test_host_qm_angle_list"
-    get_get_bond_angles = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file= "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_bond_angles = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file= "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_bond_angles.get_bond_angles() 
 
 def test_get_hessian_host(): 
     host_qm_pdb = "test_host_qm.pdb"
     unprocessed_hessian_file = "test_host_qm_unprocessed_hessian.txt"
     hessian_file = "test_host_qm_hessian.txt"
-    get_get_hessian = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = hessian_file, atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_hessian = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = unprocessed_hessian_file, bond_list_file = "", angle_list_file = "", hessian_file = hessian_file, atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_hessian.get_hessian() 
 
 def test_get_atom_names_host(): 
     host_qm_pdb = "test_host_qm.pdb"
     atom_names_file = "test_host_qm_atom_names.txt"
-    get_get_atom_names = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = atom_names_file, bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_atom_names = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file = "", atom_names_file = atom_names_file, bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_atom_names.get_atom_names() 
 
 def test_get_bond_angle_params_host(): 
@@ -313,16 +312,15 @@ def test_get_bond_angle_params_host():
     bond_list_file = "test_host_qm_bond_list.txt"
     atom_names_file = "test_host_qm_atom_names.txt"
     bond_parameter_file = "test_host_qm_bonds.txt"
-    vibrational_scaling = 1.00
     angle_list_file = "test_host_qm_angle_list"
     angle_parameter_file = "test_host_qm_angles.txt"
-    get_get_bond_angle_params = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = hessian_file, atom_names_file = atom_names_file, bond_parameter_file = bond_parameter_file, vibrational_scaling = vibrational_scaling, angle_parameter_file = angle_parameter_file, charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
+    get_get_bond_angle_params = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = coordinate_file, unprocessed_hessian_file = "", bond_list_file = bond_list_file, angle_list_file = angle_list_file, hessian_file = hessian_file, atom_names_file = atom_names_file, bond_parameter_file = bond_parameter_file, angle_parameter_file = angle_parameter_file, charge_parameter_file = "", host_qm_pdb = host_qm_pdb)
     get_get_bond_angle_params.get_bond_angle_params() 
 
 def test_get_charges_host(): 
     host_qm_pdb = "test_host_qm.pdb"
     charge_parameter_file = "test_host_qm_surround_charges.txt"
-    get_get_charges = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", vibrational_scaling = "", angle_parameter_file = "", charge_parameter_file = charge_parameter_file, host_qm_pdb = host_qm_pdb)
+    get_get_charges = qmmmrebind.parameterize.ParameterizeHost(xyz_file = "", coordinate_file = "", unprocessed_hessian_file = "", bond_list_file = "", angle_list_file = "", hessian_file= "", atom_names_file = "", bond_parameter_file = "", angle_parameter_file = "", charge_parameter_file = charge_parameter_file, host_qm_pdb = host_qm_pdb)
     get_get_charges.get_charges() 
 
 ##############################GuestAmberXMLAmber############################## 
