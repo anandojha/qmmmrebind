@@ -9,7 +9,6 @@
 
 ## Software Requirements :
 * Gaussian16
-* Amber
 * TorsionDrive
 * Psi4
 
@@ -20,7 +19,7 @@
 conda create -n qmmmrebind python=3.8
 conda activate qmmmrebind # activate the conda environment
 conda install openforcefield # install openforcefield
-conda install -c conda-forge openbabel # install openbabel
+conda install openbabel -c conda-forge # install openbabel
 conda install git # install git
 ```
 * Clone the *QMMMReBind* repository :
