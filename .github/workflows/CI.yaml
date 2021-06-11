@@ -25,7 +25,6 @@ jobs:
       run: |
         sudo apt-get install openbabel
         babel
-      #run: |
         uname -a
         df -h
         ulimit -a
