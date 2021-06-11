@@ -23,14 +23,12 @@ jobs:
     - name: Additional info about the build
       shell: bash
       run: |
-        apt-get install openbabel
+        sudo apt-get install openbabel
         babel
       #run: |
-        #uname -a
-        #df -h
-        #ulimit -a
-        #sudo apt install openbabel
-
+        uname -a
+        df -h
+        ulimit -a
     - uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
