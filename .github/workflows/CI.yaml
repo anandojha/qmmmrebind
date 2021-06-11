@@ -23,7 +23,7 @@ jobs:
     - name: Additional info about the build
       shell: bash
       run: |
-        sudo apt-get install openbabel
+        apt-get install openbabel
         babel
       #run: |
         #uname -a
