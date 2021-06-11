@@ -1,10 +1,13 @@
 # QMMMReBind - Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield *Re*paramaterisation of the *Bind*ing site for receptor-ligand complexes
 
-| **Status** | [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/qubekit/QUBEKit.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/qubekit/QUBEKit/context:python) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  [![CI](https://github.com/qubekit/QUBEKit/actions/workflows/CI.yaml/badge.svg)](https://github.com/qubekit/QUBEKit/actions/workflows/CI.yaml)  [![codecov](https://codecov.io/gh/qubekit/QUBEKit/branch/master/graph/badge.svg?token=E554IAATJC)](https://codecov.io/gh/qubekit/QUBEKit)|
+| **Status** | 
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/qubekit/QUBEKit.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/qubekit/QUBEKit/context:python)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
+[![CI](https://github.com/anandojha/qmmmrebind/workflows/CI/badge.svg)](https://github.com/anandojha/qmmmrebind/actions?query=workflow%3ACI) 
+[![codecov](https://codecov.io/gh/anandojha/QMMMReBind/branch/master/graph/badge.svg)](https://app.codecov.io/gh/anandojha/qmmmrebind)|
 | :------ | :------ |
-| **Foundation** | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/) [![platforms]() [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/qubekit?color=blue&logo=anaconda&logoColor=white)](https://anaconda.org/conda-forge/qubekit)|
+| **Foundation** | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/)|
 | **Installation** | |
-
 
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/anandojha/qmmmrebind/workflows/CI/badge.svg)](https://github.com/anandojha/qmmmrebind/actions?query=workflow%3ACI)
