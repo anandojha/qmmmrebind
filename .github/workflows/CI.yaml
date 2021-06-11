@@ -22,7 +22,6 @@ jobs:
     - name: Additional info about the build
       shell: bash
       run: |
-        sudo apt-get install openbabel
         uname -a
         df -h
         ulimit -a
@@ -38,7 +37,6 @@ jobs:
     - name: Install package
       shell: bash -l {0}
       run: |
-        sudo apt-get install openbabel
         python -m pip install . --no-deps
         conda install -c conda-forge biopandas
         conda install -c conda-forge mendeleev
@@ -46,6 +44,7 @@ jobs:
         conda install -c conda-forge parmed
         conda config --add channels omnia --add channels conda-forge
         conda install openforcefield
+        conda install openbabel -c conda-forge
         conda list
     - name: Run tests
       shell: bash -l {0}
