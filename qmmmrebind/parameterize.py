@@ -1866,8 +1866,12 @@ class PrepareGaussianGuest:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the Gaussian described options for generating
-        population.
+        Specifies the QM engine to select one of the methods for 
+        analyzing the electron density of the system. Methods used 
+        are based on fitting the molecular electrostatic potential. 
+        Methods used are : POP=CHELPG (Charges from Electrostatic 
+        Potentials using a Grid based method) and POP=MK 
+        (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
         Used to include the IOp keyword (to set the internal options to
@@ -1895,9 +1899,9 @@ class PrepareGaussianGuest:
         basis_set="6-31G",
         optimisation="OPT",
         frequency="FREQ",
-        add_keywords_I="Integral=(Grid=UltraFine)",
-        add_keywords_II="Pop(MK,ReadRadii)",
-        add_keywords_III="IOp(6/33=2,6/42=6)",
+        add_keywords_I="INTEGRAL=(GRID=ULTRAFINE)",
+        add_keywords_II="POP(MK,READRADII)",
+        add_keywords_III="IOP(6/33=2,6/42=6)",
         gauss_out_file="guest.out",
         fchk_out_file="guest_fchk.out",
     ):
@@ -1941,8 +1945,12 @@ class PrepareGaussianGuest:
             Specifies the integration grid.
 
         add_keywords_II: str, optional
-            Specifies the Gaussian described options for generating
-            population.
+            Specifies the QM engine to select one of the methods for 
+            analyzing the electron density of the system. Methods used 
+            are based on fitting the molecular electrostatic potential. 
+            Methods used are : POP=CHELPG (Charges from Electrostatic 
+            Potentials using a Grid based method) and POP=MK 
+            (Merz-Singh-Kollman scheme)
 
         add_keywords_III: str, optional
             Used to include the IOp keyword (to set the internal options to
@@ -2126,8 +2134,12 @@ class PrepareGaussianHostGuest:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the Gaussian described options for generating
-        population.
+        Specifies the QM engine to select one of the methods for 
+        analyzing the electron density of the system. Methods used 
+        are based on fitting the molecular electrostatic potential. 
+        Methods used are : POP=CHELPG (Charges from Electrostatic 
+        Potentials using a Grid based method) and POP=MK 
+        (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
         Used to include the IOp keyword (to set the internal options to
@@ -2171,9 +2183,9 @@ class PrepareGaussianHostGuest:
         basis_set="6-31G",
         optimisation="",
         frequency="",
-        add_keywords_I="Integral=(Grid=UltraFine)",
-        add_keywords_II="Pop(MK,ReadRadii)",
-        add_keywords_III="IOp(6/33=2,6/42=6)",
+        add_keywords_I="INTEGRAL=(GRID=ULTRAFINE)",
+        add_keywords_II="POP(MK,READRADII)",
+        add_keywords_III="IOP(6/33=2,6/42=6)",
         gauss_system_out_file="system_qm.out",
         fchk_system_out_file="system_qm_fchk.out",
         host_guest_input="host_guest.com",
@@ -2223,8 +2235,12 @@ class PrepareGaussianHostGuest:
             Specifies the integration grid.
 
         add_keywords_II: str, optional
-            Specifies the Gaussian described options for generating
-            population.
+            Specifies the QM engine to select one of the methods for 
+            analyzing the electron density of the system. Methods used 
+            are based on fitting the molecular electrostatic potential. 
+            Methods used are : POP=CHELPG (Charges from Electrostatic 
+            Potentials using a Grid based method) and POP=MK 
+            (Merz-Singh-Kollman scheme)
 
         add_keywords_III: str, optional
             Used to include the IOp keyword (to set the internal options to
@@ -3211,8 +3227,12 @@ class PrepareGaussianHost:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the Gaussian described options for generating
-        population.
+        Specifies the QM engine to select one of the methods for 
+        analyzing the electron density of the system. Methods used 
+        are based on fitting the molecular electrostatic potential. 
+        Methods used are : POP=CHELPG (Charges from Electrostatic 
+        Potentials using a Grid based method) and POP=MK 
+        (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
         Used to include the IOp keyword (to set the internal options to
@@ -3239,9 +3259,9 @@ class PrepareGaussianHost:
         basis_set="6-31G",
         optimisation="OPT",
         frequency="FREQ",
-        add_keywords_I="Integral=(Grid=UltraFine)",
-        add_keywords_II="Pop(MK,ReadRadii)",
-        add_keywords_III="IOp(6/33=2,6/42=6)",
+        add_keywords_I="INTEGRAL=(GRID=ULTRAFINE)",
+        add_keywords_II="POP(MK,READRADII)",
+        add_keywords_III="IOP(6/33=2,6/42=6)",
         gauss_out_file="host_qm.out",
         fchk_out_file="host_qm_fchk.out",
     ):
@@ -3285,8 +3305,12 @@ class PrepareGaussianHost:
             Specifies the integration grid.
 
         add_keywords_II: str, optional
-            Specifies the Gaussian described options for generating
-            population.
+            Specifies the QM engine to select one of the methods for 
+            analyzing the electron density of the system. Methods used 
+            are based on fitting the molecular electrostatic potential. 
+            Methods used are : POP=CHELPG (Charges from Electrostatic 
+            Potentials using a Grid based method) and POP=MK 
+            (Merz-Singh-Kollman scheme)
 
         add_keywords_III: str, optional
             Used to include the IOp keyword (to set the internal options to
