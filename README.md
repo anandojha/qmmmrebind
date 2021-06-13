@@ -8,13 +8,10 @@
 
 # <img src="https://github.com/anandojha/qmmmrebind/blob/main/images/qmmmrebind_logo.jpg" width="400">
 
+```bash
 ## Background and Introduction 
 Understanding the interaction of metabolites or drugs with biomolecules can help improve our understanding of drug discovery and development. Accurate computational prediction of kinetic rates or residence times of an intermolecular encounter can help us identify lead drugs. Kinetic binding parameters are often correlated with efficacy rather than binding affinities. The binding kinetic profile of a drug molecule is characterized by the bimolecular association rate constant (k<sub>on</sub>) and the dissociation rate constant (k<sub>off</sub>). Drug-Target residence time (1/ k<sub>off</sub>) has received the most attention from the drug discovery community since drugs with long-lasting target occupancy are often correlated with greater in-vivo efficacy. k<sub>on</sub> is also useful for predicting in-vivo efficacy, particularly related to understanding drug rebinding. Both k<sub>on</sub> and k<sub>off</sub> can be used to compute the binding free energy. A complete kinetic profile (k<sub>on</sub> and k<sub>off</sub>), in addition to binding free energy, is extremely desirable for the prediction of in-vivo efficacy and further optimization of lead compounds.
-
-
-
-
-
+```
 
 ## Software Requirements :
 * Gaussian16
