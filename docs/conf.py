@@ -16,9 +16,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
-import qmmmrebind
-
+#import qmmmrebind
 
 # -- Project information -----------------------------------------------------
 
@@ -97,7 +95,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'default'
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -161,7 +158,6 @@ latex_documents = [
      'qmmmrebind', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -182,6 +178,5 @@ texinfo_documents = [
      author, 'qmmmrebind', 'QMMMReBind : Quantum Mechanics – Molecular Mechanics (QM-MM) ForceField Reparamaterisation of the binding site for the receptor-ligand complexes',
      'Miscellaneous'),
 ]
-
 
 # -- Extension configuration -------------------------------------------------
