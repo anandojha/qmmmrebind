@@ -80,7 +80,7 @@ Installation and Setup Instructions
 
 * Make sure `anaconda3 <https://www.anaconda.com/>`_ is installed on the local machine. 
 * Go to the `download <https://www.anaconda.com/products/individual>`_  page of anaconda3 and install the latest version of anaconda3. 
-* Create a new conda environment with python = 3.8 with the following commands in the terminal: 
+* Create a new conda environment with python = 3.8 and install the package with the following commands in the terminal: 
 
 .. code-block:: python
 

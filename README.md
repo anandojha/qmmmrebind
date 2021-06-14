@@ -9,13 +9,15 @@
 # <img src="https://github.com/anandojha/qmmmrebind/blob/main/images/qmmmrebind_logo.jpg" width="400">
 
 ## Software Requirements :
+Make sure to install these packages before running the QMMMReBind:
+
 * Gaussian16
 * TorsionDrive
 * Psi4
 
 ## Installation and Setup Instructions :
-* Make sure [anaconda3](https://www.anaconda.com/) is installed on the local machine. Go to this [link](https://www.anaconda.com/products/individual) and download the latest edition of anaconda3 and install. 
-* Create a new conda environment with python version 3.8 :
+* Make sure [anaconda3](https://www.anaconda.com/) is installed on the local machine. Go to the  [download](https://www.anaconda.com/products/individual) page of anaconda3 and install the latest version of anaconda3.
+* Create a new conda environment with python = 3.8 and install the package with the following commands in the terminal: 
 ```bash
 conda create -n qmmmrebind python=3.8
 conda activate qmmmrebind # activate the conda environment
@@ -34,7 +36,7 @@ python setup.py install
 python setup.py test  # optionally run tests to check for proper installation 
 ```
 
-Documentation can be found [here](https://qmmmrebind.tiiny.site/)
+Documentation can be found [here](https://qmmmrebind.readthedocs.io/en/latest/index.html).
 
 ### Copyright
 Copyright (c) 2021, Anupam Anand Ojha
