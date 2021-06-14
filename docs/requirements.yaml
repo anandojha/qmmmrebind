@@ -1,13 +1,25 @@
 name: docs
-channels:
+channels: conda-forge,defaults
 dependencies:
     # Base depends
-  - python=3.8
+  - python
   - pip
-  - anaconda
 
     # Pip-only installs
   - pip:
     - sphinx-autoapi
-  - pip:
-    - sphinx-autoapi
+
+  - name: Install package
+    shell: bash -l {0}
+    run: |
+      python -m pip install . --no-deps
+      conda install -c conda-forge biopandas
+      conda install -c conda-forge mendeleev
+      conda install -c conda-forge openmm
+      conda install -c conda-forge parmed
+      conda config --add channels omnia --add channels conda-forge
+      conda install openforcefield
+      conda install openbabel -c conda-forge
+      conda list
+
+
