@@ -1418,6 +1418,8 @@ class PrepareQMMM:
             Number of residues required in the QM region of the receptor.
 
         """
+
+
         self.init_pdb = init_pdb
         self.distance = distance
         self.num_residues = num_residues
@@ -6800,7 +6802,7 @@ class RunOpenMMSims:
 
 class MergeHostGuestTopology:
     """
-    This class is used to merge the host and guest topology and coordinate
+    A class used to merge the host and guest topology and coordinate
     files.
 
     ...
@@ -6894,7 +6896,7 @@ class MergeHostGuestTopology:
 
 class TorsionDriveSims:
     """
-    This class is used to create a filetree for torsion scan
+    A class used to create a filetree for torsion scan
     using torsionsdrive for the dihedral angles of the ligand.
 
     This class creates a directory for carrying out torsiondrive
@@ -7735,8 +7737,7 @@ class TorsionDriveSims:
 class TorsionDriveParams:
     """
 
-
-    This class is used to parameterize the torsional parameters
+    A class used to parameterize the torsional parameters
     of the ligand by fitting the torsional parameters obtained
     from torsiondrive calculations.
 
