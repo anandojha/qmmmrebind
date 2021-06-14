@@ -1,18 +1,16 @@
 name: docs
 channels:
   - conda-forge
+  - omnia
   - defaults
 dependencies:
   - python=3.8
-  - pip
-  - openbabel
-  - mendeleev
-  - biopandas
-  - openmm
-  - parmed
   - openforcefield
-  - pytest
+  - openbabel
+  - biopandas
+  - mendeleev
+  - pip
+
   - pip:
     - sphinx-autoapi
-
 
