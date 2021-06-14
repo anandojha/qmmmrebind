@@ -2,11 +2,12 @@ name: docs
 channels:
 dependencies:
     # Base depends
-  - python
+  - python=3.8
   - pip
-
-
+  - anaconda
 
     # Pip-only installs
+  - pip:
+    - sphinx-autoapi
   - pip:
     - sphinx-autoapi
