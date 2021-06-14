@@ -8,5 +8,5 @@ dependencies:
 
 
     # Pip-only installs
-  #- pip:
-
+  - pip:
+    - sphinx-autoapi
