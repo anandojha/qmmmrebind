@@ -46,7 +46,7 @@ The author would like to thank everyone who has helped or will help improve this
 * Eliseo Marin-Rimoldi, MoLSSI (Project Mentor and Collaborator)
 * Anupam Anand Ojha, UC San Diego (Author and Lead Developer)
 * Saumya Thakur, IIT Bombay (Documentation)
-* Lane Votapka , UC San Diego (Project Mentor and Developer)
+* Lane Votapka, UC San Diego (Project Mentor and Contributor)
 
 ### Copyright
 Copyright (c) 2021, Anupam Anand Ojha
