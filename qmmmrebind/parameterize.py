@@ -1343,82 +1343,6 @@ class PrepareQMMM:
         host_mm_region_II_pdb="host_mm_region_II.pdb",
     ):
 
-        """
-        Parameters
-        ----------
-        init_pdb : str
-            Initial PDB file containing the receptor-ligand complex with
-            solvent, ions, etc.
-
-        cleaned_pdb : str
-            Formatted PDB file containing only the receptor and the ligand.
-
-        guest_init_pdb : str
-            A separate ligand PDB file with atom numbers not beginning from 1.
-
-        host_pdb : str
-            A separate receptor PDB file with atom numbers beginning from 1.
-
-        guest_resname : str
-            Three letter residue ID for the ligand.
-
-        guest_pdb : str
-            Ligand PDB file with atom numbers beginning from 1.
-
-        guest_xyz : str
-            A text file of the XYZ corordinates of the ligand.
-
-        distance : float
-            The distance required to define the QM region of the receptor.
-            This is the distance between the atoms of the ligand and the
-            atoms of the receptor.
-
-        residue_list : str
-            A text file of the residue numbers of the receptor within the
-            proximity (as defined by the distance) from the ligand.
-
-        host_qm_atoms : str
-            A text file of the atom numbers of the receptors in the QM
-            region.
-
-        host_mm_atoms : str
-            A text file of the atom numbers of the receptors in the MM
-            region (all atoms except atoms in the QM region)
-
-        host_qm_pdb : str
-            PDB file for the receptor's QM region.
-
-        host_mm_pdb : str
-            PDB file for the receptor's MM region.
-
-        qm_pdb : str
-            PDB file for the QM region (receptor's QM region and the
-            ligand).
-
-        mm_pdb : str
-            PDB file for the MM region.
-
-        host_mm_region_I_atoms : str
-            A text file of the atom numbers of the receptors in the MM
-            region preceeding the QM region.
-
-        host_mm_region_II_atoms : str
-            A text file of the atom numbers of the receptors in the MM
-            region following the QM region.
-
-        host_mm_region_I_pdb : str
-            PDB file of the receptor in the MM region preceeding the
-            QM region.
-
-        host_mm_region_II_pdb : str
-            PDB file of the receptor in the MM region following the
-            QM region.
-
-        num_residues : int
-            Number of residues required in the QM region of the receptor.
-
-        """
-
 
         self.init_pdb = init_pdb
         self.distance = distance
@@ -1908,65 +1832,6 @@ class PrepareGaussianGuest:
         fchk_out_file="guest_fchk.out",
     ):
 
-        """
-        Parameters
-        ----------
-        charge : int
-            Charge of the ligand.
-
-        multiplicity: int
-            Spin Multiplicity (2S+1) of the ligand where S represents
-            the total spin of the ligand.
-
-        guest_pdb: str, optional
-            Ligand PDB file with atom numbers beginning from 1.
-
-        n_processors : int, optional
-            Number of processors to be used for Gaussian program to run and
-            set in %NProcShared command of Gaussian.
-
-        memory : int, optional
-            Memory (in GB) to be used set in %Mem command of Gaussian.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid functional to use in the Gaussian
-            QM calculation.
-
-        basis_set: str, optional
-            Basis set to use for the Gaussian QM calculation.
-
-        optimisation: str, optional
-            set to "OPT" to perform a geometry optimization on the ligand
-            specified in the system; else set to an empty string.
-
-        frequency: str, optional
-            set to "FREQ" for Gaussian to perform a frequency calculation;
-            else set to an empty string.
-
-        add_keywords_I: str, optional
-            Specifies the integration grid.
-
-        add_keywords_II: str, optional
-            Specifies the QM engine to select one of the methods for 
-            analyzing the electron density of the system. Methods used 
-            are based on fitting the molecular electrostatic potential. 
-            Methods used are : POP=CHELPG (Charges from Electrostatic 
-            Potentials using a Grid based method) and POP=MK 
-            (Merz-Singh-Kollman scheme)
-
-        add_keywords_III: str, optional
-            Used to include the IOp keyword (to set the internal options to
-            specific values) in the Gaussian command.
-
-        gauss_out_file: str, optional
-            This file contains the output script obtained after running
-            the Gaussian QM calculation.
-
-        fchk_out_file: str, optional
-            Formatted checkpoint file obtained from the checkpoint file
-            using formchk command.
-
-        """
 
         self.charge = charge
         self.multiplicity = multiplicity
@@ -2195,84 +2060,7 @@ class PrepareGaussianHostGuest:
         qm_host_charge_parameter_file="host_qm_surround_charges.txt",
         qm_guest_atom_charge_parameter_file="guest_qm_atom_surround_charges.txt",
     ):
-        """
-        Parameters
-        ----------
-        charge : int
-            Total charge of the receptor - ligand complex.
 
-        multiplicity : int
-            Spin Multiplicity (2S+1) of the ligand where S represents
-            the total spin of the ligand.
-
-        guest_pdb : str, optional
-            Ligand PDB file with atom numbers beginning from 1.
-
-        host_qm_pdb : str, optional
-            PDB file for the receptor's QM region.
-
-        n_processors : int, optional
-            Number of processors to be used for Gaussian program to run and
-            set in %NProcShared command of Gaussian.
-
-        memory : int, optional
-            Memory (in GB) to be used set in %Mem command of Gaussian.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid functional to use in the Gaussian
-            QM calculation.
-
-        basis_set: str, optional
-            Basis set to use for the Gaussian QM calculation.
-
-        optimisation: str, optional
-            set to "OPT" to perform a geometry optimization on the ligand
-            specified in the system; else set to an empty string.
-
-        frequency: str, optional
-            set to "FREQ" for Gaussian to perform a frequency calculation;
-            else set to an empty string.
-
-        add_keywords_I: str, optional
-            Specifies the integration grid.
-
-        add_keywords_II: str, optional
-            Specifies the QM engine to select one of the methods for 
-            analyzing the electron density of the system. Methods used 
-            are based on fitting the molecular electrostatic potential. 
-            Methods used are : POP=CHELPG (Charges from Electrostatic 
-            Potentials using a Grid based method) and POP=MK 
-            (Merz-Singh-Kollman scheme)
-
-        add_keywords_III: str, optional
-            Used to include the IOp keyword (to set the internal options to
-            specific values) in the Gaussian command.
-
-        gauss_system_out_file : str, optional
-            This file contains the output script obtained after running
-            the Gaussian QM calculation.
-
-        fchk_system_out_file : str, optional
-            Formatted checkpoint file obtained from the checkpoint file
-            using formchk command.
-
-        host_guest_input : str, optional
-            Gaussian input file (.com extension) for the receptor - ligand
-            QM region.
-
-        qm_guest_charge_parameter_file : str, optional
-            File containing the charges of ligand atoms and their corresponding
-            atoms. Charge obtained are the polarised charged due to the
-            surrounding receptor's region.
-
-        qm_host_charge_parameter_file : str, optional
-            File containing the charges of the QM region of the receptor.
-
-        qm_guest_atom_charge_parameter_file : str, optional
-            File containing the charges of ligand atoms. Charge obtained
-            are the polarised charged due to the surrounding receptor's region.
-
-        """
         self.charge = charge
         self.multiplicity = multiplicity
         self.guest_pdb = guest_pdb
@@ -2537,60 +2325,7 @@ class ParameterizeGuest:
         functional="B3LYP",
         basis_set="6-31G",
     ):
-        """
-        Parameters
-        ----------
-        xyz_file: str, optional
-            XYZ file for ligand coordinates obtained from its corresponding
-            formatted checkpoint file.
 
-        coordinate_file: str, optional
-            Text file containing the ligand coordinates (extracted
-            from the formatted checkpoint file).
-
-        unprocessed_hessian_file: str, optional
-            Unprocessed hessian matrix of the ligand obtained from the
-            formatted checkpoint file.
-
-        bond_list_file: str, optional
-            Text file containing the bond information of the ligand extracted
-            from the log file.
-
-        angle_list_file: str, optional
-
-            Text file containing the angle information of the ligand extracted
-            from the log file.
-
-        hessian_file: str, optional
-            Processed hessian matrix of the ligand.
-
-        atom_names_file: str, optional
-            Text file containing the list of atom names from the fchk file.
-
-        bond_parameter_file: str, optional
-            Text file containing the bond parameters for the ligand obtained
-            using the Modified Seminario method.
-
-        angle_parameter_file: str, optional
-            Text file containing the angle parameters of the ligand.
-
-        charge_parameter_file: str, optional
-            Text file containing the QM charges of the ligand.
-
-        guest_pdb: str, optional
-            Ligand PDB file with atom numbers beginning from 1.
-
-        proper_dihedral_file: str, optional
-            A text file containing proper dihedral angles of the ligand.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid functional to use in the Gaussian
-            QM calculation.
-
-        basis_set: str, optional
-            Basis set to use for the Gaussian QM calculation.
-
-        """
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
         self.unprocessed_hessian_file = unprocessed_hessian_file
@@ -3267,66 +3002,7 @@ class PrepareGaussianHost:
         gauss_out_file="host_qm.out",
         fchk_out_file="host_qm_fchk.out",
     ):
-        """
-        Parameters
-        ----------
-        charge : int
-            Charge of the receptor.
 
-        multiplicity: int
-            Spin Multiplicity (2S+1) of the receptor where S represents
-            the total spin of the receptor.
-
-        host_qm_pdb: str, optional
-            PDB file of the receptor's QM region with atom numbers
-            beginning from 1.
-
-        n_processors : int, optional
-            Number of processors to be used for Gaussian program to run and
-            set in %NProcShared command of Gaussian.
-
-        memory : int, optional
-            Memory (in GB) to be used set in %Mem command of Gaussian.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid functional to use in the Gaussian
-            QM calculation.
-
-        basis_set: str, optional
-            Basis set to use for the Gaussian QM calculation.
-
-        optimisation: str, optional
-            set to "OPT" to perform a geometry optimization on the receptor
-            specified in the system; else set to an empty string.
-
-        frequency: str, optional
-            set to "FREQ" for Gaussian to perform a frequency calculation;
-            else set to an empty string.
-
-        add_keywords_I: str, optional
-            Specifies the integration grid.
-
-        add_keywords_II: str, optional
-            Specifies the QM engine to select one of the methods for 
-            analyzing the electron density of the system. Methods used 
-            are based on fitting the molecular electrostatic potential. 
-            Methods used are : POP=CHELPG (Charges from Electrostatic 
-            Potentials using a Grid based method) and POP=MK 
-            (Merz-Singh-Kollman scheme)
-
-        add_keywords_III: str, optional
-            Used to include the IOp keyword (to set the internal options to
-            specific values) in the Gaussian command.
-
-        gauss_out_file: str, optional
-            This file contains the output script obtained after running
-            the Gaussian QM calculation.
-
-        fchk_out_file: str, optional
-            Formatted checkpoint file obtained from the checkpoint file
-            using formchk command.
-
-        """
         self.charge = charge
         self.multiplicity = multiplicity
         self.host_qm_pdb = host_qm_pdb
@@ -3519,56 +3195,7 @@ class ParameterizeHost:
         functional="B3LYP",
         basis_set="6-31G",
     ):
-        """
-        Parameters
-        ----------
-        xyz_file: str, optional
-            XYZ file for ligand coordinates obtained from its corresponding
-            formatted checkpoint file.
 
-        coordinate_file: str, optional
-            Text file containing the receptor coordinates (extracted
-            from the formatted checkpoint file).
-
-        unprocessed_hessian_file: str, optional
-            Unprocessed hessian matrix of the receptor obtained from the
-            formatted checkpoint file.
-
-        bond_list_file: str, optional
-            Text file containing the bond information of the receptor
-            extracted from the log file.
-
-        angle_list_file: str, optional
-            Text file containing the angle information of the receptor
-            extracted from the log file.
-
-        hessian_file: str, optional
-            Processed hessian matrix of the receptor.
-
-        atom_names_file: str, optional
-            Text file containing the list of atom names from the fchk file.
-
-        bond_parameter_file: str, optional
-            Text file containing the bond parameters for the receptor
-            obtained using the Modified Seminario method.
-
-        angle_parameter_file: str, optional
-            Text file containing the angle parameters of the receptor.
-
-        charge_parameter_file: str, optional
-            Text file containing the QM charges of the receptor.
-
-        host_qm_pdb: str, optional
-            PDB file for the receptor's QM region.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid functional to use in the Gaussian
-            QM calculation.
-
-        basis_set: str, optional
-            Basis set to use for the Gaussian QM calculation.
-
-        """
         self.xyz_file = xyz_file
         self.coordinate_file = coordinate_file
         self.unprocessed_hessian_file = unprocessed_hessian_file
@@ -4256,121 +3883,7 @@ class GuestAmberXMLAmber:
         inpcrd_system_params="guest_params.inpcrd",
         load_topology="openmm",
     ):
-        """
-        Parameters
-        ----------
-        charge : int
-            Charge of the ligand.
 
-        num_charge_atoms: int
-            Number of charged atoms in the molecule.
-
-        charge_atom_1: int
-            Charge on the first charged atom.
-
-        index_charge_atom_1: int
-            Index of the first charged atom.
-
-        system_pdb: str, optional
-            Ligand PDB file with atom numbers beginning from 1.
-
-        system_mol2: str, optional
-            Ligand Mol2 file obtained from PDB file.
-
-        system_in: str, optional
-            Prepi file as required by antechamber.
-
-        system_frcmod: str, optional
-            FRCMOD file as required by antechamber.
-
-        prmtop_system : str, optional
-            Topology file obtained from the ligand PDB.
-
-        inpcrd_system : str, optional
-            Coordinate file obtained from the Ligand PDB using the
-            command saveamberparm.
-
-        system_leap : str, optional
-            Amber generated leap file for generating and saving topology
-            and coordinate files.
-
-        system_xml: str, optional
-            Serilazed XML force field file of the ligand.
-
-        system_smi: str, optional
-            Ligand SMILES format file.
-
-        system_sdf: str, optional
-            Ligand SDF (structure-data) format file.
-
-        system_init_sdf: str, optional
-            Ligand SDF (structure-data) format file. This file will be
-            generated only if the ligand is charged.
-
-        index_charge_atom_2: int, optional
-            Index of the second charged atom of the ligand.
-
-        charge_atom_2: int, optional
-            Charge on the second charged atom of the ligand.
-
-        charge_parameter_file: str, optional
-            File containing the charges of ligand atoms and their corresponding
-            atoms.
-
-        system_qm_pdb: str, optional
-            Ligand PDB file with atom numbers beginning from 1.
-
-        bond_parameter_file: str, optional
-            Text file containing the bond parameters for the ligand.
-
-        angle_parameter_file: str, optional
-            Text file containing the angle parameters of the ligand.
-
-        system_qm_params_file: str, optional
-            A text file containing the QM obtained parameters for the
-            ligand.
-
-        reparameterised_intermediate_system_xml_file: str, optional
-            XML foce field file with bond and angle parameter lines replaced by
-            corresponding values obtained from the QM calculations.
-
-        system_xml_non_bonded_file: str, optional
-            A text file to write the NonBondedForce Charge Parameters from
-            the non-parametrised system XML file.
-
-        system_xml_non_bonded_reparams_file: str, optional
-            Text file containing the non-bonded parameters parsed from the
-            XML force field file.
-
-        reparameterised_system_xml_file: str, optional
-            Reparameterized force field XML file obtained using
-            openforcefield.
-
-        non_reparameterised_system_xml_file: str, optional
-            Non-reparameterized force field XML file obtained using
-            openforcefield.
-
-        prmtop_system_non_params: str, optional
-            Amber generated topology file saved from the non-reparameterized
-            force field XML file for the ligand.
-
-        inpcrd_system_non_params: str, optional
-            Amber generated coordinate file saved from the non-reparameterized
-            force field XML file for the ligand.
-
-        prmtop_system_params: str, optional
-            Amber generated topology file saved from the reparameterized
-            force field XML file for the ligand.
-
-        inpcrd_system_params: str, optional
-            Amber generated coordinate file saved from the reparameterized
-            force field XML file for the ligand.
-
-        load_topology: str, optional
-            Argument to specify how to load the topology. Can either be "openmm"
-            or "parmed".
-
-        """
         self.charge = charge
         self.num_charge_atoms = num_charge_atoms
         self.charge_atom_1 = charge_atom_1
@@ -6687,28 +6200,7 @@ class RunOpenMMSims:
         system_output="sim_output.pdb",
         sim_steps=1000,
     ):
-        """
-        Parameters
-        ----------
-        system_prmtop : str
-            Topology file of the system (receptor, ligand or
-            receptor - ligand complex)
 
-        system_inpcrd : str
-            Coordinate file of the system (receptor, ligand or
-            receptor - ligand complex)
-
-        system_pdb: str
-            PDB file of the system to run MD simulation (receptor,
-            ligand or receptor - ligand complex).
-
-        sim_output: str, optional
-            PDB file containing the trajectory coordinates for the OpenMM
-            simulation.
-
-        sim_steps: str, optional
-            Number of steps in the OpenMM MD simulation.
-        """
         self.system_prmtop = system_prmtop
         self.system_inpcrd = system_inpcrd
         self.system_pdb = system_pdb
@@ -6838,28 +6330,7 @@ class MergeHostGuestTopology:
         system_prmtop,
         system_inpcrd,
     ):
-        """
-        Parameters
-        ----------
-        host_prmtop : str
-            Topology file of the receptor.
 
-        guest_prmtop : str
-            Topology file of the ligand.
-
-        host_inpcrd : str
-            Coordinate file of the receptor.
-
-        guest_inpcrd : str
-            Coordinate file of the ligand.
-
-        system_prmtop : str
-            Topology file of the receptor - ligand complex.
-
-        system_inpcrd : str
-            Coordinate file of the receptor - ligand complex.
-
-        """
         self.host_prmtop = host_prmtop
         self.guest_prmtop = guest_prmtop
         self.host_inpcrd = host_inpcrd
@@ -7000,77 +6471,7 @@ class TorsionDriveSims:
         engine="psi4",
         energy_threshold=0.001,
     ):
-        """
-        Parameters
-        ----------
 
-        charge : int
-            Charge of the ligand.
-
-        multiplicity: int
-            Spin Multiplicity (2S+1) of the ligand where S represents
-            the total spin of the ligand.
-
-        reparameterised_system_xml_file : str, optional
-            Reparamaterixed XML force field for the ligand.
-
-        torsion_xml_file : str, optional
-            A text file containing torsional parameters from
-            reparametrised XML file.
-
-        xyz_file : str, optional
-            XYZ file containing the coordinates of the guest molecule.
-
-        psi_input_file : str, optional
-            Input file for psi4 QM engine.
-
-        memory : int, optional
-            Memory (in GB) to be used.
-
-        basis_set: str, optional
-            Basis set to use for the QM engine.
-
-        functional: str, optional
-            Exchange/Correlation or hybrid Functional for the QM engine.
-
-        iterations : int, optional
-            Maximum number of geometry optimization steps.
-
-        method_torsion_drive : str, optional
-            The algorithm/package to use while running the torsiondrive
-            scan. Using --native_opt uses QM program native constrained
-            optimization algorithm and turns off geomeTRIC package.
-
-        system_bonds_file : str, optional
-            Text file containing bond parameters for the ligand.
-
-        tor_dir : str, optional
-            Torsiondrive directory containing separate torsiondrive
-            folders, each containing files for a separate torsiondrive
-            calculation for a particular dihedral angle.
-
-        dihedral_text_file : str, optional
-            Dihedral information file for torsiondrive.
-
-        template_pdb : str, optional
-            Guest PDB with atoms beginning from 1 to be used as a
-            template PDB to retrieve atom indices and symbols.
-
-        torsion_drive_run_file : str, optional
-            bash file for torsiondrive calculations.
-
-        dihedral_interval : int, optional
-            Grid spacing for dihedral scan, i.e. every n degrees
-            (where n is an integer), multiple values will be mapped
-            to each dihedral angle.
-
-        engine : str, optional
-            Engine for running torsiondrive scan.
-
-        energy_threshold : float, optional
-            Only activate grid points if the new optimization is lower than
-            the previous lowest energy (in a.u.).
-        """
         self.charge = charge
         self.multiplicity = multiplicity
         self.reparameterised_system_xml_file = reparameterised_system_xml_file
