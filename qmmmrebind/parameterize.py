@@ -1,8 +1,3 @@
-"""
-QMMMReBind : Quantum Mechanics – Molecular Mechanics ( *QMMM* ) forcefield 
-*Re*paramaterisation of the *Bind*ing site for the receptor-ligand complexes
-"""
-
 import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
 import matplotlib.pyplot as plt
@@ -7241,76 +7236,7 @@ class TorsionDriveParams:
         reparameterised_system_xml_file="guest_reparameterised.xml",
         reparameterised_torsional_system_xml_file="guest_torsional_reparameterized.xml",
     ):
-        """
-        Parameters
-        ----------
-
-        num_charge_atoms : int
-            Number of charged atoms in the molecule.
-
-        index_charge_atom_1: int
-            Index of the first charged atom.
-
-        charge_atom_1 : int
-            Charge on the first charged atom.
-
-        tor_dir : str, optional
-            Torsiondrive directory containing separate torsiondrive folders,
-            each containing files for a separate torsiondrive calculation
-            for a particular dihedral angle.
-
-        reparameterized_torsional_params_file : str, optional
-            Text file containing the forcefield parameters for the
-            ligand previously obtained without torsional reparameterization.
-
-        psi_input_file : str, optional
-            Input file for psi4 QM engine.
-
-        xyz_file : str, optional
-            XYZ file for ligand coordinates.
-
-        coords_file : str, optional
-            Text file containing the XYZ coordinates of the ligand.
-
-        template_pdb: str, optional
-            Ligand PDB with atoms beginning from 1 to be used as a template PDB
-            to retrieve atom indices and symbols.
-
-        system_pdb: str, optional
-            PDB file for the torsiondrive torsion scans
-
-        system_sdf : str, optional
-            Maximum number of geometry optimization steps.
-
-        system_xml : str, optional
-            XML force field file for the ligand.
-
-        qm_scan_file : str, optional
-            Output scan file for the torsiondrive scans.
-
-        load_topology : str, optional
-            Argument to specify how to load the topology. Can either
-            be "openmm" or "parmed".
-
-        method : str, optional
-            Minimization method for fitting of torsional
-            parameters.
-
-        dihedral_text_file : str, optional
-            Dihedral information file for torsiondrive.
-
-        system_init_sdf : str, optional
-            Ligand SDF (structure-data) format file. This file will be generated
-            only if the ligand is charged.
-
-        reparameterised_system_xml_file : str, optional
-            Reparameterized force field XML file obtained using
-            openforcefield without torsional reparamaterization.
-
-        reparameterised_torsional_system_xml_file : str, optional
-            XML force field file for the ligand obtained with
-            torsional reparamaterization.
-        """
+ 
         self.num_charge_atoms = num_charge_atoms
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
