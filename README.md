@@ -38,6 +38,16 @@ python setup.py test  # optionally run tests to check for proper installation
 
 Documentation can be found [here](https://qmmmrebind.readthedocs.io/en/latest/index.html).
 
+## Authors and Contributors
+The following people have contributed directly to the coding and validation efforts of SEEKR2 (listed in an alphabetical order of last name). 
+The author would like to thank everyone who has helped or will help improve this project by providing feedback, bug reports, or other comments.
+
+* Rommie Amaro, UC San Diego (Principal Investigator)
+* Eliseo Marin-Rimoldi, MoLSSI (Project Mentor and Collaborator)
+* Anupam Anand Ojha, UC San Diego (Author and Lead Developer)
+* Saumya Thakur, IIT Bombay (Documentation)
+* Lane Votapka , UC San Diego (Project Mentor and Developer)
+
 ### Copyright
 Copyright (c) 2021, Anupam Anand Ojha
 #### Acknowledgements
