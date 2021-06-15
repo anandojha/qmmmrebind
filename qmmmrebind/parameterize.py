@@ -432,13 +432,19 @@ element_list = [
 
 
 def get_vibrational_scaling(functional, basis_set):
+    """
+    Returns the vibratonal scaling factor given the functional 
+    and the basis set for the QM engine.
+    """
     vib_scale = method_basis_scale_dict.get(functional + " " + basis_set)
     return vib_scale
 
 
 def unit_vector_N(u_BC, u_AB):
-    # Calculates unit normal vector which is
-    # perpendicular to plane ABC
+    """
+    Calculates unit normal vector which is perpendicular 
+    to a plane ABC.
+    """
     cross_product = np.cross(u_BC, u_AB)
     norm_u_N = np.linalg.norm(cross_product)
     u_N = cross_product / norm_u_N
@@ -446,12 +452,17 @@ def unit_vector_N(u_BC, u_AB):
 
 
 def copy_file(source, destination):
+    """
+    Copies a file from a source to the destination.
+    """
     shutil.copy(source, destination)
 
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
-    # Gives the vector in the plane A,B,C and
-    # perpendicular to A to B
+    """
+    Returns the vector in the plane A,B,C and
+    perpendicular to A to B.
+    """
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
     u_AB = diff_AB / norm_diff_AB
@@ -476,9 +487,11 @@ def force_angle_constant(
     scaling_1,
     scaling_2,
 ):
-    # Force Constant- Equation 14 of seminario calculation paper -
-    # gives force constant for angle
-    # (in kcal/mol/rad^2) and equilibrium angle in degrees
+    """
+    Returns force constant for angle (in kcal/mol/rad^2) and 
+    equilibrium angle in degrees. (Force Constant- Equation 14 
+    of seminario calculation paper.)
+    """
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
@@ -521,13 +534,12 @@ def force_angle_constant(
         1 / ((bond_length_BC ** 2) * sum_second)
     )
     k_theta = 1 / k_theta
-    k_theta = -k_theta  # Change to OPLS form
+    k_theta = -k_theta            # Change to OPLS form
     k_theta = abs(k_theta * 0.5)  # Change to OPLS form
     # Equilibrium Angle
     theta_0 = math.degrees(math.acos(np.dot(u_AB, u_CB)))
-    # If the vectors u_CB and u_AB are linearly dependent u_N
-    # cannot be defined
-    # This case is dealt with here
+    # If the vectors u_CB and u_AB are linearly dependent u_N cannot be defined.
+    # This case is dealt with here :
     if abs(sum((u_CB) - (u_AB))) < 0.01 or (
         abs(sum((u_CB) - (u_AB))) > 1.99 and abs(sum((u_CB) - (u_AB))) < 2.01
     ):
@@ -548,6 +560,9 @@ def force_angle_constant(
 
 
 def dot_product(u_PA, eig_AB):
+    """
+    Returns the dot product of two vectors.
+    """
     x = 0
     for i in range(0, 3):
         x = x + u_PA[i] * eig_AB[i].conjugate()
@@ -565,11 +580,12 @@ def force_angle_constant_special_case(
     scaling_1,
     scaling_2,
 ):
-    # Force Constant- Equation 14 of seminario calculation paper -
-    # gives force constant for angle
-    # (in kcal/mol/rad^2) and equilibrium angle in degrees
-    # Deals with cases when u_N cannot be defined and instead takes
-    # samples of u_N across a unit sphere.
+    """
+    Returns force constant for angle (in kcal/mol/rad^2) and equilibrium
+    angle in degrees. Deals with cases when u_N cannot be defined and 
+    instead takes samples of u_N across a unit sphere. (Force Constant - 
+    Equation 14 of seminario calculation paper.)
+    """
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
@@ -620,11 +636,11 @@ def force_angle_constant_special_case(
                 1 / ((bond_length_BC ** 2) * sum_second)
             )
             k_theta_ij = 1 / k_theta_ij
-            k_theta_ij = -k_theta_ij  # Change to OPLS form
+            k_theta_ij = -k_theta_ij            # Change to OPLS form
             k_theta_ij = abs(k_theta_ij * 0.5)  # Change to OPLS form
             k_theta_array[theta, phi] = k_theta_ij
-    # Removes cases where u_N was linearly dependent of u_CB or u_AB
-    # Force constant used is taken as the mean
+    # Removes cases where u_N was linearly dependent of u_CB or u_AB.
+    # Force constant used is taken as the mean.
     k_theta = np.mean(np.mean(k_theta_array))
     # Equilibrium Angle independent of u_N
     theta_0 = math.degrees(math.cos(np.dot(u_AB, u_CB)))
@@ -632,8 +648,10 @@ def force_angle_constant_special_case(
 
 
 def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
-    # Force Constant - Equation 10 of Seminario paper - gives force
-    # constant for bond
+    """
+    Returns force constant for bond. (Force Constant - Equation 10 of
+    seminario paper.)
+    """
     # Eigenvalues and eigenvectors calculated
     eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
     eigenvectors_AB = eigenvectors[:, :, atom_A, atom_B]
@@ -651,7 +669,10 @@ def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
 
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
-    # Gives the vector in the plane A,B,C and perpendicular to A to B
+    """
+    Returns the vector in the plane A,B,C and perpendicular
+    to A to B.
+    """
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
     u_AB = diff_AB / norm_diff_AB
@@ -666,11 +687,19 @@ def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
 
 
 def reverse_list(lst):
+    """ 
+    Returns a reverse of the given list.
+    """
     reversed_list = lst[::-1]
     return reversed_list
 
 
 def uniq(input_):
+    """
+    Returns a list containing unique elements 
+    from a list containing duplicate / repeating 
+    elements.
+    """
     output = []
     for x in input_:
         if x not in output:
@@ -680,8 +709,8 @@ def uniq(input_):
 
 def search_in_file(file: str, word: str) -> list:
     """
-    Search for the given string in file and return lines containing
-    that string along with line numbers
+    Search for the given string in file and return lines 
+    containing that string along with line numbers.
     """
     line_number = 0
     list_of_results = []
@@ -693,80 +722,47 @@ def search_in_file(file: str, word: str) -> list:
     return list_of_results
 
 
-def OPLS_LJ(system):
-    forces = {
-        system.getForce(index).__class__.__name__: system.getForce(index)
-        for index in range(system.getNumForces())
-    }
-    nonbonded_force = forces["NonbondedForce"]
-    lorentz = simtk.openmm.openmm.CustomNonbondedForce(
-        "4*epsilon*((sigma/r)^12-(sigma/r)^6); sigma=sqrt(sigma1*sigma2); epsilon=sqrt(epsilon1*epsilon2)"
-    )
-    lorentz.setNonbondedMethod(nonbonded_force.getNonbondedMethod())
-    lorentz.addPerParticleParameter("sigma")
-    lorentz.addPerParticleParameter("epsilon")
-    lorentz.setCutoffDistance(nonbonded_force.getCutoffDistance())
-    system.addForce(lorentz)
-    LJset = {}
-    for index in range(nonbonded_force.getNumParticles()):
-        (
-            charge,
-            sigma,
-            epsilon,
-        ) = nonbonded_force.getParticleParameters(index)
-        LJset[index] = (sigma, epsilon)
-        lorentz.addParticle([sigma, epsilon])
-        nonbonded_force.setParticleParameters(
-            index, charge, sigma, epsilon * 0
-        )
-    for i in range(nonbonded_force.getNumExceptions()):
-        (
-            p1,
-            p2,
-            q,
-            sig,
-            eps,
-        ) = nonbonded_force.getExceptionParameters(i)
-        lorentz.addExclusion(p1, p2)
-        if eps._value != 0.0:
-            # print (p1,p2,sig,eps)
-            sig14 = math.sqrt(
-                LJset[p1][0].value_in_unit(simtk.unit.nanometer)
-                * LJset[p2][0].value_in_unit(simtk.unit.nanometer)
-            )
-            eps14 = math.sqrt(
-                LJset[p1][1].value_in_unit(
-                    simtk.unit.kilojoule / simtk.unit.mole
-                )
-                * LJset[p2][1].value_in_unit(
-                    simtk.unit.kilojoule / simtk.unit.mole
-                )
-            )
-            nonbonded_force.setExceptionParameters(i, p1, p2, q, sig14, eps)
-    return system
-
-
 def list_to_dict(lst):
+    """
+    Returns a dictionary from the list where every 
+    odd entry is the key of the dictionary and every 
+    even entry is its correponding value. 
+    """
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
     return res_dct
 
 
 def scale_list(list_):
+    """
+    Returns a scaled list from the given list.
+    """
     scaled_list = [i - min(list_) for i in list_]
     return scaled_list
 
 
 def list_kJ_kcal(list_):
+    """
+    Convert the elements in the list from 
+    kiloJoules units to kiloCalories units. 
+    """
     converted_list = [i / 4.184 for i in list_]
     return converted_list
 
 
 def list_hartree_kcal(list_):
+    """
+    Convert the elements in the list from 
+    hartree units to kiloCalories units.  
+    """
     converted_list = [i * 627.5094 for i in list_]
     return converted_list
 
 
 def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
+    """
+    Returns an xyz file from a torsiondrive formatted
+    input file."
+    """
     with open(psi_input_file, "r") as f:
         lines = f.readlines()
     for i in range(len(lines)):
@@ -783,6 +779,9 @@ def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
 
 
 def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
+    """ 
+    Converts a XYZ file to a PDB file.
+    """
     with open(xyz_file, "r") as f:
         lines = f.readlines()
     needed_lines = lines[2:]
@@ -801,7 +800,7 @@ def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
 
 def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     """
-    This function generates an openforcefield xml file from the pdb file
+    Generates an openforcefield xml file from the pdb file.
     """
     # command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
     command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_sdf
@@ -829,7 +828,7 @@ def generate_xml_from_charged_pdb_sdf(
     system_xml,
 ):
     """
-    This function generates an openforcefield xml file from the pdb
+    Generates an openforcefield xml file from the pdb
     file via SDF file and openforcefield.
     """
     # command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
@@ -869,6 +868,9 @@ def generate_xml_from_charged_pdb_sdf(
 
 
 def get_dihedrals(qm_scan_file):
+    """
+    Returns dihedrals from the torsiondrive scan file.
+    """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
     energy_dihedral_lines = []
@@ -885,6 +887,10 @@ def get_dihedrals(qm_scan_file):
 
 
 def get_qm_energies(qm_scan_file):
+    """
+    Returns QM optimized energies from the torsiondrive 
+    scan file.
+    """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
     energy_dihedral_lines = []
@@ -901,6 +907,10 @@ def get_qm_energies(qm_scan_file):
 
 
 def generate_mm_pdbs(qm_scan_file, template_pdb):
+    """
+    Generate PDBs from the torsiondrive scan file 
+    based on a template PDB.
+    """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
     energy_dihedral_lines = []
@@ -948,6 +958,9 @@ def generate_mm_pdbs(qm_scan_file, template_pdb):
 
 
 def remove_mm_files(qm_scan_file):
+    """
+    Delete all generated PDB files.
+    """
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
         if i > 0:
@@ -965,6 +978,10 @@ def remove_mm_files(qm_scan_file):
 
 
 def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
+    """
+    Returns torsional energy of the system from the PDB file 
+    given the topology and the forcefield file.
+    """
     system_prmtop = system_pdb[:-4] + ".prmtop"
     system_inpcrd = system_pdb[:-4] + ".inpcrd"
     if load_topology == "parmed":
@@ -1020,6 +1037,10 @@ def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
 
 
 def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
+    """
+    Returns potential energy of the system from the PDB file 
+    given the topology and the forcefield file.
+    """
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
         if i > 0:
@@ -1042,6 +1063,9 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
 
 
 def list_diff(list_1, list_2):
+    """
+    Returns the difference between two lists as a list. 
+    """
     diff_list = []
     zipped_list = zip(list_1, list_2)
     for list1_i, list2_i in zipped_list:
@@ -1050,6 +1074,9 @@ def list_diff(list_1, list_2):
 
 
 def dihedral_energy(x, k1, k2, k3, k4=0):
+    """
+    Expression for the dihedral energy.
+    """
     energy_1 = k1 * (1 + np.cos(1 * x * 0.01745))
     energy_2 = k2 * (1 - np.cos(2 * x * 0.01745))
     energy_3 = k3 * (1 + np.cos(3 * x * 0.01745))
@@ -1059,6 +1086,9 @@ def dihedral_energy(x, k1, k2, k3, k4=0):
 
 
 def error_function(delta_qm, delta_mm):
+    """
+    Root Mean Squared Error.
+    """
     squared_error = np.square(np.subtract(delta_qm, delta_mm))
     mean_squared_error = squared_error.mean()
     root_mean_squared_error = math.sqrt(mean_squared_error)
@@ -1066,6 +1096,9 @@ def error_function(delta_qm, delta_mm):
 
 
 def error_function_boltzmann(delta_qm, delta_mm, T):
+    """
+    Boltzmann Root Mean Squared Error.
+    """
     kb = 3.297623483 * 10 ** (-24)  # in cal/K
     delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
     squared_error = (
@@ -1078,6 +1111,9 @@ def error_function_boltzmann(delta_qm, delta_mm, T):
 
 
 def gen_init_guess(qm_scan_file, load_topology, system_xml):
+    """
+    Initial guess for the torsional parameter.
+    """
     x = get_dihedrals(qm_scan_file)
     y = scale_list(
         list_=get_mm_potential_energies(
@@ -1097,6 +1133,9 @@ def gen_init_guess(qm_scan_file, load_topology, system_xml):
 
 
 def objective_function(k_array, x, delta_qm):
+    """
+    Objective function for the torsional parameter fitting.
+    """
     delta_mm = dihedral_energy(
         x, k1=k_array[0], k2=k_array[1], k3=k_array[2], k4=k_array[3]
     )
@@ -1105,6 +1144,9 @@ def objective_function(k_array, x, delta_qm):
 
 
 def fit_params(qm_scan_file, load_topology, system_xml, method):
+    """
+    Optimization of the objective function. 
+    """
     k_guess = gen_init_guess(
         qm_scan_file=qm_scan_file,
         load_topology=load_topology,
@@ -1132,6 +1174,9 @@ def fit_params(qm_scan_file, load_topology, system_xml, method):
 def get_tor_params(
     qm_scan_file, template_pdb, load_topology, system_xml, method
 ):
+    """
+    Returns the fitted torsional parameters.
+    """
     qm_e = get_qm_energies(qm_scan_file=qm_scan_file)
     qm_e_kcal = list_hartree_kcal(qm_e)
     delta_qm = scale_list(qm_e_kcal)
@@ -1159,6 +1204,9 @@ def get_torsional_lines(
     method,
     dihedral_text_file,
 ):
+    """
+    Returns the torsional lines for the XML forcefield file.
+    """
     opt_param = get_tor_params(
         qm_scan_file=qm_scan_file,
         template_pdb=template_pdb,
