@@ -432,18 +432,59 @@ element_list = [
 
 
 def get_vibrational_scaling(functional, basis_set):
+
     """
-    Returns the vibratonal scaling factor given the functional 
+    Returns vibrational scaling factor given the functional
     and the basis set for the QM engine.
+
+    Parameters
+    ----------
+    functional: str
+        Functional
+
+    basis_set: str
+        Basis set
+
+    Returns
+    -------
+    vib_scale: float
+        Vibrational scaling factor corresponding to the given 
+        the basis_set and the functional.
+
+    Examples
+    --------
+    >>> get_vibrational_scaling("QCISD", "6-311G*")
+    0.957
+
     """
     vib_scale = method_basis_scale_dict.get(functional + " " + basis_set)
     return vib_scale
 
 
 def unit_vector_N(u_BC, u_AB):
+
     """
-    Calculates unit normal vector which is perpendicular 
-    to a plane ABC.
+    Calculates unit normal vector perpendicular to plane ABC.
+
+    Parameters
+    ----------
+    u_BC : (.. , 1, 3) array
+        Unit vector from atom B to atom C.
+
+    u_AB : (..., 1, 3) array
+        Unit vector from atom A to atom B.
+
+    Returns
+    -------
+    u_N : (..., 1, 3) array
+        Unit normal vector perpendicular to plane ABC.
+
+    Examples
+    --------
+    >>> u_BC = [0.34040355, 0.62192853, 0.27011169]
+    >>> u_AB = [0.28276792, 0.34232697, 0.02370306]
+    >>> unit_vector_N(u_BC, u_AB)
+    array([-0.65161629,  0.5726879 , -0.49741811])
     """
     cross_product = np.cross(u_BC, u_AB)
     norm_u_N = np.linalg.norm(cross_product)
@@ -452,6 +493,7 @@ def unit_vector_N(u_BC, u_AB):
 
 
 def copy_file(source, destination):
+
     """
     Copies a file from a source to the destination.
     """
@@ -459,9 +501,35 @@ def copy_file(source, destination):
 
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
+
     """
-    Returns the vector in the plane A,B,C and
-    perpendicular to A to B.
+    Returns the vector in the plane A,B,C and perpendicular to AB.
+
+    Parameters
+    ----------
+    atom_A : int
+        Index of atom A (left, starting from 0).
+
+    atom_B : int
+        Index of atom B (center, starting from 0).
+
+    atom_C : int
+        Index of atom C (right, starting from 0).
+
+    coords : (..., N, 3) array
+        An array which contains the coordinates of all 
+        the N atoms.
+
+    Returns
+    -------
+    u_PA : (..., 1, 3) array
+        Unit vector perpendicular to AB and in the plane
+        of A, B, C.
+
+    Examples
+    --------
+    # >>> coords =
+    # >>> u_PA_from_angles()
     """
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
@@ -487,10 +555,55 @@ def force_angle_constant(
     scaling_1,
     scaling_2,
 ):
+
     """
-    Returns force constant for angle (in kcal/mol/rad^2) and 
-    equilibrium angle in degrees. (Force Constant- Equation 14 
-    of seminario calculation paper.)
+    Calculates force constant according to Equation 14 of 
+    Seminario calculation paper; returns angle (in kcal/mol/rad^2) 
+    and equilibrium angle (in degrees).
+
+    Parameters
+    ----------
+    atom_A : int
+        Index of atom A (left, starting from 0).
+
+    atom_B : int
+        Index of atom B (center, starting from 0).
+
+    atom_C : int
+        Index of atom C (right, starting from 0).
+
+    bond_lengths : (N, N) array
+        An N * N array containing the bond lengths for 
+        all the possible pairs of atoms.
+
+    eigenvalues : (N, N, 3) array
+        A numpy array of shape (N, N, 3) containing
+        eigenvalues of the hessian matrix, where N 
+        is the total number of atoms.
+
+    eigenvectors : (3, 3, N, N) array
+        A numpy array of shape (3, 3, N, N) containing
+        eigenvectors of the hessian matrix.
+
+    coords : (N, 3) array
+        A numpy array of shape (N, 3) having the X, Y and Z
+        coordinates of all N atoms.
+
+    scaling_1 : float
+        Factor to scale the projections of eigenvalues for AB.
+
+    scaling_2 : float
+        Factor to scale the projections of eigenvalues for BC.
+
+    Returns
+    -------
+    k_theta : float
+        Force angle constant calculated using modified 
+        seminario method.
+
+    k_0 : float
+        Equilibrium angle between AB and BC.
+
     """
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
@@ -560,8 +673,30 @@ def force_angle_constant(
 
 
 def dot_product(u_PA, eig_AB):
+
     """
     Returns the dot product of two vectors.
+
+    Parameters
+    ----------
+    u_PA : (..., 1, 3) array
+        Unit vector perpendicular to AB and in the 
+        plane of A, B, C.
+
+    eig_AB : (..., 3, 3) array
+        Eigenvectors of the hessian matrix for 
+        the bond AB.
+
+    Returns
+    -------
+    x : float
+        Projection of the eigenvectors along the 
+        unit normal to AB in plane of angle ABC.
+
+    Examples
+    --------
+    >>> u_PA = [-0.65161629,  0.5726879 , -0.49741811]
+    >>> eig_AB =
     """
     x = 0
     for i in range(0, 3):
@@ -580,11 +715,57 @@ def force_angle_constant_special_case(
     scaling_1,
     scaling_2,
 ):
+
     """
-    Returns force constant for angle (in kcal/mol/rad^2) and equilibrium
-    angle in degrees. Deals with cases when u_N cannot be defined and 
-    instead takes samples of u_N across a unit sphere. (Force Constant - 
-    Equation 14 of seminario calculation paper.)
+    Calculates force constant according to Equation 14 
+    of Seminario calculation paper when the vectors
+    u_CB and u_AB are linearly dependent and u_N cannot 
+    be defined. It instead takes samples of u_N across a 
+    unit sphere for the calculation; returns angle 
+    (in kcal/mol/rad^2) and equilibrium angle in degrees.
+
+    Parameters
+    ----------
+    atom_A : int
+        Index of atom A (left, starting from 0).
+
+    atom_B : int
+        Index of atom B (center, starting from 0).
+
+    atom_C : int
+        Index of atom C (right, starting from 0).
+
+    bond_lengths : (N, N) array
+        An N * N array containing the bond lengths for 
+        all the possible pairs of atoms.
+
+    eigenvalues : (N, N, 3) array
+        A numpy array of shape (N, N, 3) containing 
+        eigenvalues of the  hessian matrix, where N 
+        is the total number of atoms.
+
+    eigenvectors : (3, 3, N, N) array
+        A numpy array of shape (3, 3, N, N) containing
+        eigenvectors of the hessian matrix.
+
+    coords : (N, 3) array
+        A numpy array of shape (N, 3) having the X, Y, 
+        and Z coordinates of all N atoms.
+
+    scaling_1 : float
+        Factor to scale the projections of eigenvalues for AB.
+
+    scaling_2 : float
+        Factor to scale the projections of eigenvalues for BC.
+
+    Returns
+    -------
+    k_theta : float
+        Force angle constant calculated using modified 
+        seminario method.
+    k_0 : float
+        Equilibrium angle between AB and BC.
+
     """
     # Vectors along bonds calculated
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
@@ -648,9 +829,39 @@ def force_angle_constant_special_case(
 
 
 def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
+
     """
-    Returns force constant for bond. (Force Constant - Equation 10 of
-    seminario paper.)
+    Calculates the bond force constant for the bonds in the 
+    molecule according to equation 10 of seminario paper, 
+    given the bond atoms' indices and the corresponding
+    eigenvalues, eigenvectors and coordinates matrices.
+
+    Parameters
+    ----------
+    atom_A : int
+        Index of Atom A.
+
+    atom_B : int
+        Index of Atom B.
+
+    eigenvalues : (N, N, 3) array
+        A numpy array of shape (N, N, 3) containing eigenvalues 
+        of the hessian matrix, where N is the total number 
+        of atoms.
+
+    eigenvectors : (3, 3, N, N) array
+        A numpy array of shape (3, 3, N, N) containing the 
+        eigenvectors of the hessian matrix.
+
+    coords : (N, 3) array
+        A numpy array of shape (N, 3) having the X, Y, and 
+        Z  coordinates of all N atoms.
+
+    Returns
+    --------
+    k_AB : float
+        Bond Force Constant value for the bond with atoms A and B.
+
     """
     # Eigenvalues and eigenvectors calculated
     eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
@@ -669,10 +880,36 @@ def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
 
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
+
+   """
+    Returns the vector in the plane A,B,C and perpendicular to AB.
+
+    Parameters
+    ----------
+    atom_A : int
+        Index of atom A (left, starting from 0).
+
+    atom_B : int
+        Index of atom B (center, starting from 0).
+
+    atom_C : int
+        Index of atom C (right, starting from 0).
+
+    coords : (..., N, 3) array
+        An array containing the coordinates of all the N atoms.
+
+    Returns
+    -------
+    u_PA : (..., 1, 3) array
+        Unit vector perpendicular to AB and in the plane of A, B, C.
+
+    Examples
+    --------
+    # >>> coords =
+    # >>> u_PA_from_angles()
+
     """
-    Returns the vector in the plane A,B,C and perpendicular
-    to A to B.
-    """
+
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
     u_AB = diff_AB / norm_diff_AB
@@ -687,18 +924,53 @@ def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
 
 
 def reverse_list(lst):
-    """ 
-    Returns a reverse of the given list.
+
+    """
+    Returns the reversed form of a given list.
+
+    Parameters
+    ----------
+    lst : list
+        Input list.
+
+    Returns
+    -------
+    reversed_list : list
+        Reversed input list.
+
+    Examples
+    --------
+    >>> lst = [5, 4, 7, 2]
+    >>> reverse_list(lst)
+    [2, 7, 4, 5]
+
     """
     reversed_list = lst[::-1]
     return reversed_list
 
 
 def uniq(input_):
+
     """
-    Returns a list containing unique elements 
-    from a list containing duplicate / repeating 
-    elements.
+    Returns a list with only unique elements from a list 
+    containing duplicate / repeating elements.
+
+    Parameters
+    ----------
+    input_ : list
+        Input list.
+
+    Returns
+    -------
+    output : list
+        List with only unique elements.
+
+    Examples
+    --------
+    >>> lst = [2, 4, 2, 9, 10, 35, 10]
+    >>> uniq(lst)
+    [2, 4, 9, 10, 35]
+
     """
     output = []
     for x in input_:
@@ -708,9 +980,25 @@ def uniq(input_):
 
 
 def search_in_file(file: str, word: str) -> list:
+
     """
     Search for the given string in file and return lines 
     containing that string along with line numbers.
+
+    Parameters
+    ----------
+    file : str
+        Input file. 
+
+    word : str
+        Search word.
+
+    Returns
+    -------
+    list_of_results : list
+        List of lists with each element representing the
+        line number and the line contents.
+
     """
     line_number = 0
     list_of_results = []
@@ -723,27 +1011,88 @@ def search_in_file(file: str, word: str) -> list:
 
 
 def list_to_dict(lst):
+
     """
-    Returns a dictionary from the list where every 
+    Converts an input list with mapped characters (every 
     odd entry is the key of the dictionary and every 
-    even entry is its correponding value. 
+    even entry adjacent to the odd entry is its correponding
+    value)  to a dictionary.
+
+    Parameters
+    ----------
+    lst : list
+        Input list. 
+
+    Returns
+    -------
+    res_dct : dict
+        A dictionary with every element mapped with
+        its successive element starting from index 0.
+
+    Examples
+    --------
+    >>> lst = [5, 9, 3, 6, 2, 7]
+    >>> list_to_dict(lst)
+    {5: 9, 3: 6, 2: 7}
+
     """
+
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
     return res_dct
 
 
 def scale_list(list_):
+
     """
-    Returns a scaled list from the given list.
+    Returns a scaled list with the minimum value
+    subtracted from each element of the corresponding list.
+
+    Parameters
+    ----------
+    list_ : list
+        Input list.
+
+    Returns
+    -------
+    scaled_list : list
+        Scaled list.
+
+    Examples
+    --------
+    >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
+    >>> scale_list(list_)
+    [4, 1, 3, 9, 1, 0, 6, 4]
+
     """
     scaled_list = [i - min(list_) for i in list_]
     return scaled_list
 
 
 def list_kJ_kcal(list_):
+
     """
     Convert the elements in the list from 
-    kiloJoules units to kiloCalories units. 
+    kiloJoules units to kiloCalories units.
+ 
+    Parameters
+    ----------
+    list_ : list
+        List with elements in units of kJ.
+
+    Returns
+    -------
+    converted_list : list
+        List with elements in units of kcal.
+
+    Examples
+    --------
+    >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
+    >>> list_kJ_kcal(list_)
+    [1.4340344168260037, 0.7170172084130019, 
+     1.1950286806883366, 2.62906309751434, 
+     0.7170172084130019, 0.4780114722753346, 
+    1.9120458891013383, 1.4340344168260037]
+
     """
     converted_list = [i / 4.184 for i in list_]
     return converted_list
@@ -753,15 +1102,44 @@ def list_hartree_kcal(list_):
     """
     Convert the elements in the list from 
     hartree units to kiloCalories units.  
+
+    Parameters
+    ----------
+    list_ : list
+        List with elements in units of hartree.
+
+    Returns
+    -------
+    converted_list : list
+        List with elements in units of kcal.
+
+    Examples
+    --------
+    >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
+    >>> list_hartree_kcal(list_)
+    [3765.0564000000004, 1882.5282000000002, 3137.547, 
+     6902.6034, 1882.5282000000002, 1255.0188, 
+     5020.0752, 3765.0564000000004]
+
     """
     converted_list = [i * 627.5094 for i in list_]
     return converted_list
 
 
 def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
+
     """
     Returns an xyz file from a torsiondrive formatted
-    input file."
+    input file.
+
+    Parameters
+    ----------
+    psi_input_file : str
+        Input file for the psi4 QM engine.
+
+    xyz_file : str
+        XYZ format file to write the coords of the system. 
+
     """
     with open(psi_input_file, "r") as f:
         lines = f.readlines()
@@ -781,6 +1159,22 @@ def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
 def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
     """ 
     Converts a XYZ file to a PDB file.
+
+    Parameters
+    ----------
+    xyz_file : str
+        XYZ file containing the coordinates of the system.
+
+    coords_file : str
+        A text file containing the coordinates part of XYZ file.
+
+    template_pdb : str
+        A pdb file to be used as a template for the required PDB.
+
+    system_pdb : str
+        Output PDB file with the coordinates updated in the 
+        template pdb using XYZ file.
+
     """
     with open(xyz_file, "r") as f:
         lines = f.readlines()
@@ -801,6 +1195,18 @@ def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
 def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     """
     Generates an openforcefield xml file from the pdb file.
+
+    Parameters
+    ----------
+    system_pdb : str
+        Input PDB file.
+
+    system_sdf : str
+        SDF file of the system.
+
+    system_xml : str
+        XML force field file generated using PDB and SDF files.
+
     """
     # command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
     command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_sdf
@@ -830,6 +1236,29 @@ def generate_xml_from_charged_pdb_sdf(
     """
     Generates an openforcefield xml file from the pdb
     file via SDF file and openforcefield.
+
+    Parameters
+    ----------
+    system_pdb : str
+        Input PDB file.
+
+    system_init_sdf : str
+        SDF file for the system excluding charge information.
+
+    system_sdf : str
+        SDF file of the system.
+
+    num_charge_atoms : int
+        Total number of charged atoms in the PDB.
+
+    index_charge_atom_1 : int
+        Index of the first charged atom.
+
+    charge_atom_1 : float
+        Charge on first charged atom.
+    system_xml : str
+        XML force field file generated using PDB and SDF files.
+
     """
     # command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
     command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_init_sdf
@@ -868,8 +1297,20 @@ def generate_xml_from_charged_pdb_sdf(
 
 
 def get_dihedrals(qm_scan_file):
+
     """
     Returns dihedrals from the torsiondrive scan file.
+
+    Parameters
+    ----------
+    qm_scan_file : str
+        Output scan file containing torsiondrive scans.
+
+    Returns
+    -------
+    dihedrals : list
+        List of all the dihedral values from the qm scan file.
+
     """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -887,9 +1328,21 @@ def get_dihedrals(qm_scan_file):
 
 
 def get_qm_energies(qm_scan_file):
+
     """
     Returns QM optimized energies from the torsiondrive 
     scan file.
+
+    Parameters
+    ----------
+    qm_scan_file : str
+        Output scan file containing torsiondrive scans.
+
+    Returns
+    -------
+    qm_energies : list
+        List of all the qm optimiseed energies extracted from the torsiondrive
+        scan file.
     """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -907,9 +1360,11 @@ def get_qm_energies(qm_scan_file):
 
 
 def generate_mm_pdbs(qm_scan_file, template_pdb):
+
     """
     Generate PDBs from the torsiondrive scan file 
     based on a template PDB.
+
     """
     with open(qm_scan_file, "r") as f:
         lines = f.readlines()
@@ -960,6 +1415,12 @@ def generate_mm_pdbs(qm_scan_file, template_pdb):
 def remove_mm_files(qm_scan_file):
     """
     Delete all generated PDB files.
+
+    Parameters
+    ----------
+    qm_scan_file : str
+        Output scan file containing torsiondrive scans.
+
     """
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
@@ -978,9 +1439,27 @@ def remove_mm_files(qm_scan_file):
 
 
 def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
+
     """
-    Returns torsional energy of the system from the PDB file 
-    given the topology and the forcefield file.
+    Returns sum of all the non-torsional energies (that 
+    includes HarmonicBondForce, HarmonicAngleForce 
+    and NonBondedForce) of the system from the PDB 
+    file given the topology and the forcefield file.
+
+    Parameters
+    ----------
+    system_pdb : str
+        System PDB file to load the openmm system topology 
+        and coordinates.
+    load_topology : {"openmm", "parmed"}
+        Argument to specify how to load the topology.
+    system_xml : str
+        XML force field file for the openmm system.
+
+    Returns
+    -------
+    Sum of all the non-torsional energies of the system.
+
     """
     system_prmtop = system_pdb[:-4] + ".prmtop"
     system_inpcrd = system_pdb[:-4] + ".inpcrd"
@@ -1037,9 +1516,26 @@ def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
 
 
 def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
+
     """
     Returns potential energy of the system from the PDB file 
     given the topology and the forcefield file.
+
+    Parameters
+    ----------
+    qm_scan_file : str
+        Output scan file containing torsiondrive scans.
+    load_topology : {"openmm", "parmed"}
+        Argument to spcify how to load the topology.
+    system_xml : str
+        XML file to load the openmm system.
+
+    Returns
+    -------
+    mm_potential_energies : list
+        List of all the non torsion mm energies for the 
+        generated PDB files.
+
     """
     mm_pdb_list = []
     for i in get_dihedrals(qm_scan_file):
@@ -1063,8 +1559,28 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
 
 
 def list_diff(list_1, list_2):
+
     """
-    Returns the difference between two lists as a list. 
+    Returns the difference between two lists as a list.
+
+    Parameters
+    ----------
+    list_1 : list
+        First list
+    list_2 : list
+        Second list.
+    Returns
+    -------
+    diff_list : list
+        List containing the diferences between the elements of
+        the two lists.
+    Examples
+    --------
+    >>> list_1 = [4, 2, 8, 3, 0, 6, 7]
+    >>> list_2 = [5, 3, 1, 5, 6, 0, 4]
+    >>> list_diff(list_1, list_2)
+    [-1, -1, 7, -2, -6, 6, 3]
+
     """
     diff_list = []
     zipped_list = zip(list_1, list_2)
@@ -1111,8 +1627,24 @@ def error_function_boltzmann(delta_qm, delta_mm, T):
 
 
 def gen_init_guess(qm_scan_file, load_topology, system_xml):
+
     """
     Initial guess for the torsional parameter.
+
+    Parameters
+    ----------
+    qm_scan_file : str
+        Output scan file containing torsiondrive scans.
+    load_topology : {"openmm", "parmed"}
+        Argument to speify how to load the topology.
+    system_xml : str
+        XML force field file for the system.
+
+    Returns
+    -------
+    k_init_guess : list
+        Initial guess for the torsional parameters.
+
     """
     x = get_dihedrals(qm_scan_file)
     y = scale_list(
