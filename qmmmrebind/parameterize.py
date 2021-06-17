@@ -520,16 +520,6 @@ def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
         An array which contains the coordinates of all 
         the N atoms.
 
-    Returns
-    -------
-    u_PA : (..., 1, 3) array
-        Unit vector perpendicular to AB and in the plane
-        of A, B, C.
-
-    Examples
-    --------
-    # >>> coords =
-    # >>> u_PA_from_angles()
     """
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
@@ -687,16 +677,6 @@ def dot_product(u_PA, eig_AB):
         Eigenvectors of the hessian matrix for 
         the bond AB.
 
-    Returns
-    -------
-    x : float
-        Projection of the eigenvectors along the 
-        unit normal to AB in plane of angle ABC.
-
-    Examples
-    --------
-    >>> u_PA = [-0.65161629,  0.5726879 , -0.49741811]
-    >>> eig_AB =
     """
     x = 0
     for i in range(0, 3):
@@ -881,7 +861,7 @@ def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
 
-   """
+    """
     Returns the vector in the plane A,B,C and perpendicular to AB.
 
     Parameters
@@ -903,13 +883,7 @@ def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
     u_PA : (..., 1, 3) array
         Unit vector perpendicular to AB and in the plane of A, B, C.
 
-    Examples
-    --------
-    # >>> coords =
-    # >>> u_PA_from_angles()
-
     """
-
     diff_AB = coords[atom_B, :] - coords[atom_A, :]
     norm_diff_AB = np.linalg.norm(diff_AB)
     u_AB = diff_AB / norm_diff_AB
@@ -1088,10 +1062,7 @@ def list_kJ_kcal(list_):
     --------
     >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
     >>> list_kJ_kcal(list_)
-    [1.4340344168260037, 0.7170172084130019, 
-     1.1950286806883366, 2.62906309751434, 
-     0.7170172084130019, 0.4780114722753346, 
-    1.9120458891013383, 1.4340344168260037]
+    [1.4340344168260037, 0.7170172084130019, 1.1950286806883366, 2.62906309751434, 0.7170172084130019, 0.4780114722753346, 1.9120458891013383, 1.4340344168260037]
 
     """
     converted_list = [i / 4.184 for i in list_]
@@ -1117,9 +1088,7 @@ def list_hartree_kcal(list_):
     --------
     >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
     >>> list_hartree_kcal(list_)
-    [3765.0564000000004, 1882.5282000000002, 3137.547, 
-     6902.6034, 1882.5282000000002, 1255.0188, 
-     5020.0752, 3765.0564000000004]
+    [3765.0564000000004, 1882.5282000000002, 3137.547, 6902.6034, 1882.5282000000002, 1255.0188, 5020.0752, 3765.0564000000004]
 
     """
     converted_list = [i * 627.5094 for i in list_]
