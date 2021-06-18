@@ -2300,10 +2300,10 @@ class PrepareGaussianGuest:
 
     Attributes
     ----------
-    charge : int
+    charge : int, optional
         Charge of the ligand.
 
-    multiplicity: int
+    multiplicity: int, optional
         Spin Multiplicity (2S+1) of the ligand where S represents
         the total spin of the ligand.
 
@@ -2360,8 +2360,8 @@ class PrepareGaussianGuest:
 
     def __init__(
         self,
-        charge,
-        multiplicity,
+        charge = 0,
+        multiplicity = 1,
         guest_pdb="guest_init_II.pdb",
         n_processors=12,
         memory=50,
@@ -2506,10 +2506,10 @@ class PrepareGaussianHostGuest:
 
     Attributes
     ----------
-    charge : int
+    charge : int, optional
         Total charge of the receptor - ligand complex.
 
-    multiplicity : int
+    multiplicity : int, optional
         Spin Multiplicity (2S+1) of the ligand where S represents
         the total spin of the ligand.
 
@@ -2584,8 +2584,8 @@ class PrepareGaussianHostGuest:
 
     def __init__(
         self,
-        charge,
-        multiplicity,
+        charge = 0,
+        multiplicity = 1,
         guest_pdb="guest_init_II.pdb",
         host_qm_pdb="host_qm.pdb",
         n_processors=12,
@@ -3471,10 +3471,10 @@ class PrepareGaussianHost:
 
     Attributes
     ----------
-    charge : int
+    charge : int, optional
         Charge of the receptor.
 
-    multiplicity: int
+    multiplicity: int, optional
         Spin Multiplicity (2S+1) of the receptor where S represents
         the total spin of the receptor.
 
@@ -3531,8 +3531,8 @@ class PrepareGaussianHost:
 
     def __init__(
         self,
-        charge,
-        multiplicity,
+        charge = 0,
+        multiplicity = 1,
         host_qm_pdb="host_qm.pdb",
         n_processors=12,
         memory=50,
@@ -4279,16 +4279,16 @@ class GuestAmberXMLAmber:
 
     Attributes
     ----------
-    charge : int
+    charge : int, optional
         Charge of the ligand.
 
-    num_charge_atoms: int
+    num_charge_atoms: int, optional
         Number of charged atoms in the molecule.
 
-    charge_atom_1: int
+    charge_atom_1: int, optional
         Charge on the first charged atom.
 
-    index_charge_atom_1: int
+    index_charge_atom_1: int, optional
         Index of the first charged atom.
 
     system_pdb: str, optional
@@ -4394,10 +4394,10 @@ class GuestAmberXMLAmber:
 
     def __init__(
         self,
-        charge,
-        num_charge_atoms,
-        charge_atom_1,
-        index_charge_atom_1,
+        charge = "",
+        num_charge_atoms = "",
+        charge_atom_1 = "",
+        index_charge_atom_1 = "",
         system_pdb="guest_init_II.pdb",
         system_mol2="guest.mol2",
         system_in="guest.in",
@@ -6924,10 +6924,10 @@ class TorsionDriveSims:
 
     Attributes
     ----------
-    charge : int
+    charge : int, optional
         Charge of the ligand.
 
-    multiplicity: int
+    multiplicity: int, optional
         Spin Multiplicity (2S+1) of the ligand where S represents
         the total spin of the ligand.
 
@@ -6995,8 +6995,8 @@ class TorsionDriveSims:
 
     def __init__(
         self,
-        charge,
-        multiplicity,
+        charge = 0,
+        multiplicity = 1,
         reparameterised_system_xml_file="guest_reparameterised.xml",
         torsion_xml_file="guest_torsion_xml.txt",
         xyz_file="guest_coords.xyz",
@@ -7695,13 +7695,13 @@ class TorsionDriveParams:
 
     Attributes
     ----------
-    num_charge_atoms : int
+    num_charge_atoms : int, optional
         Number of charged atoms in the molecule.
 
-    index_charge_atom_1: int
+    index_charge_atom_1: int, optional
         Index of the first charged atom.
 
-    charge_atom_1 : int
+    charge_atom_1 : int, optional
         Charge on the first charged atom.
 
     tor_dir : str, optional
@@ -7765,9 +7765,9 @@ class TorsionDriveParams:
 
     def __init__(
         self,
-        num_charge_atoms,
-        index_charge_atom_1,
-        charge_atom_1,
+        num_charge_atoms = "",
+        index_charge_atom_1 = "",
+        charge_atom_1 = "",
         tor_dir="torsion_dir",
         reparameterized_torsional_params_file="reparameterized_torsional_params.txt",
         psi_input_file="torsion_drive_input.dat",
