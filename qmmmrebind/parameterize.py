@@ -4279,7 +4279,7 @@ class GuestAmberXMLAmber:
 
     Attributes
     ----------
-    charge : int, optional
+    charge : int
         Charge of the ligand.
 
     num_charge_atoms: int, optional
@@ -4394,7 +4394,7 @@ class GuestAmberXMLAmber:
 
     def __init__(
         self,
-        charge = "",
+        charge = 0,
         num_charge_atoms = "",
         charge_atom_1 = "",
         index_charge_atom_1 = "",
@@ -5615,6 +5615,9 @@ class HostAmberXMLAmber:
     system_pdb: str, optional
         Receptor PDB file with atom numbers beginning from 1.
 
+    system_sdf: str, optional
+        Receptor SDF (structure-data) format file.
+
     system_xml: str, optional
         Serilazed XML force field file of the receptor.
 
@@ -5687,6 +5690,7 @@ class HostAmberXMLAmber:
     def __init__(
         self,
         system_pdb="host.pdb",
+        system_sdf="host.sdf",
         system_xml="host.xml",
         sim_output="sim_output.pdb",
         sim_steps=1000,
@@ -5707,6 +5711,7 @@ class HostAmberXMLAmber:
         load_topology="openmm",
     ):
         self.system_pdb = system_pdb
+        self.system_sdf = system_sdf
         self.system_xml = system_xml
         self.sim_output = sim_output
         self.sim_steps = sim_steps
@@ -5731,6 +5736,31 @@ class HostAmberXMLAmber:
         self.prmtop_system_params = prmtop_system_params
         self.inpcrd_system_params = inpcrd_system_params
         self.load_topology = load_topology
+
+    def generate_xml_from_pdb_sdf(self):
+        """
+        Generates an XML forcefield file from the SDF file through
+        openforcefield.
+        """
+        command = (
+            # "babel -ipdb " + self.system_pdb + " -osdf " + self.system_sdf
+            "obabel -ipdb "
+            + self.system_pdb
+            + " -osdf -O "
+            + self.system_sdf
+        )
+        os.system(command)
+        off_molecule = openforcefield.topology.Molecule(self.system_sdf)
+        force_field = openforcefield.typing.engines.smirnoff.ForceField(
+            "openff_unconstrained-1.0.0.offxml"
+        )
+        system = force_field.create_openmm_system(off_molecule.to_topology())
+        pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
+        structure = parmed.openmm.load_topology(
+            pdbfile.topology, system, xyz=pdbfile.positions
+        )
+        with open(self.system_xml, "w") as f:
+            f.write(simtk.openmm.XmlSerializer.serialize(system))
 
     def serialize_system(self):
         pdb = simtk.openmm.app.PDBFile(self.system_pdb)
