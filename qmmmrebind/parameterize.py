@@ -7863,7 +7863,7 @@ class TorsionDriveParams:
             )
             generate_xml_from_charged_pdb_sdf(
                 system_pdb=self.system_pdb,
-                system_init_sdf=system_init_sdf,
+                system_init_sdf=self.system_init_sdf,
                 system_sdf=self.system_sdf,
                 num_charge_atoms=num_charge_atoms,
                 index_charge_atom_1=index_charge_atom_1,
