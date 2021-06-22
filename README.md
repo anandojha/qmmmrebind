@@ -16,7 +16,7 @@ Make sure to install these packages before running the QMMMReBind:
 * Psi4
 
 ## External Software Installation Instructions:
-* A new conda environment is recommended to run torsiondrive calculations. Please follow these steps in an terminal: 
+* A new conda environment is recommended to run torsiondrive calculations. Please follow these steps in a terminal: 
 ```bash
 conda create -n torsiondrive python=3.6 # create a new conda environment 
 conda activate torsiondrive # activate torsiondrive environment
