@@ -7043,7 +7043,7 @@ class TorsionDriveSims:
         torsion_drive_run_file="run_command",
         dihedral_interval=15,
         engine="psi4",
-        energy_threshold=0.001,
+        energy_threshold=0.00001,
     ):
 
         self.charge = charge
