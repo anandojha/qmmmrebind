@@ -7,5 +7,6 @@ QMMMReBind is a python package designed to quantum mechanically reparameterize  
    :caption: Contents:
 
    getting_started
+   convergence
    api
 
