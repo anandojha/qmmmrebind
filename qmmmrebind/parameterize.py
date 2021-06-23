@@ -7865,9 +7865,9 @@ class TorsionDriveParams:
                 system_pdb=self.system_pdb,
                 system_init_sdf=self.system_init_sdf,
                 system_sdf=self.system_sdf,
-                num_charge_atoms=num_charge_atoms,
-                index_charge_atom_1=index_charge_atom_1,
-                charge_atom_1=charge_atom_1,
+                num_charge_atoms= self.num_charge_atoms,
+                index_charge_atom_1=self.index_charge_atom_1,
+                charge_atom_1=self.charge_atom_1,
                 system_xml=self.system_xml,
             )
             torsional_lines = get_torsional_lines(
