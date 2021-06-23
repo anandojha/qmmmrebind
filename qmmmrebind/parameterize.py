@@ -3540,7 +3540,7 @@ class PrepareGaussianHost:
         basis_set="6-31G",
         optimisation="OPT",
         frequency="FREQ",
-        add_keywords_I="INTEGRAL=(GRID=ULTRAFINE)",
+        add_keywords_I="INTEGRAL=(GRID=ULTRAFINE) SCF=(maxcycles=4000) SYMMETRY=NONE",
         add_keywords_II="POP(MK,READRADII)",
         add_keywords_III="IOP(6/33=2,6/42=6)",
         gauss_out_file="host_qm.out",
