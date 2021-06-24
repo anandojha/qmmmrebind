@@ -41,8 +41,7 @@ jobs:
         conda install -c conda-forge mendeleev
         conda install -c conda-forge openmm
         conda install -c conda-forge parmed
-        conda config --add channels omnia --add channels conda-forge
-        conda install openforcefield
+        conda install -c conda-forge openff-toolkit
         conda install openbabel -c conda-forge
         conda list
     - name: Run tests
