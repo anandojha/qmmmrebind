@@ -26,8 +26,8 @@ conda install -c psi4 psi4 dftd3 gcp # install dependent softwares
 ```bash
 conda create -n qmmmrebind python=3.8
 conda activate qmmmrebind # activate the conda environment
-conda install openforcefield # install openforcefield
-conda install openbabel -c conda-forge # install openbabel
+conda install -c conda-forge openff-toolkit # install openforcefield toolkit
+conda install -c conda-forge openbabel # install openbabel
 conda install git # install git
 ```
 * Clone the *QMMMReBind* repository :
