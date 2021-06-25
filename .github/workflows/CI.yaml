@@ -43,6 +43,7 @@ jobs:
         conda install -c conda-forge parmed
         conda install -c conda-forge openff-toolkit
         conda install -c conda-forge openbabel
+        conda install -c conda-forge jupyterlab
         conda list
     - name: Run tests
       shell: bash -l {0}
