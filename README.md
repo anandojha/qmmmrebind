@@ -28,6 +28,7 @@ conda create -n qmmmrebind python=3.8
 conda activate qmmmrebind # activate the conda environment
 conda install -c conda-forge openff-toolkit # install openforcefield toolkit
 conda install -c conda-forge openbabel # install openbabel
+conda install -c conda-forge jupyterlab # install jupyter notebook
 conda install git # install git
 ```
 * Clone the *QMMMReBind* repository :
