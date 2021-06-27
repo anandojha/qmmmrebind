@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies:
   - python=3.8
-  - openforcefield
+  - openff-toolkit
   - openbabel
   - biopandas
   - mendeleev
