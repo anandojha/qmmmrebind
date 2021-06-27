@@ -1781,7 +1781,7 @@ class PrepareQMMM:
     """
     A class used to segregate the QM and MM regions.
 
-    This class contains methods to remove the solvent, ions and all
+    This class contain methods to remove the solvent, ions and all
     entities that are exclusive of receptor and the ligand. It also
     defines the Quantum Mechanical (QM) region and the Molecular
     Mechanical (MM) region based upon the distance of the ligand
@@ -4268,7 +4268,7 @@ class GuestAmberXMLAmber:
     A class used to generate a template force field XML file for the ligand
     in order regenerate the reparametrised forcefield XML file.
 
-    This class contains methods to generate a template XML force field through
+    This class contain methods to generate a template XML force field through
     openforcefield. XML template generation can be obtained through different
     file formats such as PDB, SDF, and SMI. Methods support charged ligands as
     well. Re-parameterized XML force field files are then generated from the
@@ -5602,7 +5602,7 @@ class HostAmberXMLAmber:
     A class used to generate a template force field XML file for the receptor
     in order regenerate the reparametrised forcefield XML file.
 
-    This class contains methods to generate a template XML force field through
+    This class contain methods to generate a template XML force field through
     openforcefield. Re-parameterized XML force field files are then
     generated from the template files. Different energy components such as
     the bond,angle, torsional and non-bonded energies are computed for the
@@ -6739,7 +6739,7 @@ class RunOpenMMSims:
     """
     A class used to run the OpenMM simulation on any specified system.
 
-    This class contains methods to run a MD simulation to confirm the
+    This class contain methods to run a MD simulation to confirm the
     proper structure of the reparameterized forcefield files.
 
 
@@ -6785,7 +6785,7 @@ class RunOpenMMSims:
 
     def run_openmm_prmtop_inpcrd(self):
         """
-        Run a OpenMM MD simulation with prmtop and inpcrd file.
+        Runs OpenMM MD simulation with prmtop and inpcrd file.
         """
         print(
             "Running OpenMM simulation for "
@@ -6828,7 +6828,7 @@ class RunOpenMMSims:
 
     def run_openmm_prmtop_pdb(self):
         """
-        Run a OpenMM MD simulation with prmtop and PDB file.
+        Runs OpenMM MD simulation with prmtop and PDB file.
         """
         print(
             "Running OpenMM simulation for "
@@ -8011,3 +8011,331 @@ class TorsionDriveParams:
         with open(self.reparameterised_torsional_system_xml_file, "w") as f:
             for i in xml_tor_reparams_lines:
                 f.write(i)
+
+class PrepareSolvatedParams:
+
+    """
+    A class used to integrate the parameterized topology 
+    files of the receptor - ligand complex and the solvent.
+
+    This class contain methods to concatanate the solvent (and 
+    ions ) and the receptor - ligand complex in a single 
+    parameterized topology file (prmtop and inpcrd). 
+
+    ...
+
+    Attributes
+    ----------
+
+    init_pdb : str
+        Initial PDB file containing the receptor-ligand complex with
+        solvent, ions, etc.
+
+    intermediate_pdb : str, optional
+        An intermediate PDB file formed during pdb4amber processing.
+
+    solvent_pdb : str, optional
+        PDB file containing the water, ions, etc.
+
+    solvent_prmtop : str, optional
+        Solvent topology file.
+
+    solvent_inpcrd : str, optional
+        Solvent coordinate file. 
+
+    solvent_amber_pdb : str, optional
+        Solvent PDB file saved from Amber's tleap. 
+
+    solvent_leap : str, optional
+        Solvent tleap file for parameterizing the solvent. 
+
+    system_prmtop : str, optional
+        Topology file of the receptor - ligand complex.
+
+    system_inpcrd : str, optional 
+        Coordinate file of the receptor - ligand complex.
+
+    system_output: str, optional
+        PDB file containing the trajectory coordinates for 
+        the OpenMM simulation.
+
+    sim_steps: str, optional
+        Number of steps in the OpenMM MD simulation.
+
+    system_solvent_prmtop : str, optional
+        Topology file of the receptor - ligand complex and 
+        the solvent.
+
+    system_solvent_inpcrd : str, optional 
+        Coordinate file of the receptor - ligand complex and 
+        the solvent.
+
+    """
+
+    def __init__(
+        self,
+        init_pdb,
+        intermediate_pdb="intermediate.pdb",
+        solvent_pdb="solvent.pdb",
+        solvent_prmtop="solvent.prmtop",
+        solvent_inpcrd="solvent.inpcrd",
+        solvent_amber_pdb="solvent_amber.pdb",
+        solvent_leap="solvent.leap",
+        system_prmtop="system_torsional_params.prmtop",
+        system_inpcrd="system_torsional_params.inpcrd",
+        system_output="sim_output.pdb",
+        sim_steps=1000,
+        system_solvent_prmtop="system_qmmmrebind.prmtop",
+        system_solvent_inpcrd="system_qmmmrebind.inpcrd",
+    ):
+
+        self.init_pdb = init_pdb
+        self.intermediate_pdb = intermediate_pdb
+        self.solvent_pdb = solvent_pdb
+        self.solvent_prmtop = solvent_prmtop
+        self.solvent_inpcrd = solvent_inpcrd
+        self.solvent_amber_pdb = solvent_amber_pdb
+        self.solvent_leap = solvent_leap
+        self.system_prmtop = system_prmtop
+        self.system_inpcrd = system_inpcrd
+        self.system_output = system_output
+        self.sim_steps = sim_steps
+        self.system_solvent_prmtop = system_solvent_prmtop
+        self.system_solvent_inpcrd = system_solvent_inpcrd
+
+    def create_solvent_pdb(self):
+        """
+        Generates a PDB file containing the solvent and the ions.
+        """
+        water_variables = ["HOH", "WAT"]
+        ions = [
+            "Na+",
+            "Cs+",
+            "K+",
+            "Li+",
+            "Rb+",
+            "Cl-",
+            "Br-",
+            "F-",
+            "I-",
+            "Ca2",
+        ]
+        pdb_variables = ["END", "CRYST"]
+        with open(self.init_pdb) as f1, open(self.intermediate_pdb, "w") as f2:
+            for line in f1:
+                if (
+                    any(
+                        water_variable in line
+                        for water_variable in water_variables
+                    )
+                    or any(
+                        pdb_variable in line for pdb_variable in pdb_variables
+                    )
+                    or any(ion in line for ion in ions)
+                ):
+                    f2.write(line)
+        command = (
+            "pdb4amber -i " + self.intermediate_pdb + " -o " + self.solvent_pdb
+        )
+        os.system(command)
+        command = (
+            "rm -rf "
+            + self.solvent_pdb[:-4]
+            + "_nonprot.pdb "
+            + self.solvent_pdb[:-4]
+            + "_renum.txt "
+            + self.solvent_pdb[:-4]
+            + "_sslink"
+        )
+        os.system(command)
+        command = "rm -rf " + self.intermediate_pdb
+        os.system(command)
+
+    def parameterize_solvent_pdb(self):
+        """
+        Generates a topology file (prmtop) and a coordinate 
+        file (inpcrd) for the solvent system. 
+        """
+        line_0 = " "
+        line_1 = "source leaprc.protein.ff14SB"
+        line_2 = "source leaprc.water.tip4pew"
+        line_3 = "loadAmberParams frcmod.ionsjc_tip4pew"
+        line_4 = "pdb = loadpdb " + self.solvent_pdb
+        line_5 = (
+            "saveamberparm pdb "
+            + self.solvent_prmtop
+            + " "
+            + self.solvent_inpcrd
+        )
+        line_6 = "savepdb pdb " + self.solvent_amber_pdb
+        line_7 = "quit"
+        with open(self.solvent_leap, "w") as f:
+            f.write(line_0 + "\n")
+            f.write(line_1 + "\n")
+            f.write(line_2 + "\n")
+            f.write(line_3 + "\n")
+            f.write(line_4 + "\n")
+            f.write(line_5 + "\n")
+            f.write(line_6 + "\n")
+            f.write(line_7 + "\n")
+        command = "tleap -f " + self.solvent_leap
+        os.system(command)
+        command = "rm -rf leap.log " + self.solvent_leap
+        os.system(command)
+
+    def run_openmm_solvent_prmtop_inpcrd(self):
+        """
+        Runs OpenMM MD simulation with prmtop and inpcrd file
+        for the solvent.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.solvent_prmtop
+            + " and "
+            + self.solvent_inpcrd
+        )
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.solvent_prmtop)
+        inpcrd = simtk.openmm.app.AmberInpcrdFile(self.solvent_inpcrd)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(inpcrd.positions)
+        if inpcrd.boxVectors is not None:
+            simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+    def run_openmm_solvent_prmtop_pdb(self):
+        """
+        Runs OpenMM MD simulation with prmtop and PDB file
+        for the solvent.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.solvent_prmtop
+            + " and "
+            + self.solvent_amber_pdb
+        )
+        pdb = simtk.openmm.app.PDBFile(self.solvent_amber_pdb)
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.solvent_prmtop)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+    def merge_topology_files_system_solvent(self):
+        """
+        Merge the system and solvent topology and coordinate 
+        files.
+        """
+        print(
+            "Merging the "
+            + self.system_prmtop
+            + " "
+            + self.solvent_prmtop
+            + " files"
+        )
+        print(
+            "Merging the "
+            + self.system_inpcrd
+            + " "
+            + self.solvent_inpcrd
+            + " files"
+        )
+        system = parmed.load_file(self.system_prmtop, xyz=self.system_inpcrd)
+        solvent = parmed.load_file(
+            self.solvent_prmtop, xyz=self.solvent_inpcrd
+        )
+        system_solvent = system + solvent
+        system_solvent.save(self.system_solvent_prmtop, overwrite=True)
+        system_solvent.save(self.system_solvent_inpcrd, overwrite=True)
+
+    def run_openmm_system_solvent_prmtop_inpcrd(self):
+        """
+        Runs OpenMM MD simulation with prmtop and PDB file
+        for the solvent - system complex.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_solvent_prmtop
+            + " and "
+            + self.system_solvent_inpcrd
+        )
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_solvent_prmtop)
+        inpcrd = simtk.openmm.app.AmberInpcrdFile(self.system_solvent_inpcrd)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(inpcrd.positions)
+        if inpcrd.boxVectors is not None:
+            simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
