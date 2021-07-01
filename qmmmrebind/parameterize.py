@@ -8070,6 +8070,10 @@ class PrepareSolvatedParams:
         Coordinate file of the receptor - ligand complex and 
         the solvent.
 
+    system_solvent_pdb : str, optional 
+        PDB file of the receptor - ligand complex and 
+        the solvent.
+
     """
 
     def __init__(
@@ -8087,6 +8091,7 @@ class PrepareSolvatedParams:
         sim_steps=1000,
         system_solvent_prmtop="system_qmmmrebind.prmtop",
         system_solvent_inpcrd="system_qmmmrebind.inpcrd",
+        system_solvent_pdb = "system_qmmmrebind.pdb",
     ):
 
         self.init_pdb = init_pdb
@@ -8102,6 +8107,7 @@ class PrepareSolvatedParams:
         self.sim_steps = sim_steps
         self.system_solvent_prmtop = system_solvent_prmtop
         self.system_solvent_inpcrd = system_solvent_inpcrd
+        self.system_solvent_pdb = system_solvent_pdb
 
     def create_solvent_pdb(self):
         """
@@ -8295,10 +8301,11 @@ class PrepareSolvatedParams:
         system_solvent = system + solvent
         system_solvent.save(self.system_solvent_prmtop, overwrite=True)
         system_solvent.save(self.system_solvent_inpcrd, overwrite=True)
+        system_solvent.save(self.system_solvent_pdb, overwrite=True)
 
     def run_openmm_system_solvent_prmtop_inpcrd(self):
         """
-        Runs OpenMM MD simulation with prmtop and PDB file
+        Runs OpenMM MD simulation with prmtop and inpcrd file
         for the solvent - system complex.
         """
         print(
@@ -8321,6 +8328,49 @@ class PrepareSolvatedParams:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        simulation.minimizeEnergy()
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+
+    def run_openmm_system_solvent_prmtop_pdb(self):
+        """
+        Runs OpenMM MD simulation with prmtop and PDB file
+        for the solvent - system complex.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_solvent_prmtop
+            + " and "
+            + self.system_solvent_pdb
+        )
+        pdb = simtk.openmm.app.PDBFile(self.system_solvent_pdb)
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_solvent_prmtop)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(pdb.positions)
         simulation.minimizeEnergy()
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
