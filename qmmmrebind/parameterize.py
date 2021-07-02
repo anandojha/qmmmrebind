@@ -7695,7 +7695,7 @@ class TorsionDriveSims:
 
     def run_torsion_sim(self):
         """
-        Run torsion scans using torsiondrive locally. \
+        Run torsion scans using torsiondrive locally. 
         """
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + "/" + self.tor_dir
@@ -7852,38 +7852,46 @@ class TorsionDriveParams:
         target_dir = parent_cwd + "/" + self.tor_dir
         for i in os.listdir(target_dir):
             os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
-            print("Entering directory" + " : " + os.getcwd())
-            torsiondrive_input_to_xyz(
-                psi_input_file=self.psi_input_file,
-                xyz_file=self.xyz_file,
-            )
-            xyz_to_pdb(
-                xyz_file=self.xyz_file,
-                coords_file=self.coords_file,
-                template_pdb=self.template_pdb,
-                system_pdb=self.system_pdb,
-            )
-            generate_xml_from_charged_pdb_sdf(
-                system_pdb=self.system_pdb,
-                system_init_sdf=self.system_init_sdf,
-                system_sdf=self.system_sdf,
-                num_charge_atoms= self.num_charge_atoms,
-                index_charge_atom_1=self.index_charge_atom_1,
-                charge_atom_1=self.charge_atom_1,
-                system_xml=self.system_xml,
-            )
-            torsional_lines = get_torsional_lines(
-                template_pdb=self.template_pdb,
-                system_xml=self.system_xml,
-                qm_scan_file=self.qm_scan_file,
-                load_topology=self.load_topology,
-                method=self.method,
-                dihedral_text_file=self.dihedral_text_file,
-            )
-            # print(torsional_lines)
-            torsional_parameters_list.append(torsional_lines)
-            remove_mm_files(qm_scan_file=self.qm_scan_file)
-            os.chdir(parent_cwd)
+            if os.path.isfile(self.qm_scan_file):
+                print("Entering directory" + " : " + os.getcwd())
+                torsiondrive_input_to_xyz(
+                    psi_input_file=self.psi_input_file,
+                    xyz_file=self.xyz_file,
+                )
+                xyz_to_pdb(
+                    xyz_file=self.xyz_file,
+                    coords_file=self.coords_file,
+                    template_pdb=self.template_pdb,
+                    system_pdb=self.system_pdb,
+                )
+                generate_xml_from_charged_pdb_sdf(
+                    system_pdb=self.system_pdb,
+                    system_init_sdf=self.system_init_sdf,
+                    system_sdf=self.system_sdf,
+                    num_charge_atoms=self.num_charge_atoms,
+                    index_charge_atom_1=self.index_charge_atom_1,
+                    charge_atom_1=self.charge_atom_1,
+                    system_xml=self.system_xml,
+                )
+                torsional_lines = get_torsional_lines(
+                    template_pdb=self.template_pdb,
+                    system_xml=self.system_xml,
+                    qm_scan_file=self.qm_scan_file,
+                    load_topology=self.load_topology,
+                    method=self.method,
+                    dihedral_text_file=self.dihedral_text_file,
+                )
+                # print(torsional_lines)
+                torsional_parameters_list.append(torsional_lines)
+                remove_mm_files(qm_scan_file=self.qm_scan_file)
+                os.chdir(parent_cwd)
+            else:
+                print("Entering directory" + " : " + os.getcwd())
+                print(
+                    "Torsional Scan file not found, the optimization may not \
+                     be complete. Existing!!"
+                )
+                os.chdir(parent_cwd)
         torsional_parameters = [
             item for sublist in torsional_parameters_list for item in sublist
         ]
@@ -7901,38 +7909,46 @@ class TorsionDriveParams:
         target_dir = parent_cwd + "/" + self.tor_dir
         for i in os.listdir(target_dir):
             os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
-            print("Entering directory" + " : " + os.getcwd())
-            torsiondrive_input_to_xyz(
-                psi_input_file=self.psi_input_file,
-                xyz_file=self.xyz_file,
-            )
-            xyz_to_pdb(
-                xyz_file=self.xyz_file,
-                coords_file=self.coords_file,
-                template_pdb=self.template_pdb,
-                system_pdb=self.system_pdb,
-            )
-            generate_xml_from_charged_pdb_sdf(
-                system_pdb=self.system_pdb,
-                system_init_sdf=self.system_init_sdf,
-                system_sdf=self.system_sdf,
-                num_charge_atoms=self.num_charge_atoms,
-                index_charge_atom_1=self.index_charge_atom_1,
-                charge_atom_1=self.charge_atom_1,
-                system_xml=self.system_xml,
-            )
-            torsional_lines = get_torsional_lines(
-                template_pdb=self.template_pdb,
-                system_xml=self.system_xml,
-                qm_scan_file=self.qm_scan_file,
-                load_topology=self.load_topology,
-                method=self.method,
-                dihedral_text_file=self.dihedral_text_file,
-            )
-            # print(torsional_lines)
-            torsional_parameters_list.append(torsional_lines)
-            remove_mm_files(qm_scan_file=self.qm_scan_file)
-            os.chdir(parent_cwd)
+            if os.path.isfile(self.qm_scan_file):
+                print("Entering directory" + " : " + os.getcwd())
+                torsiondrive_input_to_xyz(
+                    psi_input_file=self.psi_input_file,
+                    xyz_file=self.xyz_file,
+                )
+                xyz_to_pdb(
+                    xyz_file=self.xyz_file,
+                    coords_file=self.coords_file,
+                    template_pdb=self.template_pdb,
+                    system_pdb=self.system_pdb,
+                )
+                generate_xml_from_charged_pdb_sdf(
+                    system_pdb=self.system_pdb,
+                    system_init_sdf=self.system_init_sdf,
+                    system_sdf=self.system_sdf,
+                    num_charge_atoms=self.num_charge_atoms,
+                    index_charge_atom_1=self.index_charge_atom_1,
+                    charge_atom_1=self.charge_atom_1,
+                    system_xml=self.system_xml,
+                )
+                torsional_lines = get_torsional_lines(
+                    template_pdb=self.template_pdb,
+                    system_xml=self.system_xml,
+                    qm_scan_file=self.qm_scan_file,
+                    load_topology=self.load_topology,
+                    method=self.method,
+                    dihedral_text_file=self.dihedral_text_file,
+                )
+                # print(torsional_lines)
+                torsional_parameters_list.append(torsional_lines)
+                remove_mm_files(qm_scan_file=self.qm_scan_file)
+                os.chdir(parent_cwd)
+            else:
+                print("Entering directory" + " : " + os.getcwd())
+                print(
+                    "Torsional Scan file not found, the optimization may not \
+                     be complete. Existing!!"
+                )
+                os.chdir(parent_cwd)                           
         torsional_parameters = [
             item for sublist in torsional_parameters_list for item in sublist
         ]
