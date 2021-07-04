@@ -2287,6 +2287,7 @@ class PrepareQMMM:
 
 
 class PrepareGaussianGuest:
+
     """
     A class used to prepare the QM engine input file (Gaussian)
     for the ligand and run QM calculations with appropriate
@@ -2492,6 +2493,7 @@ class PrepareGaussianGuest:
 
 
 class PrepareGaussianHostGuest:
+
     """
     A class used to prepare the QM engine input file (Gaussian) for
     the receptor - ligand complex and run the QM calculations with
@@ -2787,6 +2789,7 @@ class PrepareGaussianHostGuest:
 
 
 class ParameterizeGuest:
+
     """
     A class used to obtain force field parameters for the ligand (bond,
     angle and charge parameters) from QM calculations.
@@ -3459,6 +3462,7 @@ class ParameterizeGuest:
 
 
 class PrepareGaussianHost:
+
     """
     A class used to prepare the QM engine input file (Gaussian)
     for the receptor and run QM calculations with appropriate keywords.
@@ -3661,6 +3665,7 @@ class PrepareGaussianHost:
 
 
 class ParameterizeHost:
+
     """
     A class used to obtain force field parameters for the QM region
     of the receptor (bond, angle and charge parameters) from QM
@@ -4264,6 +4269,7 @@ class ParameterizeHost:
 
 
 class GuestAmberXMLAmber:
+
     """
     A class used to generate a template force field XML file for the ligand
     in order regenerate the reparametrised forcefield XML file.
@@ -5598,6 +5604,7 @@ class GuestAmberXMLAmber:
 
 
 class HostAmberXMLAmber:
+
     """
     A class used to generate a template force field XML file for the receptor
     in order regenerate the reparametrised forcefield XML file.
@@ -5777,7 +5784,7 @@ class HostAmberXMLAmber:
             pdb.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         state = simulation.context.getState(getEnergy=True)
         energy = state.getPotentialEnergy()
         print(energy)
@@ -6736,6 +6743,7 @@ class HostAmberXMLAmber:
 
 
 class RunOpenMMSims:
+
     """
     A class used to run the OpenMM simulation on any specified system.
 
@@ -6807,7 +6815,7 @@ class RunOpenMMSims:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -6848,7 +6856,7 @@ class RunOpenMMSims:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -6869,6 +6877,7 @@ class RunOpenMMSims:
 
 
 class MergeHostGuestTopology:
+
     """
     A class used to merge the host and guest topology and coordinate
     files.
@@ -6942,6 +6951,7 @@ class MergeHostGuestTopology:
 
 
 class TorsionDriveSims:
+
     """
     A class used to create a filetree for torsion scan
     using torsionsdrive for the dihedral angles of the ligand.
@@ -7712,6 +7722,7 @@ class TorsionDriveSims:
 
 
 class TorsionDriveParams:
+
     """
 
     A class used to parameterize the torsional parameters
@@ -7888,7 +7899,7 @@ class TorsionDriveParams:
             else:
                 print("Entering directory" + " : " + os.getcwd())
                 print(
-                    "Torsional Scan file not found, the optimization may not \
+                    "Torsional Scan file not found, optimization may not \
                      be complete. Existing!!"
                 )
                 os.chdir(parent_cwd)
@@ -7945,7 +7956,7 @@ class TorsionDriveParams:
             else:
                 print("Entering directory" + " : " + os.getcwd())
                 print(
-                    "Torsional Scan file not found, the optimization may not \
+                    "Torsional Scan file not found, optimization may not \
                      be complete. Existing!!"
                 )
                 os.chdir(parent_cwd)                           
@@ -8230,7 +8241,7 @@ class PrepareSolvatedParams:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8272,7 +8283,7 @@ class PrepareSolvatedParams:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8344,7 +8355,7 @@ class PrepareSolvatedParams:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8387,7 +8398,7 @@ class PrepareSolvatedParams:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy()
+        simulation.minimizeEnergy(maxiter=1000000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
