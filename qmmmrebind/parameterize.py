@@ -5784,7 +5784,7 @@ class HostAmberXMLAmber:
             pdb.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         state = simulation.context.getState(getEnergy=True)
         energy = state.getPotentialEnergy()
         print(energy)
@@ -6815,7 +6815,7 @@ class RunOpenMMSims:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -6856,7 +6856,7 @@ class RunOpenMMSims:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8241,7 +8241,7 @@ class PrepareSolvatedParams:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8283,7 +8283,7 @@ class PrepareSolvatedParams:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8355,7 +8355,7 @@ class PrepareSolvatedParams:
         simulation.context.setPositions(inpcrd.positions)
         if inpcrd.boxVectors is not None:
             simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
@@ -8398,7 +8398,7 @@ class PrepareSolvatedParams:
             prmtop.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
-        simulation.minimizeEnergy(maxiter=1000000)
+        simulation.minimizeEnergy(maxIterations=100000)
         simulation.reporters.append(
             simtk.openmm.app.PDBReporter(
                 self.system_output, self.sim_steps / 10
