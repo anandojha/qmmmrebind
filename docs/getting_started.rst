@@ -145,3 +145,13 @@ When selecting a large QM region for the receptor, there mey be convergence fail
 5. # BLYP 6-31G OPT FREQ GUESS=READ INTEGRAL=(GRID=ULTRAFINE) SCF=(maxcycles=4000) SYMMETRY=NONE POP(MK,READRADII) IOP(6/33=2,6/42=6)
 6. # B3LYP 6-31G OPT FREQ GUESS=READ INTEGRAL=(GRID=ULTRAFINE) SCF=(maxcycles=4000) SYMMETRY=NONE POP(MK,READRADII) IOP(6/33=2,6/42=6)
 
+########################
+Input PDB file 
+########################
+
+QMMMReBind accepts the PDB input file with the following requirements:
+
+* PDB file must have the box vector information.
+
+* Ligand and the receptor must be assigned a residue name with the ligand following the receptor. 
+
