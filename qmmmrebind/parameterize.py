@@ -1775,6 +1775,276 @@ def get_torsional_lines(
         tor_lines.append(line_to_append)
     return tor_lines
 
+def truncate(x):
+
+    """
+    Returns a float or an integer with an exact number
+    of characters
+
+    Parameters
+    ----------
+    x: str
+       input value
+
+    """
+    if len(str(int(float(x)))) == 1:
+        x = format(x, ".8f")
+    if len(str(int(float(x)))) == 2:
+        x = format(x, ".7f")
+    if len(str(int(float(x)))) == 3:
+        x = format(x, ".6f")
+    if len(str(int(float(x)))) == 4:
+        x = format(x, ".5f")
+    if len(str(x)) > 10:
+        x = round(x, 10)
+    return x
+
+
+def add_vectors_inpcrd(pdbfile, inpcrdfile):
+
+    """
+    Adds periodic box dimensions to the inpcrd file
+
+    Parameters
+    ----------
+    pdbfile: str
+       PDB file containing the periodic box information
+
+    inpcrdfile: str
+       Input coordinate file
+
+    """
+
+    pdbfilelines = open(pdbfile, "r").readlines()
+    for i in pdbfilelines:
+        if "CRYST" in i:
+            vector_list = re.findall(r"[-+]?\d*\.\d+|\d+", i)
+            vector_list = [float(i) for i in vector_list]
+            vector_list = vector_list[1 : 1 + 6]
+            line_to_add = (
+                "  "
+                + truncate(vector_list[0])
+                + "  "
+                + truncate(vector_list[1])
+                + "  "
+                + truncate(vector_list[2])
+                + "  "
+                + truncate(vector_list[3])
+                + "  "
+                + truncate(vector_list[4])
+                + "  "
+                + truncate(vector_list[5])
+            )
+            print(line_to_add)
+    with open(inpcrdfile, "a+") as f:
+        f.write(line_to_add)
+
+
+def add_period_prmtop(prmtopfile):
+
+    """
+    Adds periodicity keyword in the prmtop file
+
+    Parameters
+    ----------
+    prmtopfile: str
+       Input prmtop file
+
+    """
+
+    prmtopfilelines = open(prmtopfile, "r").readlines()
+    for i in range(len(prmtopfilelines)):
+        if "FLAG POINTERS" in prmtopfilelines[i]:
+            j = i + 4
+            line_prmtop = prmtopfilelines[j]
+            print(line_prmtop)
+            l = re.findall(r"[-+]?\d*\.\d+|\d+", line_prmtop)
+            l[7] = "1"
+            l_per = "{:>8}  {:>6}  {:>6} {:>7} {:>7} {:>7} {:>7} {:>7} {:>7} {:>7}".format(
+                l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7], l[8], l[9]
+            )
+            print(l_per)
+            prmtopfilelines[j] = l_per + "\n"
+    with open(prmtopfile, "w") as file:
+        file.writelines(prmtopfilelines)
+
+
+def add_dim_prmtop(pdbfile, prmtopfile):
+
+    """
+    Adds periodic box dimensions flag in the prmtop file
+
+    Parameters
+    ----------
+    prmtopfile: str
+       Input prmtop file
+
+    pdbfile: str
+       PDB file containing the periodic box information
+
+    """
+    pdbfilelines = open(pdbfile, "r").readlines()
+    for i in pdbfilelines:
+        if "CRYST" in i:
+            vector_list = re.findall(r"[-+]?\d*\.\d+|\d+", i)
+            vector_list = [float(i) for i in vector_list]
+            vector_list = vector_list[1 : 1 + 6]
+            vector_list = [i / 10 for i in vector_list]
+            vector_list = [truncate(i) for i in vector_list]
+            vector_list = [i + "E+01" for i in vector_list]
+            line3 = (
+                "  "
+                + vector_list[3]
+                + "  "
+                + vector_list[0]
+                + "  "
+                + vector_list[1]
+                + "  "
+                + vector_list[2]
+            )
+            print(line3)
+    line1 = "%FLAG BOX_DIMENSIONS"
+    line2 = "%FORMAT(5E16.8)"
+    with open(prmtopfile) as f1, open("intermediate.prmtop", "w") as f2:
+        for line in f1:
+            if line.startswith("%FLAG RADIUS_SET"):
+                line = line1 + "\n" + line2 + "\n" + line3 + "\n" + line
+            f2.write(line)
+    command = "rm -rf " + prmtopfile
+    os.system(command)
+    command = "mv  intermediate.prmtop " + prmtopfile
+    os.system(command)
+
+
+def run_openmm_prmtop_inpcrd(
+    pdbfile,
+    prmtopfile="system_qmmmrebind.prmtop",
+    inpcrdfile="system_qmmmrebind.inpcrd",
+    sim_output="output.pdb",
+    sim_steps=10000,
+):
+
+    """
+    Runs OpenMM simulation with inpcrd and prmtop files
+
+    Parameters
+    ----------
+    pdbfile: str
+       Input PDB file
+
+    prmtopfile: str
+       Input prmtop file
+
+    inpcrdfile: str
+       Input coordinate file
+
+    sim_output: str
+       Output trajectory file
+
+    sim_steps: int
+       Simulation steps
+
+    """
+
+    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
+    inpcrd = simtk.openmm.app.AmberInpcrdFile(inpcrdfile)
+    system = prmtop.createSystem(
+        nonbondedMethod=simtk.openmm.app.PME,
+        nonbondedCutoff=1 * simtk.unit.nanometer,
+        constraints=simtk.openmm.app.HBonds,
+    )
+    integrator = simtk.openmm.LangevinIntegrator(
+        300 * simtk.unit.kelvin,
+        1 / simtk.unit.picosecond,
+        0.002 * simtk.unit.picoseconds,
+    )
+    simulation = simtk.openmm.app.Simulation(
+        prmtop.topology, system, integrator
+    )
+    if inpcrd.boxVectors is None:
+        add_vectors_inpcrd(
+            pdbfile=pdbfile,
+            inpcrdfile=inpcrdfile,
+        )
+    if inpcrd.boxVectors is not None:
+        simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        print(inpcrd.boxVectors)
+    simulation.context.setPositions(inpcrd.positions)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.minimizeEnergy(maxIterations=1000000)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.reporters.append(
+        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
+    )
+    simulation.reporters.append(
+        simtk.openmm.app.StateDataReporter(
+            stdout,
+            int(sim_steps / 10),
+            step=True,
+            potentialEnergy=True,
+            temperature=True,
+        )
+    )
+    simulation.step(sim_steps)
+
+
+def run_openmm_prmtop_pdb(
+    pdbfile="system_qmmmrebind.pdb",
+    prmtopfile="system_qmmmrebind.prmtop",
+    sim_output="output.pdb",
+    sim_steps=10000,
+):
+
+    """
+    Runs OpenMM simulation with pdb and prmtop files
+
+    Parameters
+    ----------
+    pdbfile: str
+       Input PDB file
+
+    prmtopfile: str
+       Input prmtop file
+
+    sim_output: str
+       Output trajectory file
+
+    sim_steps: int
+       Simulation steps
+
+    """
+    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
+    pdb = simtk.openmm.app.PDBFile(pdbfile)
+    system = prmtop.createSystem(
+        nonbondedMethod=simtk.openmm.app.PME,
+        nonbondedCutoff=1 * simtk.unit.nanometer,
+        constraints=simtk.openmm.app.HBonds,
+    )
+    integrator = simtk.openmm.LangevinIntegrator(
+        300 * simtk.unit.kelvin,
+        1 / simtk.unit.picosecond,
+        0.002 * simtk.unit.picoseconds,
+    )
+    simulation = simtk.openmm.app.Simulation(
+        prmtop.topology, system, integrator
+    )
+    simulation.context.setPositions(pdb.positions)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.minimizeEnergy(maxIterations=1000000)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.reporters.append(
+        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
+    )
+    simulation.reporters.append(
+        simtk.openmm.app.StateDataReporter(
+            stdout,
+            int(sim_steps / 10),
+            step=True,
+            potentialEnergy=True,
+            temperature=True,
+        )
+    )
+    simulation.step(sim_steps)
 
 class PrepareQMMM:
 
