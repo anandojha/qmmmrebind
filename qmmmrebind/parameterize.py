@@ -1422,8 +1422,10 @@ def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
     system_pdb : str
         System PDB file to load the openmm system topology 
         and coordinates.
+
     load_topology : {"openmm", "parmed"}
         Argument to specify how to load the topology.
+
     system_xml : str
         XML force field file for the openmm system.
 
@@ -1496,8 +1498,10 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
     ----------
     qm_scan_file : str
         Output scan file containing torsiondrive scans.
+
     load_topology : {"openmm", "parmed"}
         Argument to spcify how to load the topology.
+
     system_xml : str
         XML file to load the openmm system.
 
@@ -1538,8 +1542,10 @@ def list_diff(list_1, list_2):
     ----------
     list_1 : list
         First list
+
     list_2 : list
         Second list.
+
     Returns
     -------
     diff_list : list
@@ -1606,8 +1612,10 @@ def gen_init_guess(qm_scan_file, load_topology, system_xml):
     ----------
     qm_scan_file : str
         Output scan file containing torsiondrive scans.
+
     load_topology : {"openmm", "parmed"}
         Argument to speify how to load the topology.
+
     system_xml : str
         XML force field file for the system.
 
@@ -1775,11 +1783,99 @@ def get_torsional_lines(
         tor_lines.append(line_to_append)
     return tor_lines
 
+def singular_resid(pdbfile, qmmmrebind_init_file):
+
+    """
+    Returns a PDB file with chain ID = A
+
+    Parameters
+    ----------
+    pdbfile: str
+        Input PDB file
+
+    qmmmrebind_init_file: str
+        Output PDB file
+
+    """
+
+    ppdb = PandasPdb().read_pdb(pdbfile)
+    ppdb.df["HETATM"]["chain_id"] = "A"
+    ppdb.to_pdb(
+        path=qmmmrebind_init_file, records=None, gz=False, append_newline=True
+    )
+
+
+def relax_init_structure(
+    pdbfile, prmtopfile, qmmmrebindpdb, sim_output = "output.pdb", sim_steps = 100000, 
+):
+
+    """
+    Minimizing the initial PDB file with the given topology 
+    file
+
+    Parameters
+    ----------
+    pdbfile: str
+        Input PDB file.
+
+    prmtopfile : str
+        Input prmtop file.
+
+    qmmmrebind_init_file: str
+        Output PDB file.
+
+    sim_output: str
+        Simulation output trajectory file.
+
+    sim_steps: int
+        MD simulation steps.
+        
+    """
+
+    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
+    pdb = simtk.openmm.app.PDBFile(pdbfile)
+    system = prmtop.createSystem(
+        nonbondedMethod=simtk.openmm.app.PME,
+        nonbondedCutoff=1 * simtk.unit.nanometer,
+        constraints=simtk.openmm.app.HBonds,
+    )
+    integrator = simtk.openmm.LangevinIntegrator(
+        300 * simtk.unit.kelvin,
+        1 / simtk.unit.picosecond,
+        0.002 * simtk.unit.picoseconds,
+    )
+    simulation = simtk.openmm.app.Simulation(
+        prmtop.topology, system, integrator
+    )
+    simulation.context.setPositions(pdb.positions)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.minimizeEnergy(maxIterations=10000000)
+    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    simulation.reporters.append(
+        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
+    )
+    simulation.reporters.append(
+        simtk.openmm.app.StateDataReporter(
+            stdout,
+            int(sim_steps / 10),
+            step=True,
+            potentialEnergy=True,
+            temperature=True,
+        )
+    )
+    simulation.reporters.append(
+        simtk.openmm.app.PDBReporter(qmmmrebindpdb, sim_steps)
+    )
+    simulation.step(sim_steps)
+    command = "rm -rf " + sim_output
+    os.system(command)
+
+
 def truncate(x):
 
     """
     Returns a float or an integer with an exact number
-    of characters
+    of characters.
 
     Parameters
     ----------
@@ -1808,10 +1904,10 @@ def add_vectors_inpcrd(pdbfile, inpcrdfile):
     Parameters
     ----------
     pdbfile: str
-       PDB file containing the periodic box information
+       PDB file containing the periodic box information.
 
     inpcrdfile: str
-       Input coordinate file
+       Input coordinate file.
 
     """
 
@@ -1843,7 +1939,7 @@ def add_vectors_inpcrd(pdbfile, inpcrdfile):
 def add_period_prmtop(prmtopfile):
 
     """
-    Adds periodicity keyword in the prmtop file
+    Adds periodicity keyword in the prmtop file.
 
     Parameters
     ----------
@@ -1877,10 +1973,10 @@ def add_dim_prmtop(pdbfile, prmtopfile):
     Parameters
     ----------
     prmtopfile: str
-       Input prmtop file
+       Input prmtop file.
 
     pdbfile: str
-       PDB file containing the periodic box information
+       PDB file containing the periodic box information.
 
     """
     pdbfilelines = open(pdbfile, "r").readlines()
@@ -1925,24 +2021,24 @@ def run_openmm_prmtop_inpcrd(
 ):
 
     """
-    Runs OpenMM simulation with inpcrd and prmtop files
+    Runs OpenMM simulation with inpcrd and prmtop files.
 
     Parameters
     ----------
     pdbfile: str
-       Input PDB file
+       Input PDB file.
 
     prmtopfile: str
-       Input prmtop file
+       Input prmtop file.
 
     inpcrdfile: str
-       Input coordinate file
+       Input coordinate file.
 
     sim_output: str
-       Output trajectory file
+       Output trajectory file.
 
     sim_steps: int
-       Simulation steps
+       Simulation steps.
 
     """
 
@@ -1996,21 +2092,21 @@ def run_openmm_prmtop_pdb(
 ):
 
     """
-    Runs OpenMM simulation with pdb and prmtop files
+    Runs OpenMM simulation with pdb and prmtop files.
 
     Parameters
     ----------
     pdbfile: str
-       Input PDB file
+       Input PDB file.
 
     prmtopfile: str
-       Input prmtop file
+       Input prmtop file.
 
     sim_output: str
-       Output trajectory file
+       Output trajectory file.
 
     sim_steps: int
-       Simulation steps
+       Simulation steps.
 
     """
     prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
@@ -2054,18 +2150,18 @@ def move_qmmmmrebind_files(
 
     """
     Moves QMMMReBind generated topology and parameter files 
-    to a new directory 
+    to a new directory .
 
     Parameters
     ----------
     prmtopfile: str
-       QMMMReBind generated prmtop file
+       QMMMReBind generated prmtop file.
 
     inpcrdfile: str
-        QMMMReBind generated inpcrd file
+        QMMMReBind generated inpcrd file.
 
     pdbfile: str
-        QMMMReBind generated PDB file
+        QMMMReBind generated PDB file.
 
     """
     current_pwd = os.getcwd()
@@ -2090,7 +2186,7 @@ def move_qmmmmrebind_files(
 def move_qm_files():
 
     """
-    Moves QM engine generated files to a new directory 
+    Moves QM engine generated files to a new directory .
 
     """
     current_pwd = os.getcwd()
@@ -2111,7 +2207,7 @@ def move_qm_files():
 def move_qmmmrebind_files():
 
     """
-    Moves all QMMMREBind files to a new directory
+    Moves all QMMMREBind files to a new directory.
 
     """
     current_pwd = os.getcwd()
