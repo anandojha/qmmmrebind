@@ -1,16 +1,19 @@
 from openff.toolkit.typing.engines.smirnoff import ForceField
 from openff.toolkit.topology import Molecule, Topology
-#import openforcefield.typing.engines.smirnoff
+
+# import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
 import matplotlib.pyplot as plt
 from operator import itemgetter
-#import openforcefield.topology
+
+# import openforcefield.topology
 from mendeleev import element
 from simtk.openmm import app
 from scipy import optimize
 import subprocess as sp
 from sys import stdout
-#import openforcefield
+
+# import openforcefield
 import pandas as pd
 import numpy as np
 import statistics
@@ -450,7 +453,7 @@ def get_vibrational_scaling(functional, basis_set):
     Returns
     -------
     vib_scale: float
-        Vibrational scaling factor corresponding to the given 
+        Vibrational scaling factor corresponding to the given
         the basis_set and the functional.
 
     Examples
@@ -519,7 +522,7 @@ def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
         Index of atom C (right, starting from 0).
 
     coords : (..., N, 3) array
-        An array which contains the coordinates of all 
+        An array which contains the coordinates of all
         the N atoms.
 
     """
@@ -549,8 +552,8 @@ def force_angle_constant(
 ):
 
     """
-    Calculates force constant according to Equation 14 of 
-    Seminario calculation paper; returns angle (in kcal/mol/rad^2) 
+    Calculates force constant according to Equation 14 of
+    Seminario calculation paper; returns angle (in kcal/mol/rad^2)
     and equilibrium angle (in degrees).
 
     Parameters
@@ -565,12 +568,12 @@ def force_angle_constant(
         Index of atom C (right, starting from 0).
 
     bond_lengths : (N, N) array
-        An N * N array containing the bond lengths for 
+        An N * N array containing the bond lengths for
         all the possible pairs of atoms.
 
     eigenvalues : (N, N, 3) array
         A numpy array of shape (N, N, 3) containing
-        eigenvalues of the hessian matrix, where N 
+        eigenvalues of the hessian matrix, where N
         is the total number of atoms.
 
     eigenvectors : (3, 3, N, N) array
@@ -590,7 +593,7 @@ def force_angle_constant(
     Returns
     -------
     k_theta : float
-        Force angle constant calculated using modified 
+        Force angle constant calculated using modified
         seminario method.
 
     k_0 : float
@@ -639,7 +642,7 @@ def force_angle_constant(
         1 / ((bond_length_BC ** 2) * sum_second)
     )
     k_theta = 1 / k_theta
-    k_theta = -k_theta            # Change to OPLS form
+    k_theta = -k_theta  # Change to OPLS form
     k_theta = abs(k_theta * 0.5)  # Change to OPLS form
     # Equilibrium Angle
     theta_0 = math.degrees(math.acos(np.dot(u_AB, u_CB)))
@@ -672,11 +675,11 @@ def dot_product(u_PA, eig_AB):
     Parameters
     ----------
     u_PA : (..., 1, 3) array
-        Unit vector perpendicular to AB and in the 
+        Unit vector perpendicular to AB and in the
         plane of A, B, C.
 
     eig_AB : (..., 3, 3) array
-        Eigenvectors of the hessian matrix for 
+        Eigenvectors of the hessian matrix for
         the bond AB.
 
     """
@@ -699,11 +702,11 @@ def force_angle_constant_special_case(
 ):
 
     """
-    Calculates force constant according to Equation 14 
+    Calculates force constant according to Equation 14
     of Seminario calculation paper when the vectors
-    u_CB and u_AB are linearly dependent and u_N cannot 
-    be defined. It instead takes samples of u_N across a 
-    unit sphere for the calculation; returns angle 
+    u_CB and u_AB are linearly dependent and u_N cannot
+    be defined. It instead takes samples of u_N across a
+    unit sphere for the calculation; returns angle
     (in kcal/mol/rad^2) and equilibrium angle in degrees.
 
     Parameters
@@ -718,12 +721,12 @@ def force_angle_constant_special_case(
         Index of atom C (right, starting from 0).
 
     bond_lengths : (N, N) array
-        An N * N array containing the bond lengths for 
+        An N * N array containing the bond lengths for
         all the possible pairs of atoms.
 
     eigenvalues : (N, N, 3) array
-        A numpy array of shape (N, N, 3) containing 
-        eigenvalues of the  hessian matrix, where N 
+        A numpy array of shape (N, N, 3) containing
+        eigenvalues of the  hessian matrix, where N
         is the total number of atoms.
 
     eigenvectors : (3, 3, N, N) array
@@ -731,7 +734,7 @@ def force_angle_constant_special_case(
         eigenvectors of the hessian matrix.
 
     coords : (N, 3) array
-        A numpy array of shape (N, 3) having the X, Y, 
+        A numpy array of shape (N, 3) having the X, Y,
         and Z coordinates of all N atoms.
 
     scaling_1 : float
@@ -743,7 +746,7 @@ def force_angle_constant_special_case(
     Returns
     -------
     k_theta : float
-        Force angle constant calculated using modified 
+        Force angle constant calculated using modified
         seminario method.
     k_0 : float
         Equilibrium angle between AB and BC.
@@ -799,7 +802,7 @@ def force_angle_constant_special_case(
                 1 / ((bond_length_BC ** 2) * sum_second)
             )
             k_theta_ij = 1 / k_theta_ij
-            k_theta_ij = -k_theta_ij            # Change to OPLS form
+            k_theta_ij = -k_theta_ij  # Change to OPLS form
             k_theta_ij = abs(k_theta_ij * 0.5)  # Change to OPLS form
             k_theta_array[theta, phi] = k_theta_ij
     # Removes cases where u_N was linearly dependent of u_CB or u_AB.
@@ -813,8 +816,8 @@ def force_angle_constant_special_case(
 def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
 
     """
-    Calculates the bond force constant for the bonds in the 
-    molecule according to equation 10 of seminario paper, 
+    Calculates the bond force constant for the bonds in the
+    molecule according to equation 10 of seminario paper,
     given the bond atoms' indices and the corresponding
     eigenvalues, eigenvectors and coordinates matrices.
 
@@ -827,16 +830,16 @@ def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
         Index of Atom B.
 
     eigenvalues : (N, N, 3) array
-        A numpy array of shape (N, N, 3) containing eigenvalues 
-        of the hessian matrix, where N is the total number 
+        A numpy array of shape (N, N, 3) containing eigenvalues
+        of the hessian matrix, where N is the total number
         of atoms.
 
     eigenvectors : (3, 3, N, N) array
-        A numpy array of shape (3, 3, N, N) containing the 
+        A numpy array of shape (3, 3, N, N) containing the
         eigenvectors of the hessian matrix.
 
     coords : (N, 3) array
-        A numpy array of shape (N, 3) having the X, Y, and 
+        A numpy array of shape (N, 3) having the X, Y, and
         Z  coordinates of all N atoms.
 
     Returns
@@ -928,7 +931,7 @@ def reverse_list(lst):
 def uniq(input_):
 
     """
-    Returns a list with only unique elements from a list 
+    Returns a list with only unique elements from a list
     containing duplicate / repeating elements.
 
     Parameters
@@ -958,13 +961,13 @@ def uniq(input_):
 def search_in_file(file: str, word: str) -> list:
 
     """
-    Search for the given string in file and return lines 
+    Search for the given string in file and return lines
     containing that string along with line numbers.
 
     Parameters
     ----------
     file : str
-        Input file. 
+        Input file.
 
     word : str
         Search word.
@@ -989,15 +992,15 @@ def search_in_file(file: str, word: str) -> list:
 def list_to_dict(lst):
 
     """
-    Converts an input list with mapped characters (every 
-    odd entry is the key of the dictionary and every 
+    Converts an input list with mapped characters (every
+    odd entry is the key of the dictionary and every
     even entry adjacent to the odd entry is its correponding
     value)  to a dictionary.
 
     Parameters
     ----------
     lst : list
-        Input list. 
+        Input list.
 
     Returns
     -------
@@ -1047,9 +1050,9 @@ def scale_list(list_):
 def list_kJ_kcal(list_):
 
     """
-    Convert the elements in the list from 
+    Convert the elements in the list from
     kiloJoules units to kiloCalories units.
- 
+
     Parameters
     ----------
     list_ : list
@@ -1073,8 +1076,8 @@ def list_kJ_kcal(list_):
 
 def list_hartree_kcal(list_):
     """
-    Convert the elements in the list from 
-    hartree units to kiloCalories units.  
+    Convert the elements in the list from
+    hartree units to kiloCalories units.
 
     Parameters
     ----------
@@ -1109,7 +1112,7 @@ def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
         Input file for the psi4 QM engine.
 
     xyz_file : str
-        XYZ format file to write the coords of the system. 
+        XYZ format file to write the coords of the system.
 
     """
     with open(psi_input_file, "r") as f:
@@ -1128,7 +1131,7 @@ def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
 
 
 def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
-    """ 
+    """
     Converts a XYZ file to a PDB file.
 
     Parameters
@@ -1143,7 +1146,7 @@ def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
         A pdb file to be used as a template for the required PDB.
 
     system_pdb : str
-        Output PDB file with the coordinates updated in the 
+        Output PDB file with the coordinates updated in the
         template pdb using XYZ file.
 
     """
@@ -1182,9 +1185,9 @@ def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     # command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
     command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_sdf
     os.system(command)
-    #off_molecule = openforcefield.topology.Molecule(system_sdf)
+    # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
     force_field = ForceField("openff_unconstrained-1.0.0.offxml")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
@@ -1254,9 +1257,9 @@ def generate_xml_from_charged_pdb_sdf(
         out.write(line_1)
         out.write(line_2)
         out.write(line_3)
-    #off_molecule = openforcefield.topology.Molecule(system_sdf)
+    # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
     force_field = ForceField("openff_unconstrained-1.0.0.offxml")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
@@ -1301,7 +1304,7 @@ def get_dihedrals(qm_scan_file):
 def get_qm_energies(qm_scan_file):
 
     """
-    Returns QM optimized energies from the torsiondrive 
+    Returns QM optimized energies from the torsiondrive
     scan file.
 
     Parameters
@@ -1333,7 +1336,7 @@ def get_qm_energies(qm_scan_file):
 def generate_mm_pdbs(qm_scan_file, template_pdb):
 
     """
-    Generate PDBs from the torsiondrive scan file 
+    Generate PDBs from the torsiondrive scan file
     based on a template PDB.
 
     """
@@ -1412,15 +1415,15 @@ def remove_mm_files(qm_scan_file):
 def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
 
     """
-    Returns sum of all the non-torsional energies (that 
-    includes HarmonicBondForce, HarmonicAngleForce 
-    and NonBondedForce) of the system from the PDB 
+    Returns sum of all the non-torsional energies (that
+    includes HarmonicBondForce, HarmonicAngleForce
+    and NonBondedForce) of the system from the PDB
     file given the topology and the forcefield file.
 
     Parameters
     ----------
     system_pdb : str
-        System PDB file to load the openmm system topology 
+        System PDB file to load the openmm system topology
         and coordinates.
 
     load_topology : {"openmm", "parmed"}
@@ -1491,7 +1494,7 @@ def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
 def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
 
     """
-    Returns potential energy of the system from the PDB file 
+    Returns potential energy of the system from the PDB file
     given the topology and the forcefield file.
 
     Parameters
@@ -1508,7 +1511,7 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
     Returns
     -------
     mm_potential_energies : list
-        List of all the non torsion mm energies for the 
+        List of all the non torsion mm energies for the
         generated PDB files.
 
     """
@@ -1656,7 +1659,7 @@ def objective_function(k_array, x, delta_qm):
 
 def fit_params(qm_scan_file, load_topology, system_xml, method):
     """
-    Optimization of the objective function. 
+    Optimization of the objective function.
     """
     k_guess = gen_init_guess(
         qm_scan_file=qm_scan_file,
@@ -1783,6 +1786,7 @@ def get_torsional_lines(
         tor_lines.append(line_to_append)
     return tor_lines
 
+
 def singular_resid(pdbfile, qmmmrebind_init_file):
 
     """
@@ -1806,11 +1810,15 @@ def singular_resid(pdbfile, qmmmrebind_init_file):
 
 
 def relax_init_structure(
-    pdbfile, prmtopfile, qmmmrebindpdb, sim_output = "output.pdb", sim_steps = 100000, 
+    pdbfile,
+    prmtopfile,
+    qmmmrebindpdb,
+    sim_output="output.pdb",
+    sim_steps=100000,
 ):
 
     """
-    Minimizing the initial PDB file with the given topology 
+    Minimizing the initial PDB file with the given topology
     file
 
     Parameters
@@ -1829,7 +1837,7 @@ def relax_init_structure(
 
     sim_steps: int
         MD simulation steps.
-        
+
     """
 
     prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
@@ -2142,6 +2150,7 @@ def run_openmm_prmtop_pdb(
     )
     simulation.step(sim_steps)
 
+
 def move_qmmmmrebind_files(
     prmtopfile="system_qmmmrebind.prmtop",
     inpcrdfile="system_qmmmrebind.inpcrd",
@@ -2149,7 +2158,7 @@ def move_qmmmmrebind_files(
 ):
 
     """
-    Moves QMMMReBind generated topology and parameter files 
+    Moves QMMMReBind generated topology and parameter files
     to a new directory .
 
     Parameters
@@ -2245,6 +2254,7 @@ def move_qmmmrebind_files():
     os.system(command)
     command = "mv " + "*.xyz* " + current_pwd + "/" + "qmmmrebind_data"
     os.system(command)
+
 
 class PrepareQMMM:
 
@@ -2358,7 +2368,6 @@ class PrepareQMMM:
         host_mm_region_I_pdb="host_mm_region_I.pdb",
         host_mm_region_II_pdb="host_mm_region_II.pdb",
     ):
-
 
         self.init_pdb = init_pdb
         self.distance = distance
@@ -2809,11 +2818,11 @@ class PrepareGaussianGuest:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the QM engine to select one of the methods for 
-        analyzing the electron density of the system. Methods used 
-        are based on fitting the molecular electrostatic potential. 
-        Methods used are : POP=CHELPG (Charges from Electrostatic 
-        Potentials using a Grid based method) and POP=MK 
+        Specifies the QM engine to select one of the methods for
+        analyzing the electron density of the system. Methods used
+        are based on fitting the molecular electrostatic potential.
+        Methods used are : POP=CHELPG (Charges from Electrostatic
+        Potentials using a Grid based method) and POP=MK
         (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
@@ -2833,8 +2842,8 @@ class PrepareGaussianGuest:
 
     def __init__(
         self,
-        charge = 0,
-        multiplicity = 1,
+        charge=0,
+        multiplicity=1,
         guest_pdb="guest_init_II.pdb",
         n_processors=12,
         memory=50,
@@ -2848,7 +2857,6 @@ class PrepareGaussianGuest:
         gauss_out_file="guest.out",
         fchk_out_file="guest_fchk.out",
     ):
-
 
         self.charge = charge
         self.multiplicity = multiplicity
@@ -3019,11 +3027,11 @@ class PrepareGaussianHostGuest:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the QM engine to select one of the methods for 
-        analyzing the electron density of the system. Methods used 
-        are based on fitting the molecular electrostatic potential. 
-        Methods used are : POP=CHELPG (Charges from Electrostatic 
-        Potentials using a Grid based method) and POP=MK 
+        Specifies the QM engine to select one of the methods for
+        analyzing the electron density of the system. Methods used
+        are based on fitting the molecular electrostatic potential.
+        Methods used are : POP=CHELPG (Charges from Electrostatic
+        Potentials using a Grid based method) and POP=MK
         (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
@@ -3058,8 +3066,8 @@ class PrepareGaussianHostGuest:
 
     def __init__(
         self,
-        charge = 0,
-        multiplicity = 1,
+        charge=0,
+        multiplicity=1,
         guest_pdb="guest_init_II.pdb",
         host_qm_pdb="host_qm.pdb",
         n_processors=12,
@@ -3984,11 +3992,11 @@ class PrepareGaussianHost:
         Specifies the integration grid.
 
     add_keywords_II: str, optional
-        Specifies the QM engine to select one of the methods for 
-        analyzing the electron density of the system. Methods used 
-        are based on fitting the molecular electrostatic potential. 
-        Methods used are : POP=CHELPG (Charges from Electrostatic 
-        Potentials using a Grid based method) and POP=MK 
+        Specifies the QM engine to select one of the methods for
+        analyzing the electron density of the system. Methods used
+        are based on fitting the molecular electrostatic potential.
+        Methods used are : POP=CHELPG (Charges from Electrostatic
+        Potentials using a Grid based method) and POP=MK
         (Merz-Singh-Kollman scheme)
 
     add_keywords_III: str, optional
@@ -4007,8 +4015,8 @@ class PrepareGaussianHost:
 
     def __init__(
         self,
-        charge = 0,
-        multiplicity = 1,
+        charge=0,
+        multiplicity=1,
         host_qm_pdb="host_qm.pdb",
         n_processors=12,
         memory=50,
@@ -4872,10 +4880,10 @@ class GuestAmberXMLAmber:
 
     def __init__(
         self,
-        charge = 0,
-        num_charge_atoms = "",
-        charge_atom_1 = "",
-        index_charge_atom_1 = "",
+        charge=0,
+        num_charge_atoms="",
+        charge_atom_1="",
+        index_charge_atom_1="",
         system_pdb="guest_init_II.pdb",
         system_mol2="guest.mol2",
         system_in="guest.in",
@@ -5006,9 +5014,9 @@ class GuestAmberXMLAmber:
         Generates an XML forcefield file from the SMILES file through
         openforcefield.
         """
-        #off_molecule = openforcefield.topology.Molecule(self.system_smi)
+        # off_molecule = openforcefield.topology.Molecule(self.system_smi)
         off_molecule = Molecule(self.system_smi)
-        #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
         force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
@@ -5031,9 +5039,9 @@ class GuestAmberXMLAmber:
             + self.system_sdf
         )
         os.system(command)
-        #off_molecule = openforcefield.topology.Molecule(self.system_sdf)
+        # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
         force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
@@ -5076,9 +5084,9 @@ class GuestAmberXMLAmber:
             out.write(line_1)
             out.write(line_2)
             out.write(line_3)
-        #off_molecule = openforcefield.topology.Molecule(self.system_sdf)
+        # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
         force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
@@ -5125,9 +5133,9 @@ class GuestAmberXMLAmber:
             out.write(line_1)
             out.write(line_2)
             out.write(line_3)
-        #off_molecule = openforcefield.topology.Molecule(self.system_sdf)
+        # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
         force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
@@ -6229,9 +6237,9 @@ class HostAmberXMLAmber:
             + self.system_sdf
         )
         os.system(command)
-        #off_molecule = openforcefield.topology.Molecule(self.system_sdf)
+        # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        #force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
         force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
@@ -7507,8 +7515,8 @@ class TorsionDriveSims:
 
     def __init__(
         self,
-        charge = 0,
-        multiplicity = 1,
+        charge=0,
+        multiplicity=1,
         reparameterised_system_xml_file="guest_reparameterised.xml",
         torsion_xml_file="guest_torsion_xml.txt",
         xyz_file="guest_coords.xyz",
@@ -8175,7 +8183,7 @@ class TorsionDriveSims:
 
     def run_torsion_sim(self):
         """
-        Run torsion scans using torsiondrive locally. 
+        Run torsion scans using torsiondrive locally.
         """
         parent_cwd = os.getcwd()
         target_dir = parent_cwd + "/" + self.tor_dir
@@ -8278,9 +8286,9 @@ class TorsionDriveParams:
 
     def __init__(
         self,
-        num_charge_atoms = "",
-        index_charge_atom_1 = "",
-        charge_atom_1 = "",
+        num_charge_atoms="",
+        index_charge_atom_1="",
+        charge_atom_1="",
         tor_dir="torsion_dir",
         reparameterized_torsional_params_file="reparameterized_torsional_params.txt",
         psi_input_file="torsion_drive_input.dat",
@@ -8298,7 +8306,7 @@ class TorsionDriveParams:
         reparameterised_system_xml_file="guest_reparameterised.xml",
         reparameterised_torsional_system_xml_file="guest_torsional_reparameterized.xml",
     ):
- 
+
         self.num_charge_atoms = num_charge_atoms
         self.index_charge_atom_1 = index_charge_atom_1
         self.charge_atom_1 = charge_atom_1
@@ -8429,7 +8437,7 @@ class TorsionDriveParams:
                     "Torsional Scan file not found, optimization may not \
                      be complete. Existing!!"
                 )
-                os.chdir(parent_cwd)                           
+                os.chdir(parent_cwd)
         torsional_parameters = [
             item for sublist in torsional_parameters_list for item in sublist
         ]
@@ -8509,15 +8517,16 @@ class TorsionDriveParams:
             for i in xml_tor_reparams_lines:
                 f.write(i)
 
+
 class PrepareSolvatedParams:
 
     """
-    A class used to integrate the parameterized topology 
+    A class used to integrate the parameterized topology
     files of the receptor - ligand complex and the solvent.
 
-    This class contain methods to concatanate the solvent (and 
-    ions ) and the receptor - ligand complex in a single 
-    parameterized topology file (prmtop and inpcrd). 
+    This class contain methods to concatanate the solvent (and
+    ions ) and the receptor - ligand complex in a single
+    parameterized topology file (prmtop and inpcrd).
 
     ...
 
@@ -8538,37 +8547,37 @@ class PrepareSolvatedParams:
         Solvent topology file.
 
     solvent_inpcrd : str, optional
-        Solvent coordinate file. 
+        Solvent coordinate file.
 
     solvent_amber_pdb : str, optional
-        Solvent PDB file saved from Amber's tleap. 
+        Solvent PDB file saved from Amber's tleap.
 
     solvent_leap : str, optional
-        Solvent tleap file for parameterizing the solvent. 
+        Solvent tleap file for parameterizing the solvent.
 
     system_prmtop : str, optional
         Topology file of the receptor - ligand complex.
 
-    system_inpcrd : str, optional 
+    system_inpcrd : str, optional
         Coordinate file of the receptor - ligand complex.
 
     system_output: str, optional
-        PDB file containing the trajectory coordinates for 
+        PDB file containing the trajectory coordinates for
         the OpenMM simulation.
 
     sim_steps: str, optional
         Number of steps in the OpenMM MD simulation.
 
     system_solvent_prmtop : str, optional
-        Topology file of the receptor - ligand complex and 
+        Topology file of the receptor - ligand complex and
         the solvent.
 
-    system_solvent_inpcrd : str, optional 
-        Coordinate file of the receptor - ligand complex and 
+    system_solvent_inpcrd : str, optional
+        Coordinate file of the receptor - ligand complex and
         the solvent.
 
-    system_solvent_pdb : str, optional 
-        PDB file of the receptor - ligand complex and 
+    system_solvent_pdb : str, optional
+        PDB file of the receptor - ligand complex and
         the solvent.
 
     """
@@ -8588,7 +8597,7 @@ class PrepareSolvatedParams:
         sim_steps=1000,
         system_solvent_prmtop="system_qmmmrebind.prmtop",
         system_solvent_inpcrd="system_qmmmrebind.inpcrd",
-        system_solvent_pdb = "system_qmmmrebind.pdb",
+        system_solvent_pdb="system_qmmmrebind.pdb",
     ):
 
         self.init_pdb = init_pdb
@@ -8656,8 +8665,8 @@ class PrepareSolvatedParams:
 
     def parameterize_solvent_pdb(self):
         """
-        Generates a topology file (prmtop) and a coordinate 
-        file (inpcrd) for the solvent system. 
+        Generates a topology file (prmtop) and a coordinate
+        file (inpcrd) for the solvent system.
         """
         line_0 = " "
         line_1 = "source leaprc.protein.ff14SB"
@@ -8774,7 +8783,7 @@ class PrepareSolvatedParams:
 
     def merge_topology_files_system_solvent(self):
         """
-        Merge the system and solvent topology and coordinate 
+        Merge the system and solvent topology and coordinate
         files.
         """
         print(
@@ -8843,7 +8852,6 @@ class PrepareSolvatedParams:
         simulation.step(self.sim_steps)
         command = "rm -rf " + self.system_output
         os.system(command)
-
 
     def run_openmm_system_solvent_prmtop_pdb(self):
         """
