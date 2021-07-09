@@ -2046,6 +2046,110 @@ def run_openmm_prmtop_pdb(
     )
     simulation.step(sim_steps)
 
+def move_qmmmmrebind_files(
+    prmtopfile="system_qmmmrebind.prmtop",
+    inpcrdfile="system_qmmmrebind.inpcrd",
+    pdbfile="system_qmmmrebind.pdb",
+):
+
+    """
+    Moves QMMMReBind generated topology and parameter files 
+    to a new directory 
+
+    Parameters
+    ----------
+    prmtopfile: str
+       QMMMReBind generated prmtop file
+
+    inpcrdfile: str
+        QMMMReBind generated inpcrd file
+
+    pdbfile: str
+        QMMMReBind generated PDB file
+
+    """
+    current_pwd = os.getcwd()
+    command = "rm -rf reparameterized_files"
+    os.system(command)
+    command = "mkdir reparameterized_files"
+    os.system(command)
+    shutil.copy(
+        current_pwd + "/" + prmtopfile,
+        current_pwd + "/" + "reparameterized_files" + "/" + prmtopfile,
+    )
+    shutil.copy(
+        current_pwd + "/" + inpcrdfile,
+        current_pwd + "/" + "reparameterized_files" + "/" + inpcrdfile,
+    )
+    shutil.copy(
+        current_pwd + "/" + pdbfile,
+        current_pwd + "/" + "reparameterized_files" + "/" + pdbfile,
+    )
+
+
+def move_qm_files():
+
+    """
+    Moves QM engine generated files to a new directory 
+
+    """
+    current_pwd = os.getcwd()
+    command = "rm -rf qm_data"
+    os.system(command)
+    command = "mkdir qm_data"
+    os.system(command)
+    command = "cp -r " + "*.com* " + current_pwd + "/" + "qm_data"
+    os.system(command)
+    command = "cp -r " + "*.log* " + current_pwd + "/" + "qm_data"
+    os.system(command)
+    command = "cp -r " + "*.chk* " + current_pwd + "/" + "qm_data"
+    os.system(command)
+    command = "cp -r " + "*.fchk* " + current_pwd + "/" + "qm_data"
+    os.system(command)
+
+
+def move_qmmmrebind_files():
+
+    """
+    Moves all QMMMREBind files to a new directory
+
+    """
+    current_pwd = os.getcwd()
+    command = "rm -rf qmmmrebind_data"
+    os.system(command)
+    command = "mkdir qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.sdf* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.txt* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.pdb* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.xml* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.chk* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.fchk* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.com* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.log* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.inpcrd* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.prmtop* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.parm7* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.out* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*run_command* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.dat* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+    command = "mv " + "*.xyz* " + current_pwd + "/" + "qmmmrebind_data"
+    os.system(command)
+
 class PrepareQMMM:
 
     """
