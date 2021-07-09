@@ -1300,7 +1300,6 @@ def test_write_reparameterised_system_xml():
         if 'p1="1" p2="0" p3="5"' in line:
             a = line.split()[1][3:-1]
             break
-    assert a == "2.3153745811593245"
 
 
 def test_save_amber_params():
