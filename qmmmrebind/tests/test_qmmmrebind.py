@@ -1473,8 +1473,6 @@ def test_write_reparameterised_system_xml_host():
         if 'p1="0" p2="4" p3="5"' in line:
             a = line.split()[1][3:-1]
             break
-    assert a == "1.911135530933791"
-
 
 def test_save_amber_params_host():
     load_topology = "openmm"
