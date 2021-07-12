@@ -1973,6 +1973,30 @@ def add_period_prmtop(prmtopfile):
         file.writelines(prmtopfilelines)
 
 
+def add_radius_prmtop(prmtopfile):
+
+    """
+    Adds radius information in the prmtop file.
+
+    Parameters
+    ----------
+    prmtopfile: str
+       Input prmtop file
+
+    """
+
+    prmtopfilelines = open(prmtopfile, "r").readlines()
+    for i in range(len(prmtopfilelines)):
+        if "%FLAG RADIUS_SET" in prmtopfilelines[i]:
+            j = i + 2
+            line_prmtop = prmtopfilelines[j]
+            print(line_prmtop)
+            l_prmtop = "modified Bondi radii (mbondi)"
+            prmtopfilelines[j] = l_prmtop + "\n"
+    with open(prmtopfile, "w") as file:
+        file.writelines(prmtopfilelines)
+
+
 def add_dim_prmtop(pdbfile, prmtopfile):
 
     """
