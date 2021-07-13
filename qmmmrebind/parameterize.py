@@ -2050,7 +2050,6 @@ def run_openmm_prmtop_inpcrd(
     prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
     inpcrd = simtk.openmm.app.AmberInpcrdFile(inpcrdfile)
     system = prmtop.createSystem(
-        nonbondedMethod=simtk.openmm.app.PME,
         nonbondedCutoff=1 * simtk.unit.nanometer,
         constraints=simtk.openmm.app.HBonds,
     )
@@ -2117,7 +2116,6 @@ def run_openmm_prmtop_pdb(
     prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
     pdb = simtk.openmm.app.PDBFile(pdbfile)
     system = prmtop.createSystem(
-        nonbondedMethod=simtk.openmm.app.PME,
         nonbondedCutoff=1 * simtk.unit.nanometer,
         constraints=simtk.openmm.app.HBonds,
     )
