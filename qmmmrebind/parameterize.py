@@ -1990,27 +1990,32 @@ def add_dim_prmtop(pdbfile, prmtopfile):
     command = "mv  intermediate.prmtop " + prmtopfile
     os.system(command)
 
-def prmtop_calibration(prmtopfile = "system_qmmmrebind.prmtop", inpcrdfile = "system_qmmmrebind.inpcrd"):
-    
+
+def prmtop_calibration(
+    prmtopfile="system_qmmmrebind.prmtop",
+    inpcrdfile="system_qmmmrebind.inpcrd",
+):
+
     """
-    Standardizes the topology files 
+    Standardizes the topology files
 
     Parameters
     ----------
-    
+
     prmtopfile: str
        Input prmtop file.
 
     inpcrdfile: str
        Input coordinate file.
-       
+
     """
     parm = parmed.load_file(prmtopfile, inpcrdfile)
     parm_ = parmed.tools.actions.changeRadii(parm, "mbondi3")
     parm_.execute()
     parm__ = parmed.tools.actions.setMolecules(parm)
     parm__.execute()
-    parm.save(prmtopfile, overwrite = True)
+    parm.save(prmtopfile, overwrite=True)
+
 
 def run_openmm_prmtop_inpcrd(
     pdbfile,
