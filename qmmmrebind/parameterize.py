@@ -1943,7 +1943,6 @@ def add_vectors_inpcrd(pdbfile, inpcrdfile):
     with open(inpcrdfile, "a+") as f:
         f.write(line_to_add)
 
-
 def add_dim_prmtop(pdbfile, prmtopfile):
 
     """
@@ -2010,12 +2009,11 @@ def prmtop_calibration(
 
     """
     parm = parmed.load_file(prmtopfile, inpcrdfile)
-    parm_ = parmed.tools.actions.changeRadii(parm, "mbondi3")
-    parm_.execute()
-    parm__ = parmed.tools.actions.setMolecules(parm)
-    parm__.execute()
+    parm_1 = parmed.tools.actions.changeRadii(parm, "mbondi3")
+    parm_1.execute()
+    parm_2 = parmed.tools.actions.setMolecules(parm)
+    parm_2.execute()
     parm.save(prmtopfile, overwrite=True)
-
 
 def run_openmm_prmtop_inpcrd(
     pdbfile,
