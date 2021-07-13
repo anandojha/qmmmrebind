@@ -1944,59 +1944,6 @@ def add_vectors_inpcrd(pdbfile, inpcrdfile):
         f.write(line_to_add)
 
 
-def add_period_prmtop(prmtopfile):
-
-    """
-    Adds periodicity keyword in the prmtop file.
-
-    Parameters
-    ----------
-    prmtopfile: str
-       Input prmtop file
-
-    """
-
-    prmtopfilelines = open(prmtopfile, "r").readlines()
-    for i in range(len(prmtopfilelines)):
-        if "FLAG POINTERS" in prmtopfilelines[i]:
-            j = i + 4
-            line_prmtop = prmtopfilelines[j]
-            print(line_prmtop)
-            l = re.findall(r"[-+]?\d*\.\d+|\d+", line_prmtop)
-            l[7] = "1"
-            l_per = "{:>8}  {:>6}  {:>6} {:>7} {:>7} {:>7} {:>7} {:>7} {:>7} {:>7}".format(
-                l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7], l[8], l[9]
-            )
-            print(l_per)
-            prmtopfilelines[j] = l_per + "\n"
-    with open(prmtopfile, "w") as file:
-        file.writelines(prmtopfilelines)
-
-
-def add_radius_prmtop(prmtopfile):
-
-    """
-    Adds radius information in the prmtop file.
-
-    Parameters
-    ----------
-    prmtopfile: str
-       Input prmtop file
-
-    """
-
-    prmtopfilelines = open(prmtopfile, "r").readlines()
-    for i in range(len(prmtopfilelines)):
-        if "%FLAG RADIUS_SET" in prmtopfilelines[i]:
-            j = i + 2
-            line_prmtop = prmtopfilelines[j]
-            print(line_prmtop)
-            l_prmtop = "modified Bondi radii (mbondi)"
-            prmtopfilelines[j] = l_prmtop + "\n"
-    with open(prmtopfile, "w") as file:
-        file.writelines(prmtopfilelines)
-
-
 def add_dim_prmtop(pdbfile, prmtopfile):
 
     """
@@ -2043,6 +1990,27 @@ def add_dim_prmtop(pdbfile, prmtopfile):
     command = "mv  intermediate.prmtop " + prmtopfile
     os.system(command)
 
+def prmtop_calibration(prmtopfile = "system_qmmmrebind.prmtop", inpcrdfile = "system_qmmmrebind.inpcrd"):
+    
+    """
+    Standardizes the topology files 
+
+    Parameters
+    ----------
+    
+    prmtopfile: str
+       Input prmtop file.
+
+    inpcrdfile: str
+       Input coordinate file.
+       
+    """
+    parm = parmed.load_file(prmtopfile, inpcrdfile)
+    parm_ = parmed.tools.actions.changeRadii(parm, "mbondi3")
+    parm_.execute()
+    parm__ = parmed.tools.actions.setMolecules(parm)
+    parm__.execute()
+    parm.save(prmtopfile, overwrite = True)
 
 def run_openmm_prmtop_inpcrd(
     pdbfile,
