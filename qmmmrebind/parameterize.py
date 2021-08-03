@@ -1181,8 +1181,8 @@ def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     os.system(command)
     # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
     structure = parmed.openmm.load_topology(
@@ -1253,8 +1253,8 @@ def generate_xml_from_charged_pdb_sdf(
         out.write(line_3)
     # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
     structure = parmed.openmm.load_topology(
@@ -5003,8 +5003,8 @@ class GuestAmberXMLAmber:
         """
         # off_molecule = openforcefield.topology.Molecule(self.system_smi)
         off_molecule = Molecule(self.system_smi)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5028,8 +5028,8 @@ class GuestAmberXMLAmber:
         os.system(command)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5073,8 +5073,8 @@ class GuestAmberXMLAmber:
             out.write(line_3)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5122,8 +5122,8 @@ class GuestAmberXMLAmber:
             out.write(line_3)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -6741,8 +6741,8 @@ class HostAmberXMLAmber:
         os.system(command)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -7861,7 +7861,7 @@ class RunOpenMMSims:
         command = "rm -rf " + self.system_output
         os.system(command)
 
-    def run_openmm_xml_pdb(system_pdb, system_xml, system_output, sim_steps):
+    def run_openmm_xml_pdb(self):
         """
         Runs OpenMM MD simulation with XML and PDB file.
         """
