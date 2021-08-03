@@ -498,6 +498,92 @@ def copy_file(source, destination):
     """
     shutil.copy(source, destination)
 
+def get_openmm_energies(system_pdb, system_xml):
+
+    """
+    Returns decomposed OPENMM energies for the
+    system.
+
+    Parameters
+    ----------
+    system_pdb : str
+        Input PDB file
+
+    system_xml : str
+        Forcefield file in XML format
+
+    """
+
+    pdb = simtk.openmm.app.PDBFile(system_pdb)
+    ff_xml_file = open(system_xml, "r")
+    system = simtk.openmm.XmlSerializer.deserialize(ff_xml_file.read())
+    integrator = simtk.openmm.LangevinIntegrator(
+        300 * simtk.unit.kelvin,
+        1 / simtk.unit.picosecond,
+        0.002 * simtk.unit.picoseconds,
+    )
+    simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
+    simulation.context.setPositions(pdb.positions)
+    state = simulation.context.getState(
+        getEnergy=True, getParameters=True, getForces=True
+    )
+    force_group = []
+    for i, force in enumerate(system.getForces()):
+        force_group.append(force.__class__.__name__)
+    forcegroups = {}
+    for i in range(system.getNumForces()):
+        force = system.getForce(i)
+        force.setForceGroup(i)
+        forcegroups[force] = i
+    energies = {}
+    for f, i in forcegroups.items():
+        energies[f] = (
+            simulation.context.getState(getEnergy=True, groups=2 ** i)
+            .getPotentialEnergy()
+            ._value
+        )
+    decomposed_energy = []
+    for key, val in energies.items():
+        decomposed_energy.append(val)
+    df_energy_openmm = pd.DataFrame(
+        list(zip(force_group, decomposed_energy)),
+        columns=["Energy_term", "Energy_openmm_params"],
+    )
+    energy_values = [
+        list(
+            df_energy_openmm.loc[
+                df_energy_openmm["Energy_term"] == "HarmonicBondForce"
+            ].values[0]
+        )[1],
+        list(
+            df_energy_openmm.loc[
+                df_energy_openmm["Energy_term"] == "HarmonicAngleForce"
+            ].values[0]
+        )[1],
+        list(
+            df_energy_openmm.loc[
+                df_energy_openmm["Energy_term"] == "PeriodicTorsionForce"
+            ].values[0]
+        )[1],
+        list(
+            df_energy_openmm.loc[
+                df_energy_openmm["Energy_term"] == "NonbondedForce"
+            ].values[0]
+        )[1],
+    ]
+    energy_group = [
+        "HarmonicBondForce",
+        "HarmonicAngleForce",
+        "PeriodicTorsionForce",
+        "NonbondedForce",
+    ]
+    df_energy_open_mm = pd.DataFrame(
+        list(zip(energy_group, energy_values)),
+        columns=["Energy_term", "Energy_openmm_params"],
+    )
+    df_energy_open_mm = df_energy_open_mm.set_index("Energy_term")
+    print(df_energy_open_mm)
+
 
 def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
 
@@ -1937,6 +2023,7 @@ def add_vectors_inpcrd(pdbfile, inpcrdfile):
     with open(inpcrdfile, "a+") as f:
         f.write(line_to_add)
 
+
 def add_dim_prmtop(pdbfile, prmtopfile):
 
     """
@@ -2008,6 +2095,7 @@ def prmtop_calibration(
     parm_2 = parmed.tools.actions.setMolecules(parm)
     parm_2.execute()
     parm.save(prmtopfile, overwrite=True)
+
 
 def run_openmm_prmtop_inpcrd(
     pdbfile,
@@ -5305,7 +5393,7 @@ class GuestAmberXMLAmber:
 
     def write_intermediate_reparameterised_system_xml(self):
         """
-        Writes a reparameterised XML force field file for 
+        Writes a reparameterised XML force field file for
         ligand but without the QM obtained charges.
         """
         # Bond Parameters
@@ -5525,7 +5613,6 @@ class GuestAmberXMLAmber:
         for i in lines:
             f_cop.write(i)
         f_cop.close()
-
 
     def write_reparameterised_system_xml(self):
         """
@@ -5856,7 +5943,6 @@ class GuestAmberXMLAmber:
             f_reparams_xml.write(x)
         f_reparams_xml.close()
 
-
     def save_amber_params_non_qm_charges(self):
         """
         Saves amber generated topology files for the ligand
@@ -6007,12 +6093,16 @@ class GuestAmberXMLAmber:
         if self.load_topology == "parmed":
             openmm_system = parmed.openmm.load_topology(
                 parmed.load_file(self.system_pdb, structure=True).topology,
-                parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+                parmed.load_file(
+                    self.reparameterised_intermediate_system_xml_file
+                ),
             )
         if self.load_topology == "openmm":
             openmm_system = parmed.openmm.load_topology(
                 simtk.openmm.app.PDBFile(self.system_pdb).topology,
-                parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+                parmed.load_file(
+                    self.reparameterised_intermediate_system_xml_file
+                ),
             )
         openmm_system.save(self.prmtop_system_params, overwrite=True)
         openmm_system.coordinates = parmed.load_file(
@@ -6025,7 +6115,9 @@ class GuestAmberXMLAmber:
 
         xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
             openmm_system,
-            parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+            parmed.load_file(
+                self.reparameterised_intermediate_system_xml_file
+            ),
         )
         xml_energy_decomposition_value = [
             list_to_dict(
@@ -6144,8 +6236,6 @@ class GuestAmberXMLAmber:
 
         df_compare = pd.concat([df_energy_xml, df_energy_prmtop], axis=1)
         print(df_compare)
-
-
 
     def save_amber_params(self):
         """
@@ -7775,7 +7865,6 @@ class RunOpenMMSims:
         self.system_xml = system_xml
         self.system_output = system_output
         self.sim_steps = sim_steps
-
 
     def run_openmm_prmtop_inpcrd(self):
         """
