@@ -1,19 +1,13 @@
 from openff.toolkit.typing.engines.smirnoff import ForceField
 from openff.toolkit.topology import Molecule, Topology
-
-# import openforcefield.typing.engines.smirnoff
 from biopandas.pdb import PandasPdb
 import matplotlib.pyplot as plt
 from operator import itemgetter
-
-# import openforcefield.topology
 from mendeleev import element
 from simtk.openmm import app
 from scipy import optimize
 import subprocess as sp
 from sys import stdout
-
-# import openforcefield
 import pandas as pd
 import numpy as np
 import statistics
@@ -1187,8 +1181,8 @@ def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
     os.system(command)
     # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+    force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
     structure = parmed.openmm.load_topology(
@@ -1259,8 +1253,8 @@ def generate_xml_from_charged_pdb_sdf(
         out.write(line_3)
     # off_molecule = openforcefield.topology.Molecule(system_sdf)
     off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+    force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
     system = force_field.create_openmm_system(off_molecule.to_topology())
     pdbfile = simtk.openmm.app.PDBFile(system_pdb)
     structure = parmed.openmm.load_topology(
@@ -5009,8 +5003,8 @@ class GuestAmberXMLAmber:
         """
         # off_molecule = openforcefield.topology.Molecule(self.system_smi)
         off_molecule = Molecule(self.system_smi)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5034,8 +5028,8 @@ class GuestAmberXMLAmber:
         os.system(command)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5079,8 +5073,8 @@ class GuestAmberXMLAmber:
             out.write(line_3)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5128,8 +5122,8 @@ class GuestAmberXMLAmber:
             out.write(line_3)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -5308,6 +5302,230 @@ class GuestAmberXMLAmber:
             )
         xml.write("Finish writing the Charge Parameters" + "\n")
         xml.close()
+
+    def write_intermediate_reparameterised_system_xml(self):
+        """
+        Writes a reparameterised XML force field file for 
+        ligand but without the QM obtained charges.
+        """
+        # Bond Parameters
+        f_params = open(self.system_qm_params_file, "r")
+        lines_params = f_params.readlines()
+        # Bond Parameters
+        for i in range(len(lines_params)):
+            if "Begin writing the Bond Parameters" in lines_params[i]:
+                to_begin = int(i)
+            if "Finish writing the Bond Parameters" in lines_params[i]:
+                to_end = int(i)
+        bond_params = lines_params[to_begin + 1 : to_end]
+        index_search_replace_bond = []
+        for i in bond_params:
+            bond_line_to_replace = i
+            # print(bond_line_to_replace)
+            atom_number_list = [
+                re.findall("\d*\.?\d+", i)[3],
+                re.findall("\d*\.?\d+", i)[5],
+            ]
+            # print(atom_number_list)
+            comb_1 = (
+                "p1="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + "/>"
+            )
+            comb_2 = (
+                "p1="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + "/>"
+            )
+            comb_list_bond = [comb_1, comb_2]
+            # print(comb_list_bond)
+            list_search_bond = [
+                search_in_file(file=self.system_xml, word=comb_1),
+                search_in_file(file=self.system_xml, word=comb_2),
+            ]
+            # print(list_search_bond)
+            for j in range(len(list_search_bond)):
+                if list_search_bond[j] != []:
+                    to_add = (list_search_bond[j], i)
+                    # print(to_add)
+                    index_search_replace_bond.append(to_add)
+        # Angle Parameters
+        for i in range(len(lines_params)):
+            if "Begin writing the Angle Parameters" in lines_params[i]:
+                to_begin = int(i)
+            if "Finish writing the Angle Parameters" in lines_params[i]:
+                to_end = int(i)
+        angle_params = lines_params[to_begin + 1 : to_end]
+        index_search_replace_angle = []
+        for i in angle_params:
+            angle_line_to_replace = i
+            # print(angle_line_to_replace)
+        index_search_replace_angle = []
+        for i in angle_params:
+            angle_line_to_replace = i
+            # print(angle_line_to_replace)
+            atom_number_list = [
+                re.findall("\d*\.?\d+", i)[3],
+                re.findall("\d*\.?\d+", i)[5],
+                re.findall("\d*\.?\d+", i)[7],
+            ]
+            # print(atom_number_list)
+            comb_1 = (
+                "p1="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + "/>"
+            )
+            comb_2 = (
+                "p1="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + "/>"
+            )
+            comb_3 = (
+                "p1="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + "/>"
+            )
+            comb_4 = (
+                "p1="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + "/>"
+            )
+            comb_5 = (
+                "p1="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + "/>"
+            )
+            comb_6 = (
+                "p1="
+                + '"'
+                + atom_number_list[2]
+                + '"'
+                + " "
+                + "p2="
+                + '"'
+                + atom_number_list[1]
+                + '"'
+                + " "
+                + "p3="
+                + '"'
+                + atom_number_list[0]
+                + '"'
+                + "/>"
+            )
+            comb_list_angle = [
+                comb_1,
+                comb_2,
+                comb_3,
+                comb_4,
+                comb_5,
+                comb_6,
+            ]
+            # print(comb_list_angle)
+            list_search_angle = [
+                search_in_file(file=self.system_xml, word=comb_1),
+                search_in_file(file=self.system_xml, word=comb_2),
+                search_in_file(file=self.system_xml, word=comb_3),
+                search_in_file(file=self.system_xml, word=comb_4),
+                search_in_file(file=self.system_xml, word=comb_5),
+                search_in_file(file=self.system_xml, word=comb_6),
+            ]
+            # print(list_search_angle)
+            for j in range(len(list_search_angle)):
+                if list_search_angle[j] != []:
+                    to_add = (list_search_angle[j], i)
+                    # print(to_add)
+                    index_search_replace_angle.append(to_add)
+        f_org = open(self.system_xml)
+        lines = f_org.readlines()
+        for i in range(len(index_search_replace_bond)):
+            line_number = index_search_replace_bond[i][0][0][0] - 1
+            line_to_replace = index_search_replace_bond[i][0][0][1]
+            line_to_replace_with = index_search_replace_bond[i][1]
+            lines[line_number] = line_to_replace_with
+        for i in range(len(index_search_replace_angle)):
+            line_number = index_search_replace_angle[i][0][0][0] - 1
+            line_to_replace = index_search_replace_angle[i][0][0][1]
+            line_to_replace_with = index_search_replace_angle[i][1]
+            lines[line_number] = line_to_replace_with
+        f_cop = open(self.reparameterised_intermediate_system_xml_file, "w")
+        for i in lines:
+            f_cop.write(i)
+        f_cop.close()
+
 
     def write_reparameterised_system_xml(self):
         """
@@ -5637,6 +5855,297 @@ class GuestAmberXMLAmber:
         for x in lines_after_params:
             f_reparams_xml.write(x)
         f_reparams_xml.close()
+
+
+    def save_amber_params_non_qm_charges(self):
+        """
+        Saves amber generated topology files for the ligand
+        without the QM charges.
+        """
+        if self.load_topology == "parmed":
+            openmm_system = parmed.openmm.load_topology(
+                parmed.load_file(self.system_pdb, structure=True).topology,
+                parmed.load_file(self.non_reparameterised_system_xml_file),
+            )
+        if self.load_topology == "openmm":
+            openmm_system = parmed.openmm.load_topology(
+                simtk.openmm.app.PDBFile(self.system_pdb).topology,
+                parmed.load_file(self.non_reparameterised_system_xml_file),
+            )
+        openmm_system.save(self.prmtop_system_non_params, overwrite=True)
+        openmm_system.coordinates = parmed.load_file(
+            self.system_pdb, structure=True
+        ).coordinates
+        openmm_system.save(self.inpcrd_system_non_params, overwrite=True)
+        parm = parmed.load_file(
+            self.prmtop_system_non_params,
+            self.inpcrd_system_non_params,
+        )
+
+        xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            openmm_system,
+            parmed.load_file(self.non_reparameterised_system_xml_file),
+        )
+        xml_energy_decomposition_value = [
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicBondForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicAngleForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("PeriodicTorsionForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("NonbondedForce"),
+        ]
+        xml_energy_decomposition_list = [
+            "HarmonicBondForce",
+            "HarmonicAngleForce",
+            "PeriodicTorsionForce",
+            "NonbondedForce",
+        ]
+        df_energy_xml = pd.DataFrame(
+            list(
+                zip(
+                    xml_energy_decomposition_list,
+                    xml_energy_decomposition_value,
+                )
+            ),
+            columns=["Energy_term", "Energy_xml_non_params"],
+        )
+        df_energy_xml = df_energy_xml.set_index("Energy_term")
+
+        prmtop_energy_decomposition = (
+            parmed.openmm.energy_decomposition_system(
+                parm, parm.createSystem()
+            )
+        )
+        prmtop_energy_decomposition_value = [
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicBondForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicAngleForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("PeriodicTorsionForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("NonbondedForce"),
+        ]
+        prmtop_energy_decomposition_list = [
+            "HarmonicBondForce",
+            "HarmonicAngleForce",
+            "PeriodicTorsionForce",
+            "NonbondedForce",
+        ]
+        df_energy_prmtop = pd.DataFrame(
+            list(
+                zip(
+                    prmtop_energy_decomposition_list,
+                    prmtop_energy_decomposition_value,
+                )
+            ),
+            columns=["Energy_term", "Energy_prmtop_non_params"],
+        )
+        df_energy_prmtop = df_energy_prmtop.set_index("Energy_term")
+
+        df_compare = pd.concat([df_energy_xml, df_energy_prmtop], axis=1)
+        print(df_compare)
+
+        if self.load_topology == "parmed":
+            openmm_system = parmed.openmm.load_topology(
+                parmed.load_file(self.system_pdb, structure=True).topology,
+                parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+            )
+        if self.load_topology == "openmm":
+            openmm_system = parmed.openmm.load_topology(
+                simtk.openmm.app.PDBFile(self.system_pdb).topology,
+                parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+            )
+        openmm_system.save(self.prmtop_system_params, overwrite=True)
+        openmm_system.coordinates = parmed.load_file(
+            self.system_pdb, structure=True
+        ).coordinates
+        openmm_system.save(self.inpcrd_system_params, overwrite=True)
+        parm = parmed.load_file(
+            self.prmtop_system_params, self.inpcrd_system_params
+        )
+
+        xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            openmm_system,
+            parmed.load_file(self.reparameterised_intermediate_system_xml_file),
+        )
+        xml_energy_decomposition_value = [
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicBondForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicAngleForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("PeriodicTorsionForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in xml_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("NonbondedForce"),
+        ]
+        xml_energy_decomposition_list = [
+            "HarmonicBondForce",
+            "HarmonicAngleForce",
+            "PeriodicTorsionForce",
+            "NonbondedForce",
+        ]
+        df_energy_xml = pd.DataFrame(
+            list(
+                zip(
+                    xml_energy_decomposition_list,
+                    xml_energy_decomposition_value,
+                )
+            ),
+            columns=["Energy_term", "Energy_xml_params"],
+        )
+        df_energy_xml = df_energy_xml.set_index("Energy_term")
+
+        prmtop_energy_decomposition = (
+            parmed.openmm.energy_decomposition_system(
+                parm, parm.createSystem()
+            )
+        )
+        prmtop_energy_decomposition_value = [
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicBondForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("HarmonicAngleForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("PeriodicTorsionForce"),
+            list_to_dict(
+                [
+                    item
+                    for sublist in [
+                        list(elem) for elem in prmtop_energy_decomposition
+                    ]
+                    for item in sublist
+                ]
+            ).get("NonbondedForce"),
+        ]
+        prmtop_energy_decomposition_list = [
+            "HarmonicBondForce",
+            "HarmonicAngleForce",
+            "PeriodicTorsionForce",
+            "NonbondedForce",
+        ]
+        df_energy_prmtop = pd.DataFrame(
+            list(
+                zip(
+                    prmtop_energy_decomposition_list,
+                    prmtop_energy_decomposition_value,
+                )
+            ),
+            columns=["Energy_term", "Energy_prmtop_params"],
+        )
+        df_energy_prmtop = df_energy_prmtop.set_index("Energy_term")
+
+        df_compare = pd.concat([df_energy_xml, df_energy_prmtop], axis=1)
+        print(df_compare)
+
+
 
     def save_amber_params(self):
         """
@@ -6232,8 +6741,8 @@ class HostAmberXMLAmber:
         os.system(command)
         # off_molecule = openforcefield.topology.Molecule(self.system_sdf)
         off_molecule = Molecule(self.system_sdf)
-        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-        force_field = ForceField("openff_unconstrained-1.0.0.offxml")
+        # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml ")
+        force_field = ForceField("openff_unconstrained-1.0.0.offxml ")
         system = force_field.create_openmm_system(off_molecule.to_topology())
         pdbfile = simtk.openmm.app.PDBFile(self.system_pdb)
         structure = parmed.openmm.load_topology(
@@ -7238,6 +7747,9 @@ class RunOpenMMSims:
         PDB file of the system to run MD simulation (receptor,
         ligand or receptor - ligand complex).
 
+    system_xml: str
+        Serialised XML file for the system.
+
     sim_output: str, optional
         PDB file containing the trajectory coordinates for the OpenMM
         simulation.
@@ -7252,6 +7764,7 @@ class RunOpenMMSims:
         system_prmtop,
         system_inpcrd,
         system_pdb,
+        system_xml,
         system_output="sim_output.pdb",
         sim_steps=1000,
     ):
@@ -7259,8 +7772,10 @@ class RunOpenMMSims:
         self.system_prmtop = system_prmtop
         self.system_inpcrd = system_inpcrd
         self.system_pdb = system_pdb
+        self.system_xml = system_xml
         self.system_output = system_output
         self.sim_steps = sim_steps
+
 
     def run_openmm_prmtop_inpcrd(self):
         """
@@ -7325,6 +7840,47 @@ class RunOpenMMSims:
         )
         simulation = simtk.openmm.app.Simulation(
             prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy(maxIterations=100000)
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+    def run_openmm_xml_pdb(system_pdb, system_xml, system_output, sim_steps):
+        """
+        Runs OpenMM MD simulation with XML and PDB file.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_xml
+            + " and "
+            + self.system_pdb
+        )
+        pdb = simtk.openmm.app.PDBFile(self.system_pdb)
+        ff_xml_file = open(self.system_xml, "r")
+        system = simtk.openmm.XmlSerializer.deserialize(ff_xml_file.read())
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            pdb.topology, system, integrator
         )
         simulation.context.setPositions(pdb.positions)
         simulation.minimizeEnergy(maxIterations=100000)
@@ -8663,8 +9219,8 @@ class PrepareSolvatedParams:
         """
         line_0 = " "
         line_1 = "source leaprc.protein.ff14SB"
-        line_2 = "source leaprc.water.tip4pew"
-        line_3 = "loadAmberParams frcmod.ionsjc_tip4pew"
+        line_2 = "source leaprc.water.tip3p"
+        line_3 = "loadAmberParams frcmod.ionsjc_tip3p"
         line_4 = "pdb = loadpdb " + self.solvent_pdb
         line_5 = (
             "saveamberparm pdb "
