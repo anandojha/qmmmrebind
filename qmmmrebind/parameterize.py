@@ -498,6 +498,7 @@ def copy_file(source, destination):
     """
     shutil.copy(source, destination)
 
+
 def get_openmm_energies(system_pdb, system_xml):
 
     """
