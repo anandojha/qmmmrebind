@@ -5279,7 +5279,7 @@ class GuestAmberXMLAmber:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 1000.00 for i in k_bond_list]
+        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -5314,6 +5314,7 @@ class GuestAmberXMLAmber:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
+        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -7024,7 +7025,7 @@ class HostAmberXMLAmber:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 1000.00 for i in k_bond_list]
+        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -7059,6 +7060,7 @@ class HostAmberXMLAmber:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
+        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -9896,7 +9898,7 @@ class SystemAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 1000.00 for i in k_bond_list]
+        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -9933,6 +9935,7 @@ class SystemAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
+        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -10066,7 +10069,7 @@ class SystemAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 1000.00 for i in k_bond_list]
+        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -10101,6 +10104,7 @@ class SystemAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
+        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -11835,7 +11839,7 @@ class SystemGuestAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 1000.00 for i in k_bond_list]
+        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -11872,6 +11876,7 @@ class SystemGuestAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
+        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
