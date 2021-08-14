@@ -3444,7 +3444,7 @@ class ParameterizeGuest:
         atom_names_file="guest_atom_names.txt",
         bond_parameter_file="guest_bonds.txt",
         angle_parameter_file="guest_angles.txt",
-        charge_parameter_file="guest_charges.txt",
+        charge_parameter_file="guest_qm_surround_charges.txt",
         guest_pdb="guest_init_II.pdb",
         proper_dihedral_file="proper_dihedrals.txt",
         functional="B3LYP",
@@ -4848,7 +4848,7 @@ class GuestAmberXMLAmber:
 
     """
     A class used to generate a template force field XML file for the ligand
-    in order regenerate the reparametrised forcefield XML file.
+    in order regenerate the reparameterised forcefield XML file.
 
     This class contain methods to generate a template XML force field through
     openforcefield. XML template generation can be obtained through different
@@ -4939,8 +4939,8 @@ class GuestAmberXMLAmber:
         corresponding values obtained from the QM calculations.
 
     system_xml_non_bonded_file: str, optional
-        A text file to write the NonBondedForce Charge Parameters from
-        the non-parametrised system XML file.
+        Text file to write the NonBondedForce Charge Parameters from
+        the non-parameterised system XML file.
 
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the
@@ -4995,7 +4995,7 @@ class GuestAmberXMLAmber:
         system_init_sdf="guest_init.sdf",
         index_charge_atom_2=" ",
         charge_atom_2=" ",
-        charge_parameter_file="guest_charges.txt",
+        charge_parameter_file="guest_qm_surround_charges.txt",
         system_qm_pdb="guest_init_II.pdb",
         bond_parameter_file="guest_bonds.txt",
         angle_parameter_file="guest_angles.txt",
@@ -5890,7 +5890,6 @@ class GuestAmberXMLAmber:
         f_non_bonded = open(self.system_xml_non_bonded_file, "w")
         for x in nonbond_params:
             f_non_bonded.write(x)
-
         f_non_bonded = open(self.system_xml_non_bonded_file)
         lines_non_bonded = f_non_bonded.readlines()
         # print(len(lines_non_bonded))
@@ -6697,7 +6696,7 @@ class HostAmberXMLAmber:
 
     """
     A class used to generate a template force field XML file for the receptor
-    in order regenerate the reparametrised forcefield XML file.
+    in order regenerate the reparameterised forcefield XML file.
 
     This class contain methods to generate a template XML force field through
     openforcefield. Re-parameterized XML force field files are then
@@ -6773,7 +6772,7 @@ class HostAmberXMLAmber:
 
     system_xml_non_bonded_file: str, optional
         Text file to write the NonBondedForce Charge Parameters from
-        the non-parametrised system XML file.
+        the non-parameterised system XML file.
 
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the
@@ -7413,7 +7412,6 @@ class HostAmberXMLAmber:
         f_non_bonded = open(self.system_xml_non_bonded_file, "w")
         for x in nonbond_params:
             f_non_bonded.write(x)
-
         f_non_bonded = open(self.system_xml_non_bonded_file)
         lines_non_bonded = f_non_bonded.readlines()
         # print(len(lines_non_bonded))
@@ -8208,7 +8206,7 @@ class TorsionDriveSims:
 
     torsion_xml_file : str, optional
         A text file containing torsional parameters from
-        reparametrised XML file.
+        reparameterised XML file.
 
     xyz_file : str, optional
         XYZ file containing the coordinates of the guest molecule.
@@ -9653,7 +9651,7 @@ class SystemAmberSystem:
     """
     A class used to generate a force field XML file for the system
     from the given amber forcefield topology files and
-    regenerate the reparametrised forcefield XML file.
+    regenerate the reparameterised forcefield XML file.
 
     This class contain methods to generate a XML force field through
     parmed if the amber forcefield topology files are given.
@@ -9720,7 +9718,7 @@ class SystemAmberSystem:
 
     system_xml_non_bonded_file: str, optional
         Text file to write the NonBondedForce Charge Parameters from
-        the non-parametrised system XML file.
+        the non-parameterised system XML file.
 
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the
@@ -9775,7 +9773,7 @@ class SystemAmberSystem:
         system_pdb="",
         prmtop_system="hostguest.parm7",
         system_xml="hostguest.xml",
-        charge_parameter_file_guest="guest_charges.txt",
+        charge_parameter_file_guest="guest_qm_surround_charges.txt",
         guest_qm_pdb="guest_init_II.pdb",
         bond_parameter_file_guest="guest_bonds.txt",
         angle_parameter_file_guest="guest_angles.txt",
@@ -10751,6 +10749,9 @@ class SystemAmberSystem:
                 to_end = int(i)
         nonbond_params = xml_off_lines[to_begin + 4 : to_end - 1]
         # print(len(nonbond_params))
+        f_non_bonded = open(self.system_xml_non_bonded_file, "w")
+        for x in nonbond_params:
+            f_non_bonded.write(x)
         f_non_bonded = open(self.system_xml_non_bonded_file)
         lines_non_bonded = f_non_bonded.readlines()
         # print(len(lines_non_bonded))
@@ -11624,7 +11625,7 @@ class SystemGuestAmberSystem:
     """
     A class used to generate a force field XML file for the system
     from the given amber forcefield topology files and
-    regenerate the reparametrised forcefield XML file but without
+    regenerate the reparameterised forcefield XML file but without
     the host QM parameters.
 
     This class contain methods to generate a XML force field through
@@ -11673,7 +11674,7 @@ class SystemGuestAmberSystem:
 
     system_xml_non_bonded_file: str, optional
         Text file to write the NonBondedForce Charge Parameters from
-        the non-parametrised system XML file.
+        the non-parameterised system XML file.
 
     system_xml_non_bonded_reparams_file: str, optional
         Text file containing the non-bonded parameters parsed from the
@@ -11728,7 +11729,7 @@ class SystemGuestAmberSystem:
         system_pdb="",
         prmtop_system="hostguest.parm7",
         system_xml="hostguest.xml",
-        charge_parameter_file_guest="guest_charges.txt",
+        charge_parameter_file_guest="guest_qm_surround_charges.txt",
         guest_qm_pdb="guest_init_II.pdb",
         bond_parameter_file_guest="guest_bonds.txt",
         angle_parameter_file_guest="guest_angles.txt",
@@ -12437,6 +12438,9 @@ class SystemGuestAmberSystem:
                 to_end = int(i)
         nonbond_params = xml_off_lines[to_begin + 4 : to_end - 1]
         # print(len(nonbond_params))
+        f_non_bonded = open(self.system_xml_non_bonded_file, "w")
+        for x in nonbond_params:
+            f_non_bonded.write(x)
         f_non_bonded = open(self.system_xml_non_bonded_file)
         lines_non_bonded = f_non_bonded.readlines()
         # print(len(lines_non_bonded))
