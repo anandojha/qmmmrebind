@@ -1320,7 +1320,7 @@ def test_write_reparameterised_system_xml():
 
 
 def test_save_amber_params():
-    load_topology = "openmm"
+    load_topology = "parmed"
     system_pdb = "test_guest_init_ii.pdb"
     non_reparameterised_system_xml_file = "test_guest_init.xml"
     prmtop_system_non_params = "test_guest_non_params.prmtop"
@@ -1491,7 +1491,7 @@ def test_write_reparameterised_system_xml_host():
             break
 
 def test_save_amber_params_host():
-    load_topology = "openmm"
+    load_topology = "parmed"
     system_pdb = "test_host.pdb"
     non_reparameterised_system_xml_file = "test_host.xml"
     prmtop_system_non_params = "test_host_non_params.prmtop"
