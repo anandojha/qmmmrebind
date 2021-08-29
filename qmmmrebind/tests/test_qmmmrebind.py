@@ -217,7 +217,15 @@ def test_xyz_to_pdb():
             atom_list.append(line)
     assert len(atom_list) == 18
 
+def test_copy_system_init_xml():
+    source_ = get_data_filename("test_guest_init.xml")
+    destination_pwd = os.getcwd()
+    destination_file = source_.split("/")[-1]
+    destination_ = destination_pwd + "/" + destination_file
+    qmmmrebind.parameterize.copy_file(source=source_, destination=destination_)
+    assert "test_guest_init.xml" in os.listdir()
 
+"""
 def test_generate_xml_from_charged_pdb_sdf():
     system_pdb = "test_torsion_drive_input.pdb"
     system_init_sdf = "test_guest_init.sdf"
@@ -243,7 +251,7 @@ def test_generate_xml_from_charged_pdb_sdf():
         if "Bond " in line:
             bond_lines.append(line)
     assert len(bond_lines) == 18
-
+"""
 
 def test_generate_mm_pdbs():
     qm_scan_file = "test_scan.xyz"
