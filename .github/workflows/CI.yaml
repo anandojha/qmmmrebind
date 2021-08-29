@@ -39,7 +39,7 @@ jobs:
         python -m pip install . --no-deps
         conda install -c conda-forge biopandas
         conda install -c conda-forge mendeleev
-        conda install -c conda-forge openmm
+        conda install -c conda-forge openmm=7.5.0
         conda install -c conda-forge parmed
         conda install -c conda-forge openff-toolkit
         conda install -c conda-forge openbabel
