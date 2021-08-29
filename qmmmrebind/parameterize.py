@@ -490,6 +490,39 @@ def unit_vector_N(u_BC, u_AB):
     u_N = cross_product / norm_u_N
     return u_N
 
+def delete_guest_angle_params(guest_qm_params_file = "guest_qm_params.txt"):
+
+    f_params = open(guest_qm_params_file, "r")
+    lines_params = f_params.readlines()
+    for i in range(len(lines_params)):
+        if "Begin writing the Angle Parameters" in lines_params[i]:
+            to_begin = int(i)
+        if "Finish writing the Angle Parameters" in lines_params[i]:
+            to_end = int(i)
+    lines_selected = lines_params[: to_begin] + lines_params [to_end + 1 : ]
+    f_ = open(guest_qm_params_file, "w")
+    for i in lines_selected:
+        f_.write(i)
+    f_.close()
+
+def remove_bad_angle_params(guest_qm_params_file = "guest_qm_params.txt", angle = 1.00, k_angle = 500):
+    f_params = open(guest_qm_params_file, "r")
+    lines_params = f_params.readlines()
+    for i in range(len(lines_params)):
+        if "Begin writing the Angle Parameters" in lines_params[i]:
+            to_begin = int(i)
+        if "Finish writing the Angle Parameters" in lines_params[i]:
+            to_end = int(i)
+    angle_params = lines_params[to_begin + 1 : to_end]
+    lines_to_omit = []
+    for i in angle_params:
+        if float(re.findall(r"[-+]?\d+[.]?\d*", i)[0]) < float(angle) or float(re.findall(r"[-+]?\d+[.]?\d*", i)[1]) > float(k_angle):
+            lines_to_omit.append(i)
+    for b in lines_to_omit:
+        lines_params.remove(b)
+    with open(guest_qm_params_file, 'w') as file:
+        for j in lines_params:
+            file.write(j)
 
 def get_num_host_atoms(host_pdb):
 
@@ -1907,6 +1940,7 @@ def singular_resid(pdbfile, qmmmrebind_init_file):
 
     ppdb = PandasPdb().read_pdb(pdbfile)
     ppdb.df["HETATM"]["chain_id"] = "A"
+    ppdb.df["ATOM"]["chain_id"] = "A"
     ppdb.to_pdb(
         path=qmmmrebind_init_file, records=None, gz=False, append_newline=True
     )
@@ -3176,7 +3210,7 @@ class PrepareGaussianHostGuest:
         frequency="",
         add_keywords_I="INTEGRAL=(GRID=ULTRAFINE)",
         add_keywords_II="POP(MK,READRADII)",
-        add_keywords_III="IOP(6/33=2,6/42=6)",
+        add_keywords_III="IOP(6/33=2,6/42=6) SCRF=PCM",
         gauss_system_out_file="system_qm.out",
         fchk_system_out_file="system_qm_fchk.out",
         host_guest_input="host_guest.com",
@@ -8272,8 +8306,8 @@ class TorsionDriveSims:
         xyz_file="guest_coords.xyz",
         psi_input_file="torsion_drive_input.dat",
         memory=50,
-        basis_set="STO-3G",
-        functional="BLYP",
+        basis_set="6-31G",
+        functional="B3LYP",
         iterations=2000,
         method_torsion_drive="native_opt",
         system_bonds_file="guest_bonds.txt",
@@ -12195,6 +12229,7 @@ class SystemGuestAmberSystem:
         for i in lines:
             f_cop.write(i)
         f_cop.close()
+
 
     def write_reparameterised_system_xml(self):
 
