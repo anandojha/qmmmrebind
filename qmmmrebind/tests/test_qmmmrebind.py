@@ -218,7 +218,7 @@ def test_xyz_to_pdb():
     assert len(atom_list) == 18
 
 
-def test_ind_generate_xml_from_charged_pdb_sdf():
+def test_generate_xml_from_charged_pdb_sdf():
     system_pdb = "test_torsion_drive_input.pdb"
     system_init_sdf = "test_guest_init.sdf"
     system_sdf = "test_guest.sdf"
