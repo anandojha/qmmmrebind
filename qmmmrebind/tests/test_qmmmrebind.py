@@ -1144,7 +1144,7 @@ def test_generate_xml_from_charged_pdb_sdf():
     system_init_sdf = "test_guest_init.sdf"
     system_sdf = "test_guest.sdf"
     num_charge_atoms = 1
-    index_charge_atom_1 = 8
+    index_charge_atom_1 = 9
     charge_atom_1 = 1
     system_xml = "test_guest_init.xml"
     get_generate_xml_from_charged_pdb_sdf = (
