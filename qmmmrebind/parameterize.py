@@ -490,7 +490,8 @@ def unit_vector_N(u_BC, u_AB):
     u_N = cross_product / norm_u_N
     return u_N
 
-def delete_guest_angle_params(guest_qm_params_file = "guest_qm_params.txt"):
+
+def delete_guest_angle_params(guest_qm_params_file="guest_qm_params.txt"):
 
     f_params = open(guest_qm_params_file, "r")
     lines_params = f_params.readlines()
@@ -499,13 +500,16 @@ def delete_guest_angle_params(guest_qm_params_file = "guest_qm_params.txt"):
             to_begin = int(i)
         if "Finish writing the Angle Parameters" in lines_params[i]:
             to_end = int(i)
-    lines_selected = lines_params[: to_begin] + lines_params [to_end + 1 : ]
+    lines_selected = lines_params[:to_begin] + lines_params[to_end + 1 :]
     f_ = open(guest_qm_params_file, "w")
     for i in lines_selected:
         f_.write(i)
     f_.close()
 
-def remove_bad_angle_params(guest_qm_params_file = "guest_qm_params.txt", angle = 1.00, k_angle = 500):
+
+def remove_bad_angle_params(
+    guest_qm_params_file="guest_qm_params.txt", angle=1.00, k_angle=500
+):
     f_params = open(guest_qm_params_file, "r")
     lines_params = f_params.readlines()
     for i in range(len(lines_params)):
@@ -516,13 +520,16 @@ def remove_bad_angle_params(guest_qm_params_file = "guest_qm_params.txt", angle 
     angle_params = lines_params[to_begin + 1 : to_end]
     lines_to_omit = []
     for i in angle_params:
-        if float(re.findall(r"[-+]?\d+[.]?\d*", i)[0]) < float(angle) or float(re.findall(r"[-+]?\d+[.]?\d*", i)[1]) > float(k_angle):
+        if float(re.findall(r"[-+]?\d+[.]?\d*", i)[0]) < float(angle) or float(
+            re.findall(r"[-+]?\d+[.]?\d*", i)[1]
+        ) > float(k_angle):
             lines_to_omit.append(i)
     for b in lines_to_omit:
         lines_params.remove(b)
-    with open(guest_qm_params_file, 'w') as file:
+    with open(guest_qm_params_file, "w") as file:
         for j in lines_params:
             file.write(j)
+
 
 def get_num_host_atoms(host_pdb):
 
@@ -1664,9 +1671,7 @@ def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
     for i in mm_pdb_list:
         mm_pdb_file = i
         mm_energy = get_non_torsion_mm_energy(
-            system_pdb=i,
-            load_topology=load_topology,
-            system_xml=system_xml,
+            system_pdb=i, load_topology=load_topology, system_xml=system_xml,
         )
         mm_potential_energies.append(mm_energy)
     return mm_potential_energies
@@ -1811,12 +1816,7 @@ def fit_params(qm_scan_file, load_topology, system_xml, method):
         k_guess,
         args=(x_data, delta_qm),
         method=method,
-        bounds=[
-            (0.00, None),
-            (0.00, None),
-            (0.00, None),
-            (0.00, None),
-        ],
+        bounds=[(0.00, None), (0.00, None), (0.00, None), (0.00, None),],
     )
     return optimise.x
 
@@ -2128,6 +2128,37 @@ def add_dim_prmtop(pdbfile, prmtopfile):
     os.system(command)
 
 
+def add_period_prmtop(parm_file, ifbox):
+
+    """
+    Changes the value of IFBOX if needed for the prmtop / parm file.
+    Set to 1 if standard periodic box and 2 when truncated octahedral.
+    """
+    with open(parm_file) as f:
+        parm_lines = f.readlines()
+    lines_contain = []
+    for i in range(len(parm_lines)):
+        if parm_lines[i].startswith("%FLAG POINTERS"):
+            lines_contain.append(i + 4)
+    line = parm_lines[lines_contain[0]]
+    line_new = "%8s  %6s  %6s  %6s  %6s  %6s  %6s  %6s  %6s  %6s" % (
+        re.findall(r"\d+", line)[0],
+        re.findall(r"\d+", line)[1],
+        re.findall(r"\d+", line)[2],
+        re.findall(r"\d+", line)[3],
+        re.findall(r"\d+", line)[4],
+        re.findall(r"\d+", line)[5],
+        re.findall(r"\d+", line)[6],
+        str(ifbox),
+        re.findall(r"\d+", line)[8],
+        re.findall(r"\d+", line)[9],
+    )
+    parm_lines[lines_contain[0]] = line_new + "\n"
+    with open(parm_file, "w") as f:
+        for i in parm_lines:
+            f.write(i)
+
+
 def prmtop_calibration(
     prmtopfile="system_qmmmrebind.prmtop",
     inpcrdfile="system_qmmmrebind.inpcrd",
@@ -2200,8 +2231,7 @@ def run_openmm_prmtop_inpcrd(
     )
     if inpcrd.boxVectors is None:
         add_vectors_inpcrd(
-            pdbfile=pdbfile,
-            inpcrdfile=inpcrdfile,
+            pdbfile=pdbfile, inpcrdfile=inpcrdfile,
         )
     if inpcrd.boxVectors is not None:
         simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
@@ -2740,10 +2770,7 @@ class PrepareQMMM:
                 ppdb.df["ATOM"]["atom_number"] != i
             ]
         ppdb.to_pdb(
-            path=self.host_mm_pdb,
-            records=None,
-            gz=False,
-            append_newline=True,
+            path=self.host_mm_pdb, records=None, gz=False, append_newline=True,
         )
         non_selected_atoms = np.loadtxt(self.host_mm_atoms)
         non_selected_atoms = [int(i) for i in non_selected_atoms]
@@ -2754,10 +2781,7 @@ class PrepareQMMM:
                 ppdb.df["ATOM"]["atom_number"] != i
             ]
         ppdb.to_pdb(
-            path=self.host_qm_pdb,
-            records=None,
-            gz=False,
-            append_newline=True,
+            path=self.host_qm_pdb, records=None, gz=False, append_newline=True,
         )
 
     def get_host_mm_region_atoms(self):
@@ -3073,10 +3097,7 @@ class PrepareGaussianGuest:
         )
         with open(self.gauss_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
     def get_fchk(self):
@@ -3095,10 +3116,7 @@ class PrepareGaussianGuest:
         )
         with open(self.fchk_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
 
@@ -3319,10 +3337,7 @@ class PrepareGaussianHostGuest:
         )
         with open(self.gauss_system_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
     def get_fchk(self):
@@ -3341,10 +3356,7 @@ class PrepareGaussianHostGuest:
         )
         with open(self.fchk_system_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
     def get_qm_host_guest_charges(self):
@@ -3586,9 +3598,7 @@ class ParameterizeGuest:
             item for sublist in hessian_list for item in sublist
         ]
         np.savetxt(
-            self.unprocessed_hessian_file,
-            unprocessed_Hessian,
-            fmt="%s",
+            self.unprocessed_hessian_file, unprocessed_Hessian, fmt="%s",
         )
 
     def get_bond_angles(self):
@@ -3860,12 +3870,10 @@ class ParameterizeGuest:
                 # term need for the modified Seminario method
                 # Forwards directions, finds the same bonds with the central atom i
                 while (
-                    (j + n) < len(central_atoms_angles[i])
-                ) and central_atoms_angles[i][j][0] == central_atoms_angles[i][
-                    j + n
-                ][
-                    0
-                ]:
+                    ((j + n) < len(central_atoms_angles[i]))
+                    and central_atoms_angles[i][j][0]
+                    == central_atoms_angles[i][j + n][0]
+                ):
                     additional_contributions = (
                         additional_contributions
                         + (
@@ -4005,10 +4013,7 @@ class ParameterizeGuest:
         data_tuples = list(zip(atom_list, charge_list_value))
         df_charge = pd.DataFrame(data_tuples, columns=["Atom", "Charge"])
         df_charge.to_csv(
-            self.charge_parameter_file,
-            index=False,
-            header=False,
-            sep=" ",
+            self.charge_parameter_file, index=False, header=False, sep=" ",
         )
 
     def get_proper_dihedrals(self):
@@ -4245,10 +4250,7 @@ class PrepareGaussianHost:
         )
         with open(self.gauss_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
     def get_fchk(self):
@@ -4267,10 +4269,7 @@ class PrepareGaussianHost:
         )
         with open(self.fchk_out_file, "w+") as f:
             sp.run(
-                execute_command,
-                shell=True,
-                stdout=f,
-                stderr=sp.STDOUT,
+                execute_command, shell=True, stdout=f, stderr=sp.STDOUT,
             )
 
 
@@ -4457,9 +4456,7 @@ class ParameterizeHost:
             item for sublist in hessian_list for item in sublist
         ]
         np.savetxt(
-            self.unprocessed_hessian_file,
-            unprocessed_Hessian,
-            fmt="%s",
+            self.unprocessed_hessian_file, unprocessed_Hessian, fmt="%s",
         )
 
     def get_bond_angles(self):
@@ -4727,12 +4724,10 @@ class ParameterizeHost:
                 # atom and computes the term need for the modified Seminario method
                 # Forwards directions, finds the same bonds with the central atom i
                 while (
-                    (j + n) < len(central_atoms_angles[i])
-                ) and central_atoms_angles[i][j][0] == central_atoms_angles[i][
-                    j + n
-                ][
-                    0
-                ]:
+                    ((j + n) < len(central_atoms_angles[i]))
+                    and central_atoms_angles[i][j][0]
+                    == central_atoms_angles[i][j + n][0]
+                ):
                     additional_contributions = (
                         additional_contributions
                         + (
@@ -4871,10 +4866,7 @@ class ParameterizeHost:
         data_tuples = list(zip(atom_list, charge_list_value))
         df_charge = pd.DataFrame(data_tuples, columns=["Atom", "Charge"])
         df_charge.to_csv(
-            self.charge_parameter_file,
-            index=False,
-            header=False,
-            sep=" ",
+            self.charge_parameter_file, index=False, header=False, sep=" ",
         )
 
 
@@ -5313,7 +5305,9 @@ class GuestAmberXMLAmber:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
+        k_bond_list = [
+            i * 418.40 for i in k_bond_list
+        ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -5348,7 +5342,9 @@ class GuestAmberXMLAmber:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
+        k_angle_list = [
+            i * 4.184 for i in k_angle_list
+        ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -6021,8 +6017,7 @@ class GuestAmberXMLAmber:
         ).coordinates
         openmm_system.save(self.inpcrd_system_non_params, overwrite=True)
         parm = parmed.load_file(
-            self.prmtop_system_non_params,
-            self.inpcrd_system_non_params,
+            self.prmtop_system_non_params, self.inpcrd_system_non_params,
         )
 
         xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
@@ -6083,10 +6078,8 @@ class GuestAmberXMLAmber:
             columns=["Energy_term", "Energy_xml_non_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -6228,10 +6221,8 @@ class GuestAmberXMLAmber:
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
 
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -6310,8 +6301,7 @@ class GuestAmberXMLAmber:
         ).coordinates
         openmm_system.save(self.inpcrd_system_non_params, overwrite=True)
         parm = parmed.load_file(
-            self.prmtop_system_non_params,
-            self.inpcrd_system_non_params,
+            self.prmtop_system_non_params, self.inpcrd_system_non_params,
         )
 
         xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
@@ -6373,10 +6363,8 @@ class GuestAmberXMLAmber:
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
 
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -6514,10 +6502,8 @@ class GuestAmberXMLAmber:
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
 
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -6583,13 +6569,10 @@ class GuestAmberXMLAmber:
         and the parameterized force field files.
         """
         parm_non_params = parmed.load_file(
-            self.prmtop_system_non_params,
-            self.inpcrd_system_non_params,
+            self.prmtop_system_non_params, self.inpcrd_system_non_params,
         )
-        prmtop_energy_decomposition_non_params = (
-            parmed.openmm.energy_decomposition_system(
-                parm_non_params, parm_non_params.createSystem()
-            )
+        prmtop_energy_decomposition_non_params = parmed.openmm.energy_decomposition_system(
+            parm_non_params, parm_non_params.createSystem()
         )
         prmtop_energy_decomposition_non_params_value = [
             list_to_dict(
@@ -6653,10 +6636,8 @@ class GuestAmberXMLAmber:
         parm_params = parmed.load_file(
             self.prmtop_system_params, self.inpcrd_system_params
         )
-        prmtop_energy_decomposition_params = (
-            parmed.openmm.energy_decomposition_system(
-                parm_params, parm_params.createSystem()
-            )
+        prmtop_energy_decomposition_params = parmed.openmm.energy_decomposition_system(
+            parm_params, parm_params.createSystem()
         )
         prmtop_energy_decomposition_params_value = [
             list_to_dict(
@@ -7058,7 +7039,9 @@ class HostAmberXMLAmber:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
+        k_bond_list = [
+            i * 418.40 for i in k_bond_list
+        ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -7093,7 +7076,9 @@ class HostAmberXMLAmber:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
+        k_angle_list = [
+            i * 4.184 for i in k_angle_list
+        ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -7542,8 +7527,7 @@ class HostAmberXMLAmber:
         ).coordinates
         openmm_system.save(self.inpcrd_system_non_params, overwrite=True)
         parm = parmed.load_file(
-            self.prmtop_system_non_params,
-            self.inpcrd_system_non_params,
+            self.prmtop_system_non_params, self.inpcrd_system_non_params,
         )
 
         xml_energy_decomposition = parmed.openmm.energy_decomposition_system(
@@ -7605,10 +7589,8 @@ class HostAmberXMLAmber:
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
 
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -7746,10 +7728,8 @@ class HostAmberXMLAmber:
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
 
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -7815,13 +7795,10 @@ class HostAmberXMLAmber:
         and the parameterized force field files.
         """
         parm_non_params = parmed.load_file(
-            self.prmtop_system_non_params,
-            self.inpcrd_system_non_params,
+            self.prmtop_system_non_params, self.inpcrd_system_non_params,
         )
-        prmtop_energy_decomposition_non_params = (
-            parmed.openmm.energy_decomposition_system(
-                parm_non_params, parm_non_params.createSystem()
-            )
+        prmtop_energy_decomposition_non_params = parmed.openmm.energy_decomposition_system(
+            parm_non_params, parm_non_params.createSystem()
         )
         prmtop_energy_decomposition_non_params_value = [
             list_to_dict(
@@ -7885,10 +7862,8 @@ class HostAmberXMLAmber:
         parm_params = parmed.load_file(
             self.prmtop_system_params, self.inpcrd_system_params
         )
-        prmtop_energy_decomposition_params = (
-            parmed.openmm.energy_decomposition_system(
-                parm_params, parm_params.createSystem()
-            )
+        prmtop_energy_decomposition_params = parmed.openmm.energy_decomposition_system(
+            parm_params, parm_params.createSystem()
         )
         prmtop_energy_decomposition_params_value = [
             list_to_dict(
@@ -8450,15 +8425,7 @@ class TorsionDriveSims:
         data_tuples = list(zip(k_list_off, p1, p2, p3, p4, periodicity, phase))
         df_tor = pd.DataFrame(
             data_tuples,
-            columns=[
-                "k",
-                "p1",
-                "p2",
-                "p3",
-                "p4",
-                "periodicity",
-                "phase",
-            ],
+            columns=["k", "p1", "p2", "p3", "p4", "periodicity", "phase",],
         )
         # print(df_tor.head())
         df_tor.to_csv(
@@ -9128,8 +9095,7 @@ class TorsionDriveParams:
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
                 torsiondrive_input_to_xyz(
-                    psi_input_file=self.psi_input_file,
-                    xyz_file=self.xyz_file,
+                    psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
                 )
                 xyz_to_pdb(
                     xyz_file=self.xyz_file,
@@ -9185,8 +9151,7 @@ class TorsionDriveParams:
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
                 torsiondrive_input_to_xyz(
-                    psi_input_file=self.psi_input_file,
-                    xyz_file=self.xyz_file,
+                    psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
                 )
                 xyz_to_pdb(
                     xyz_file=self.xyz_file,
@@ -9930,7 +9895,9 @@ class SystemAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
+        k_bond_list = [
+            i * 418.40 for i in k_bond_list
+        ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -9967,7 +9934,9 @@ class SystemAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
+        k_angle_list = [
+            i * 4.184 for i in k_angle_list
+        ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -10101,7 +10070,9 @@ class SystemAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
+        k_bond_list = [
+            i * 418.40 for i in k_bond_list
+        ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -10136,7 +10107,9 @@ class SystemAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
+        k_angle_list = [
+            i * 4.184 for i in k_angle_list
+        ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -11158,10 +11131,8 @@ class SystemAmberSystem:
             columns=["Energy_term", "Energy_xml_non_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -11306,10 +11277,8 @@ class SystemAmberSystem:
             columns=["Energy_term", "Energy_xml_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -11450,10 +11419,8 @@ class SystemAmberSystem:
             columns=["Energy_term", "Energy_xml_non_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -11591,10 +11558,8 @@ class SystemAmberSystem:
             columns=["Energy_term", "Energy_xml_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -11874,7 +11839,9 @@ class SystemGuestAmberSystem:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
-        k_bond_list = [i * 418.40 for i in k_bond_list] # kcal/mol * A^2 to kJ/mol * nm^2
+        k_bond_list = [
+            i * 418.40 for i in k_bond_list
+        ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
@@ -11911,7 +11878,9 @@ class SystemGuestAmberSystem:
         angle_3_list = [x - 1 + min(atom_name_list) for x in angle_3_list]
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
-        k_angle_list = [i * 4.184 for i in k_angle_list] # kcal/mol * radian^2 to kJ/mol * radian^2
+        k_angle_list = [
+            i * 4.184 for i in k_angle_list
+        ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
@@ -12229,7 +12198,6 @@ class SystemGuestAmberSystem:
         for i in lines:
             f_cop.write(i)
         f_cop.close()
-
 
     def write_reparameterised_system_xml(self):
 
@@ -12848,10 +12816,8 @@ class SystemGuestAmberSystem:
             columns=["Energy_term", "Energy_xml_non_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -12996,10 +12962,8 @@ class SystemGuestAmberSystem:
             columns=["Energy_term", "Energy_xml_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -13140,10 +13104,8 @@ class SystemGuestAmberSystem:
             columns=["Energy_term", "Energy_xml_non_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
@@ -13281,10 +13243,8 @@ class SystemGuestAmberSystem:
             columns=["Energy_term", "Energy_xml_params"],
         )
         df_energy_xml = df_energy_xml.set_index("Energy_term")
-        prmtop_energy_decomposition = (
-            parmed.openmm.energy_decomposition_system(
-                parm, parm.createSystem()
-            )
+        prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
+            parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
             list_to_dict(
