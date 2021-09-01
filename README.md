@@ -16,8 +16,8 @@ Make sure to install these packages before running the QMMMReBind:
 ```bash
 conda create -n torsiondrive python=3.6 # create a new conda environment 
 conda activate torsiondrive # activate torsiondrive environment
-conda install -c conda-forge torsiondrive # install torsiondrive
 conda install -c psi4 psi4 dftd3 gcp # install dependent softwares 
+conda install -c conda-forge torsiondrive # install torsiondrive
 ```
 
 ## Installation and Setup Instructions :
@@ -29,6 +29,7 @@ conda activate qmmmrebind # activate the conda environment
 conda install -c conda-forge openff-toolkit # install openforcefield toolkit
 conda install -c conda-forge openbabel # install openbabel
 conda install -c conda-forge jupyterlab # install jupyter notebook
+conda install -c conda-forge openmm=7.5.0
 conda install git # install git
 ```
 * Clone the *QMMMReBind* repository :

@@ -2158,6 +2158,20 @@ def add_period_prmtop(parm_file, ifbox):
         for i in parm_lines:
             f.write(i)
 
+def add_solvent_pointers_prmtop(non_reparams_file, reparams_file):
+
+    """
+    Adds the flag solvent pointers to the topology file.
+    """
+    f_non_params = open(non_reparams_file, "r")
+    lines_non_params = f_non_params.readlines()
+    for i in range(len(lines_non_params)):
+        if "FLAG SOLVENT_POINTERS" in lines_non_params[i]:
+            to_begin = int(i)
+    solvent_pointers = lines_non_params[to_begin : to_begin + 3]
+    file = open(reparams_file, "a") 
+    for i in solvent_pointers:
+        file.write(i)
 
 def prmtop_calibration(
     prmtopfile="system_qmmmrebind.prmtop",
