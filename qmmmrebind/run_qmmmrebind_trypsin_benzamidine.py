@@ -32,14 +32,13 @@ singular_resid(pdbfile=args.pdbfile, qmmmrebind_init_file=qmmmrebindpdb)
 ## Step I : Defining QM and MM regions
 system = PrepareQMMM(init_pdb=qmmmrebindpdb, distance=6.0, num_residues=8, guest_resname="BEN")
 ## Step II : Ligand QM calculation
-qm_guest = PrepareGaussianGuest(functional="B3LYP", basis_set="cc-pVDZ")
+qm_guest = PrepareGaussianGuest(charge=1, multiplicity=1,functional="B3LYP", basis_set="6-31G")
 ## Step III : QM calculation of the receptor-ligand region for QM-derived charges
-qm_system = PrepareGaussianHostGuest(charge=1, multiplicity=1, basis_set="cc-pVDZ", functional="B3LYP", add_keywords_II="POP(CHELPG, REGULAR)", add_keywords_III="IOP(6/33=2) SCRF=PCM")
+qm_system = PrepareGaussianHostGuest(charge=1, multiplicity=1, basis_set="6-31G", functional="B3LYP", add_keywords_II="POP(CHELPG, REGULAR)", add_keywords_III="IOP(6/33=2) SCRF=PCM")
 ## Step IV : Ligand QM reparameterization
-params_guest = ParameterizeGuest(functional="B3LYP", basis_set="cc-pVDZ")
+params_guest = ParameterizeGuest(functional="B3LYP", basis_set="6-31G")
 ## Step V : Generation of reparameterized prmtop & inpcrd files for the ligand
-system_guest = GuestAmberXMLAmber(charge=1, num_charge_atoms=1, index_charge_atom_1=8, charge_atom_1=1, charge_parameter_file="guest_qm_atom_surround_charges.txt") # Use charge_parameter_file="guest_qm_atom_surround_charges.txt" for bound state polarised charges and charge_parameter_file="guest_qm_surround_charges.txt" for non-polarised charges
-system_guest = GuestAmberXMLAmber() 
+system_guest = GuestAmberXMLAmber(charge=1, num_charge_atoms=1, index_charge_atom_1=8, charge_atom_1=1) 
 ## Step VI : Reparameterization of the torsion angles for the ligand
 guest_torsion_params = TorsionDriveSims(charge=1, multiplicity=1, method_torsion_drive="geometric")
 ## Step VII : Generation of torsional parameters for the ligand
@@ -82,7 +81,7 @@ params_guest.get_bond_angles()
 params_guest.get_hessian()
 params_guest.get_atom_names()
 params_guest.get_bond_angle_params()
-params_guest.get_charges()
+#params_guest.get_charges()
 params_guest.get_proper_dihedrals()
 ##################################################################################################################################################################################################################
 ## Step V : Generation of reparameterized prmtop & inpcrd files for the ligand
