@@ -13,7 +13,8 @@ import shutil
 import sys
 import os
 import re
-pwd_qmmmrebind = "/home/aaojha/qmmmrebind/"  # PWD of the directory where qmmmrebind is installed
+# TODO: remove this path dependency
+pwd_qmmmrebind = "/home/lvotapka/qmmmrebind/"  # PWD of the directory where qmmmrebind is installed
 path_join = pwd_qmmmrebind + "qmmmrebind/"
 module_path = os.path.abspath(os.path.join(path_join))
 if module_path not in sys.path:
@@ -73,6 +74,7 @@ qm_system.write_input()
 #qm_system.run_gaussian()
 #qm_system.get_fchk()
 qm_system.get_qm_host_guest_charges()
+
 ##################################################################################################################################################################################################################
 ## Step IV : Ligand QM reparameterization
 params_guest.get_xyz()
@@ -153,7 +155,7 @@ remove_bad_angle_params(angle=1.00, k_angle=1)
 hostguest_system.write_reparameterised_system_xml()
 hostguest_system.write_torsional_reparams()
 hostguest_system.save_amber_params()
-
+exit()
 """
 # Reparameterize the ligand (angle, bond, and torsion)
 hostguest_system = SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)

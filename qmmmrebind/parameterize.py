@@ -24,6 +24,14 @@ import ast
 import re
 import os
 
+BOHRS_PER_ANGSTROM = 0.529
+HARTREE_PER_KCAL_MOL = 627.509391
+#kcal/mol * A^2 to kJ/mol * nm^2
+KCAL_MOL_PER_KJ_MOL = 4.184
+ANGSTROMS_PER_NM = 10.0
+RADIANS_PER_DEGREE = np.pi / 180.0
+
+
 method_basis_scale_dict = {
     "HF STO-3G": 0.817,
     "HF 3-21G": 0.906,
@@ -492,7 +500,9 @@ def unit_vector_N(u_BC, u_AB):
 
 
 def delete_guest_angle_params(guest_qm_params_file="guest_qm_params.txt"):
-
+    """
+    
+    """
     f_params = open(guest_qm_params_file, "r")
     lines_params = f_params.readlines()
     for i in range(len(lines_params)):
@@ -501,17 +511,15 @@ def delete_guest_angle_params(guest_qm_params_file="guest_qm_params.txt"):
         if "Finish writing the Angle Parameters" in lines_params[i]:
             to_end = int(i)
     lines_selected = lines_params[:to_begin] + lines_params[to_end + 1 :]
-    f_ = open(guest_qm_params_file, "w")
-    for i in lines_selected:
-        f_.write(i)
-    f_.close()
+    with open(guest_qm_params_file, "w") as f_:
+        f_.write("".join(lines_selected))
+    return
 
 
 def remove_bad_angle_params(
-    guest_qm_params_file="guest_qm_params.txt", angle=1.00, k_angle=500
-):
-    f_params = open(guest_qm_params_file, "r")
-    lines_params = f_params.readlines()
+        guest_qm_params_file="guest_qm_params.txt", angle=1.00, k_angle=500):
+    with open(guest_qm_params_file, "r") as f_params:
+        lines_params = f_params.readlines()
     for i in range(len(lines_params)):
         if "Begin writing the Angle Parameters" in lines_params[i]:
             to_begin = int(i)
@@ -2469,7 +2477,7 @@ class PrepareQMMM:
         Ligand PDB file with atom numbers beginning from 1.
 
     guest_xyz : str, optional
-        A text file of the XYZ corordinates of the ligand.
+        A text file of the XYZ coordinates of the ligand.
 
     distance : float, optional
         The distance required to define the QM region of the receptor.
@@ -2599,19 +2607,9 @@ class PrepareQMMM:
             intermediate_file_1[:-4] + "_sslink",
             intermediate_file_1[:-4] + "_water.pdb",
         )
-        os.system(
-            "rm -rf "
-            + to_delete[0]
-            + " "
-            + to_delete[1]
-            + " "
-            + to_delete[2]
-            + " "
-            + to_delete[3]
-        )
+        os.system("rm -rf " + " ".join(to_delete))
         with open(intermediate_file_1) as f1, open(
-            intermediate_file_2, "w"
-        ) as f2:
+                intermediate_file_2, "w") as f2:
             for line in f1:
                 if not any(ion in line for ion in ions):
                     f2.write(line)
@@ -2644,9 +2642,9 @@ class PrepareQMMM:
         """
         ppdb = PandasPdb()
         ppdb.read_pdb(self.guest_init_pdb)
-        to_substract = min(ppdb.df["ATOM"]["atom_number"]) - 1
+        to_subtract = min(ppdb.df["ATOM"]["atom_number"]) - 1
         ppdb.df["ATOM"]["atom_number"] = (
-            ppdb.df["ATOM"]["atom_number"] - to_substract
+            ppdb.df["ATOM"]["atom_number"] - to_subtract
         )
         intermediate_file_1 = self.guest_pdb[:-4] + "_intermediate_1.pdb"
         intermediate_file_2 = self.guest_pdb[:-4] + "_intermediate_2.pdb"
@@ -2663,9 +2661,7 @@ class PrepareQMMM:
             intermediate_file_2[:-4] + "_renum.txt",
             intermediate_file_2[:-4] + "_sslink",
         )
-        os.system(
-            "rm -rf " + to_delete[0] + " " + to_delete[1] + " " + to_delete[2]
-        )
+        os.system("rm -rf " + " ".join(to_delete))
         with open(intermediate_file_2, "r") as f1:
             filedata = f1.read()
         filedata = filedata.replace("HETATM", "ATOM  ")
@@ -2676,7 +2672,7 @@ class PrepareQMMM:
 
     def get_guest_coord(self):
         """
-        Saves a text file of the XYZ corordinates of the ligand.
+        Saves a text file of the XYZ coordinates of the ligand.
         """
         ppdb = PandasPdb()
         ppdb.read_pdb(self.guest_pdb)
@@ -2693,8 +2689,9 @@ class PrepareQMMM:
         host_atom_list = []
         for i in range(len(guest_coord_list)):
             reference_point = guest_coord_list[i]
+            # TODO: move reads outside of loop
             ppdb = PandasPdb()
-            ppdb.read_pdb(self.host_pdb)
+            ppdb.read_pdb(self.host_pdb) 
             distances = ppdb.distance(xyz=reference_point, records=("ATOM"))
             all_within_distance = ppdb.df["ATOM"][
                 distances < float(self.distance)
@@ -2719,8 +2716,9 @@ class PrepareQMMM:
         df1 = df.iloc[
             index_list,
         ]
+        # TODO: make it write list of integers
         resid_num = list(df1.residue_number.unique())
-        np.savetxt(self.residue_list, resid_num)
+        np.savetxt(self.residue_list, resid_num, fmt="%i")
 
     def get_host_qm_mm_atoms(self):
         """
@@ -2730,6 +2728,7 @@ class PrepareQMMM:
         resid_num = np.loadtxt(self.residue_list)
         # approximated_res_list = [int(i) for i in resid_num]
         approximated_res_list = []
+        # TODO: what is this doing?
         for i in range(
             int(statistics.median(resid_num))
             - int(int(self.num_residues) / 2),
@@ -2743,6 +2742,8 @@ class PrepareQMMM:
         host_index_nested_list = []
         for i in approximated_res_list:
             indices = np.where(df["residue_number"] == i)
+            #TODO: the program seems to error when this line is removed, which
+            # makes no sense.
             indices = list(indices)[0]
             indices = list(indices)
             host_index_nested_list.append(indices)
@@ -2760,15 +2761,11 @@ class PrepareQMMM:
         for i in range(len(ppdb.df["ATOM"])):
             len_atoms.append(i + 1)
         non_selected_atoms = list(set(len_atoms).difference(selected_atoms))
-        if len(non_selected_atoms) + len(selected_atoms) == len(len_atoms):
-            print(
-                "Sum of the atoms in the selected and non-selected region \
-                 equals the length of list of total atoms"
-            )
-        else:
-            print("Error")
-        np.savetxt(self.host_qm_atoms, selected_atoms)
-        np.savetxt(self.host_mm_atoms, non_selected_atoms)
+        assert len(non_selected_atoms) + len(selected_atoms) == len(len_atoms),\
+            "Sum of the atoms in the selected and non-selected region "\
+            "does not equal the length of list of total atoms."
+        np.savetxt(self.host_qm_atoms, selected_atoms, fmt="%i")
+        np.savetxt(self.host_mm_atoms, non_selected_atoms, fmt="%i")
 
     def save_host_pdbs(self):
         """
@@ -2776,6 +2773,7 @@ class PrepareQMMM:
         region separately.
         """
         selected_atoms = np.loadtxt(self.host_qm_atoms)
+        # TODO: not necessary if savetxt writes in integers
         selected_atoms = [int(i) for i in selected_atoms]
         ppdb = PandasPdb()
         ppdb.read_pdb(self.host_pdb)
@@ -2821,12 +2819,13 @@ class PrepareQMMM:
         res_mm_list = list(set(res_list).difference(approximated_res_list))
         # print(res_mm_list)
         res_mm_region_I_list = []
+        # TODO: This can probably be made into a single loop by comparing i
+        # to the maximum value within approximated_res_list
         for i in res_mm_list:
             for j in approximated_res_list:
                 if i < j:
                     res_mm_region_I_list.append(i)
         res_mm_region_I_list = list(set(res_mm_region_I_list))
-        # print(res_mm_region_I_list)
         res_mm_region_II_list = list(
             set(res_mm_list).difference(res_mm_region_I_list)
         )
@@ -2836,6 +2835,7 @@ class PrepareQMMM:
         mm_region_I_index_nested_list = []
         for i in res_mm_region_I_list:
             indices = np.where(df["residue_number"] == i)
+            # TODO: again, this is strange code
             indices = list(indices)[0]
             indices = list(indices)
             mm_region_I_index_nested_list.append(indices)
@@ -2850,6 +2850,7 @@ class PrepareQMMM:
         mm_region_II_index_nested_list = []
         for i in res_mm_region_II_list:
             indices = np.where(df["residue_number"] == i)
+            # TODO: again, this is strange code
             indices = list(indices)[0]
             indices = list(indices)
             mm_region_II_index_nested_list.append(indices)
@@ -2865,15 +2866,11 @@ class PrepareQMMM:
         len_atoms = []
         for i in range(len(ppdb.df["ATOM"])):
             len_atoms.append(i + 1)
-        if len(mm_region_I_atoms) + len(mm_region_II_atoms) == len(len_atoms):
-            print(
-                "Sum of the MM region I atoms and  MM region II atoms equals \
-                 the length of list of total MM atoms"
-            )
-        else:
-            print("Error")
-        np.savetxt(self.host_mm_region_I_atoms, mm_region_I_atoms)
-        np.savetxt(self.host_mm_region_II_atoms, mm_region_II_atoms)
+        assert len(mm_region_I_atoms) + len(mm_region_II_atoms) == len(len_atoms),\
+            "Sum of the atoms in the selected and non-selected region "\
+            "does not equal the length of list of total atoms."
+        np.savetxt(self.host_mm_region_I_atoms, mm_region_I_atoms, fmt="%i")
+        np.savetxt(self.host_mm_region_II_atoms, mm_region_II_atoms, fmt="%i")
 
     def save_host_mm_regions_pdbs(self):
         """
@@ -2885,6 +2882,10 @@ class PrepareQMMM:
         mm_region_I_atoms = [int(i) for i in mm_region_I_atoms]
         mm_region_II_atoms = np.loadtxt(self.host_mm_region_II_atoms)
         mm_region_II_atoms = [int(i) for i in mm_region_II_atoms]
+        
+        # NOTE: this is a slightly confusing way to define the atoms to 
+        # write to a PDB - the members that are *not* in a section, rather
+        # than the members that are.
         ppdb = PandasPdb()
         ppdb.read_pdb(self.host_mm_pdb)
         for i in mm_region_II_atoms:
@@ -2925,14 +2926,12 @@ class PrepareQMMM:
             for line in f1:
                 if "ATOM" in line:
                     f2.write(line)
-        with open(self.qm_pdb, "a") as f:
-            f.write("END")
+            f2.write("END")
         with open(self.host_mm_pdb) as f1, open(self.mm_pdb, "w") as f2:
             for line in f1:
                 if "ATOM" in line:
                     f2.write(line)
-        with open(self.mm_pdb, "a") as f:
-            f.write("END")
+            f2.write("END")
 
 
 class PrepareGaussianGuest:
@@ -3385,6 +3384,8 @@ class PrepareGaussianHostGuest:
                 to_begin = int(i)
             if " Sum of ESP charges =" in lines[i]:
                 to_end = int(i)
+        
+        # Why + 4?
         charges = lines[to_begin + 4 : to_end]
         charge_list = []
         for i in range(len(charges)):
@@ -3537,54 +3538,55 @@ class ParameterizeGuest:
             if "Current cartesian coordinates" in lines[i]:
                 no_coordinates = re.findall(r"\d+|\d+.\d+", lines[i])
                 no_coordinates = int(no_coordinates[0])
-        for i in range(len(lines)):
-            if "Current cartesian coordinates" in lines[i]:
                 to_begin = int(i)
+                
         cartesian_coords = lines[
             to_begin + 1 : to_begin + 1 + int(math.ceil(no_coordinates / 5))
         ]
         cartesian_list = []
         for i in range(len(cartesian_coords)):
             cartesian_list.append(cartesian_coords[i].strip().split())
+        
         coordinates_list = [
             item for sublist in cartesian_list for item in sublist
         ]
-        list_coords = [float(x) * float(0.529) for x in coordinates_list]
+        # Converted from Atomic units (Bohrs) to Angstroms
+        list_coords = [float(x) * BOHRS_PER_ANGSTROM for x in coordinates_list]
         for i in range(len(lines)):
             if "Atomic numbers" in lines[i]:
                 to_begin = int(i)
             if "Nuclear charges" in lines[i]:
                 to_end = int(i)
-        atomic_numbers = lines[to_begin + 1 : to_end]
-        atom_numbers = []
-        for i in range(len(atomic_numbers)):
-            atom_numbers.append(atomic_numbers[i].strip().split())
-        numbers = [item for sublist in atom_numbers for item in sublist]
+        atomic_number_strings = lines[to_begin + 1 : to_end]
+        atom_numbers_nested = []
+        for i in range(len(atomic_number_strings)):
+            atom_numbers_nested.append(atomic_number_strings[i].strip().split())
+        numbers = [item for sublist in atom_numbers_nested for item in sublist]
         N = int(no_coordinates / 3)
         # Opens the new xyz file
-        file = open(self.xyz_file, "w")
-        file.write(str(N) + "\n \n")
-        coords = np.zeros((N, 3))
-        n = 0
-        names = []
-        # Gives name for atomic number
-        for x in range(0, len(numbers)):
-            names.append(element_list[int(numbers[x]) - 1][1])
-        # Print coordinates to new input_coords.xyz file
-        for i in range(0, N):
-            for j in range(0, 3):
-                coords[i][j] = list_coords[n]
-                n = n + 1
-            file.write(
-                names[i]
-                + str(round(coords[i][0], 3))
-                + " "
-                + str(round(coords[i][1], 3))
-                + " "
-                + str(round(coords[i][2], 3))
-                + "\n"
-            )
-        file.close()
+        with open(self.xyz_file, "w") as file:
+            file.write(str(N) + "\n \n")
+            coords = np.zeros((N, 3))
+            n = 0
+            names = []
+            # Gives name for atomic number
+            for x in range(0, len(numbers)):
+                names.append(element_list[int(numbers[x]) - 1][1])
+            # Print coordinates to new input_coords.xyz file
+            for i in range(0, N):
+                for j in range(0, 3):
+                    coords[i][j] = list_coords[n]
+                    n = n + 1
+                file.write(
+                    names[i]
+                    + str(round(coords[i][0], 3))
+                    + " "
+                    + str(round(coords[i][1], 3))
+                    + " "
+                    + str(round(coords[i][2], 3))
+                    + "\n"
+                )
+            
         np.savetxt(self.coordinate_file, coords, fmt="%s")
 
     def get_unprocessed_hessian(self):
@@ -3599,8 +3601,6 @@ class ParameterizeGuest:
             if "Cartesian Force Constants" in lines[i]:
                 no_hessian = re.findall(r"\d+|\d+.\d+", lines[i])
                 no_hessian = int(no_hessian[0])
-        for i in range(len(lines)):
-            if "Cartesian Force Constants" in lines[i]:
                 to_begin = int(i)
         hessian = lines[
             to_begin + 1 : to_begin + 1 + int(math.ceil(no_hessian / 5))
@@ -3621,50 +3621,46 @@ class ParameterizeGuest:
         log file.
         """
         log_file = self.guest_pdb[:-4] + ".log"
-        fid = open(log_file, "r")
-        tline = fid.readline()
-        bond_list = []
-        angle_list = []
-        n = 1
-        n_bond = 1
-        n_angle = 1
-        tmp = "R"  # States if bond or angle
-        B = []
-        # Finds the bond and angles from the .log file
-        while tline:
+        with open(log_file, "r") as fid:
             tline = fid.readline()
-            # Line starts at point when bond and angle list occurs
-            if (
-                len(tline) > 80
-                and tline[0:81].strip()
-                == "! Name  Definition              Value          Derivative Info.                !"
-            ):
+            bond_list = []
+            angle_list = []
+            tmp = "R"  # States if bond or angle
+            # Finds the bond and angles from the .log file
+            while tline:
                 tline = fid.readline()
-                tline = fid.readline()
-                # Stops when all bond and angles recorded
-                while (tmp[0] == "R") or (tmp[0] == "A"):
-                    line = tline.split()
-                    tmp = line[1]
-                    # Bond or angles listed as string
-                    list_terms = line[2][2:-1]
-                    # Bond List
-                    if tmp[0] == "R":
-                        x = list_terms.split(",")
-                        # Subtraction due to python array indexing at 0
-                        x = [(int(i) - 1) for i in x]
-                        bond_list.append(x)
-                        # Angle List
-                    if tmp[0] == "A":
-                        x = list_terms.split(",")
-                        # Subtraction due to python array indexing at 0
-                        x = [(int(i) - 1) for i in x]
-                        angle_list.append(x)
+                # Line starts at point when bond and angle list occurs
+                if (
+                    len(tline) > 80
+                    and tline[0:81].strip()
+                    == "! Name  Definition              Value          Derivative Info.                !"
+                ):
                     tline = fid.readline()
-                # Leave loop
-                tline = -1
-        np.savetxt(self.bond_list_file, bond_list, fmt="%s")
-        np.savetxt(self.angle_list_file, angle_list, fmt="%s")
-
+                    tline = fid.readline()
+                    # Stops when all bond and angles recorded
+                    while (tmp[0] == "R") or (tmp[0] == "A"):
+                        line = tline.split()
+                        tmp = line[1]
+                        # Bond or angles listed as string
+                        list_terms = line[2][2:-1]
+                        # Bond List
+                        if tmp[0] == "R":
+                            x = list_terms.split(",")
+                            # Subtraction due to python array indexing at 0
+                            x = [(int(i) - 1) for i in x]
+                            bond_list.append(x)
+                            # Angle List
+                        if tmp[0] == "A":
+                            x = list_terms.split(",")
+                            # Subtraction due to python array indexing at 0
+                            x = [(int(i) - 1) for i in x]
+                            angle_list.append(x)
+                        tline = fid.readline()
+                    # Leave loop
+                    tline = -1
+            np.savetxt(self.bond_list_file, bond_list, fmt="%s")
+            np.savetxt(self.angle_list_file, angle_list, fmt="%s")
+        
     def get_hessian(self):
         """
         Extracts hessian matrix from the unprocessed hessian matrix
@@ -3678,18 +3674,19 @@ class ParameterizeGuest:
             if "Current cartesian coordinates" in lines[i]:
                 no_coordinates = re.findall(r"\d+|\d+.\d+", lines[i])
                 no_coordinates = int(no_coordinates[0])
+        
         N = int(no_coordinates / 3)
         length_hessian = 3 * N
         hessian = np.zeros((length_hessian, length_hessian))
         m = 0
         # Write the hessian in a 2D array format
-        for i in range(0, (length_hessian)):
+        for i in range(0, length_hessian):
             for j in range(0, (i + 1)):
                 hessian[i][j] = unprocessed_Hessian[m]
                 hessian[j][i] = unprocessed_Hessian[m]
                 m = m + 1
-        hessian = (hessian * (627.509391)) / (
-            0.529 ** 2
+        hessian = (hessian * HARTREE_PER_KCAL_MOL) / (
+            BOHRS_PER_ANGSTROM ** 2
         )  # Change from Hartree/bohr to kcal/mol/ang
         np.savetxt(self.hessian_file, hessian, fmt="%s")
 
@@ -4201,6 +4198,7 @@ class PrepareGaussianHost:
         """
         Writes a Gaussian input file for the receptor QM region.
         """
+        # TODO: create generic function for Gaussian Input file (DRY principle)
         command_line_1 = "%Chk = " + self.host_qm_pdb[:-4] + ".chk"
         command_line_2 = "%Mem = " + str(self.memory) + "GB"
         command_line_3 = "%NProcShared = " + str(self.n_processors)
@@ -5019,6 +5017,7 @@ class GuestAmberXMLAmber:
     def __init__(
         self,
         charge=0,
+        # TODO: some of these variables are ints, and shouldn't be initialized as strings
         num_charge_atoms="",
         charge_atom_1="",
         index_charge_atom_1="",
@@ -5319,12 +5318,17 @@ class GuestAmberXMLAmber:
         # print(bond_1_list)
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
+        #k_bond_list = [
+        #    i * 418.40 for i in k_bond_list
+        #]  # kcal/mol * A^2 to kJ/mol * nm^2
+        
         k_bond_list = [
-            i * 418.40 for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
         bond_length_list = df["bond_length"].values.tolist()
+        # TODO: units here? Anstroms per nm?
         bond_length_list = [i / 10.00 for i in bond_length_list]
         bond_length_list = [round(num, 6) for num in bond_length_list]
         # print(bond_length_list)
@@ -5357,16 +5361,17 @@ class GuestAmberXMLAmber:
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
         k_angle_list = [
-            i * 4.184 for i in k_angle_list
+            i * KCAL_MOL_PER_KJ_MOL for i in k_angle_list
         ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [(i * math.pi) / 180.00 for i in angle_list]
+        angle_list = [i * RADIANS_PER_DEGREE for i in angle_list]
         angle_list = [round(num, 6) for num in angle_list]
         # print(angle_list)
         xml = open(self.system_qm_params_file, "w")
         xml.write("Begin writing the Bond Parameters" + "\n")
+        # TODO: These should use string formatting to become more concise
         for i in range(len(k_bond_list)):
             xml.write(
                 "                                "
@@ -5697,6 +5702,7 @@ class GuestAmberXMLAmber:
                 to_end = int(i)
         bond_params = lines_params[to_begin + 1 : to_end]
         index_search_replace_bond = []
+        # TODO: These should use string formatting to become more concise
         for i in bond_params:
             bond_line_to_replace = i
             # print(bond_line_to_replace)
@@ -5990,6 +5996,7 @@ class GuestAmberXMLAmber:
         print(len(lines_) == len(lines_non_bonded))
 
         xml_off = open(self.reparameterised_intermediate_system_xml_file)
+        # TODO: implement function(s) to read certain types of files. DRY principle
         xml_off_lines = xml_off.readlines()
         for i in range(len(xml_off_lines)):
             if "<GlobalParameters/>" in xml_off_lines[i]:
@@ -7054,7 +7061,7 @@ class HostAmberXMLAmber:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * 418.40 for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -9048,9 +9055,10 @@ class TorsionDriveParams:
         torsional reparamaterization.
 
     """
-
+    
     def __init__(
         self,
+        # TODO: some of these variables are ints, and should be initialized as ints
         num_charge_atoms="",
         index_charge_atom_1="",
         charge_atom_1="",
@@ -9103,9 +9111,11 @@ class TorsionDriveParams:
         """
         torsional_parameters_list = []
         parent_cwd = os.getcwd()
-        target_dir = parent_cwd + "/" + self.tor_dir
+        # TODO: use os.path.join
+        target_dir = os.path.join(parent_cwd, self.tor_dir)
+        # TODO: let's use a more informative variable name than 'i'
         for i in os.listdir(target_dir):
-            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
+            os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
                 torsiondrive_input_to_xyz(
@@ -9159,9 +9169,9 @@ class TorsionDriveParams:
         """
         torsional_parameters_list = []
         parent_cwd = os.getcwd()
-        target_dir = parent_cwd + "/" + self.tor_dir
+        target_dir = os.path.join(parent_cwd, self.tor_dir)
         for i in os.listdir(target_dir):
-            os.chdir(parent_cwd + "/" + self.tor_dir + "/" + i)
+            os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
                 torsiondrive_input_to_xyz(
@@ -9213,8 +9223,8 @@ class TorsionDriveParams:
         Generates a XML force field file for the ligand with reparameterized
         torsional parameters.
         """
-        xml_tor = open(self.reparameterized_torsional_params_file, "r")
-        xml_tor_lines = xml_tor.readlines()
+        with open(self.reparameterized_torsional_params_file, "r") as xml_tor:
+            xml_tor_lines = xml_tor.readlines()
         non_zero_k_tor = []
         for i in xml_tor_lines:
             to_find = "k=" + '"' + "0.0" + '"'
@@ -9243,8 +9253,11 @@ class TorsionDriveParams:
                 int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[9])
             )
         # print(periodicity)
+        # TODO: there may be a way to consolidate the reparametrization of 
+        #  the XML file to obey the DRY principle
         xml_tor_reparams = open(self.reparameterised_system_xml_file, "r")
         xml_tor_reparams_lines = xml_tor_reparams.readlines()
+        # A string template and formatting should be used here
         for j in range(len(xml_tor_reparams_lines)):
             for i in range(len(non_zero_k_tor)):
                 to_find_tor = (
@@ -9910,7 +9923,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * 418.40 for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -10085,7 +10098,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * 418.40 for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -11854,7 +11867,7 @@ class SystemGuestAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * 418.40 for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -11893,16 +11906,17 @@ class SystemGuestAmberSystem:
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
         k_angle_list = [
-            i * 4.184 for i in k_angle_list
+            i * KCAL_MOL_PER_KJ_MOL for i in k_angle_list
         ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [(i * math.pi) / 180.00 for i in angle_list]
+        angle_list = [i * RADIANS_PER_DEGREE for i in angle_list]
         angle_list = [round(num, 6) for num in angle_list]
         # print(angle_list)
         xml = open(self.guest_qm_params_file, "w")
         xml.write("Begin writing the Bond Parameters" + "\n")
+        # TODO: use string formatting and templates to write these lines
         for i in range(len(k_bond_list)):
             xml.write(
                 "                                "
@@ -12220,8 +12234,8 @@ class SystemGuestAmberSystem:
         """
 
         # Bond Parameters
-        f_params = open(self.guest_qm_params_file, "r")
-        lines_params = f_params.readlines()
+        with open(self.guest_qm_params_file, "r") as f_params:
+            lines_params = f_params.readlines()
         # Bond Parameters
         for i in range(len(lines_params)):
             if "Begin writing the Bond Parameters" in lines_params[i]:
@@ -12230,6 +12244,7 @@ class SystemGuestAmberSystem:
                 to_end = int(i)
         bond_params = lines_params[to_begin + 1 : to_end]
         index_search_replace_bond = []
+        # TODO: again, use string formatting.
         for i in bond_params:
             bond_line_to_replace = i
             # print(bond_line_to_replace)
@@ -12286,6 +12301,7 @@ class SystemGuestAmberSystem:
             angle_line_to_replace = i
             # print(angle_line_to_replace)
         index_search_replace_angle = []
+        # TODO: use string formatting (generalize to function?)
         for i in angle_params:
             angle_line_to_replace = i
             # print(angle_line_to_replace)
@@ -12648,9 +12664,10 @@ class SystemGuestAmberSystem:
         """
 
         no_host_atoms = get_num_host_atoms(self.host_pdb)
-        xml_tor = open(self.reparameterized_torsional_params_file, "r")
-        xml_tor_lines = xml_tor.readlines()
+        with open(self.reparameterized_torsional_params_file, "r") as xml_tor:
+            xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
+        # TODO: string formatting and clean up this code to be more concise
         for i in xml_tor_lines:
             i = i.replace(
                 "p1=" + '"' + str(int(re.findall("\d*\.?\d+", i)[2])) + '"',

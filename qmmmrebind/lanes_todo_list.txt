@@ -1,0 +1,30 @@
+This is a list of items that should/could be done to improve QMMMReBind.
+
+- Use DistUtils to make QMMMReBind a package for installation so that a path to the module isn't necessary within the script
+- Parametrize.py needs to be broken up into smaller modules for easier code reading and testing.
+- Make running pdb4amber its own function (DRY principle).
+- Does QM region of host have chemically valid molecules (H's added)?
+- Class inheritance can be used for PrepareGaussianGuest and PrepareGaussianHostGuest to save space.
+- Common functions for reading Gaussian output logs.
+- More checks & assertions needed to ensure that the proper number of values exist for the number of host and guest atoms.
+- Deeper tests should be performed to ensure that bond/angle parameters are being properly extracted from Hessian.
+    - Try a test of Gaussian on water, and use functions to extract Hessian, bond lenths, bond strengths, etc.
+- No test for force_constant_bond
+- More asserts ought to be implemented in various steps to ensure that proper atom counts, orders, etc. to ensure
+    - This suggests the need for a persistent object of system information to be passed between the classes.
+- Generalize Gaussian-specific classes for potential input to GAMESS.
+- It is good practice not to do "from library import *", but to use functions from libraries using the full library reference.
+- Better sorting of various files into directories based on calculation stages, or at least better naming.
+- Reading files to find start/end of section and intermediate lines (DRY principle)
+- Some variables are not correctly initialized (ints instead of strs, for instance).
+- Some paths need to be constructed with os.path.join()
+- After conversion from XML to AMBER, or vice versa, check parameters atom by atom.
+
+Notes:
+- Changing file reads/writes to use "with" paradigm.
+- Region I are the residues *before* the active site residues, while
+  Region II are the residues *after* the active site residues.
+- The structure defined by qm.pdb looks problematic - long chains of residues far away from guest, and missing chains close to guest.
+
+
+  
