@@ -7061,7 +7061,7 @@ class HostAmberXMLAmber:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 * for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -9923,7 +9923,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 * for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -10098,7 +10098,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 * for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -11867,7 +11867,7 @@ class SystemGuestAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 * for i in k_bond_list
+            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -12234,8 +12234,8 @@ class SystemGuestAmberSystem:
         """
 
         # Bond Parameters
-        f_params = open(self.guest_qm_params_file, "r")
-        lines_params = f_params.readlines()
+        with open(self.guest_qm_params_file, "r") as f_params:
+            lines_params = f_params.readlines()
         # Bond Parameters
         for i in range(len(lines_params)):
             if "Begin writing the Bond Parameters" in lines_params[i]:
@@ -12244,6 +12244,7 @@ class SystemGuestAmberSystem:
                 to_end = int(i)
         bond_params = lines_params[to_begin + 1 : to_end]
         index_search_replace_bond = []
+        # TODO: again, use string formatting.
         for i in bond_params:
             bond_line_to_replace = i
             # print(bond_line_to_replace)
@@ -12300,6 +12301,7 @@ class SystemGuestAmberSystem:
             angle_line_to_replace = i
             # print(angle_line_to_replace)
         index_search_replace_angle = []
+        # TODO: use string formatting (generalize to function?)
         for i in angle_params:
             angle_line_to_replace = i
             # print(angle_line_to_replace)
@@ -12662,9 +12664,10 @@ class SystemGuestAmberSystem:
         """
 
         no_host_atoms = get_num_host_atoms(self.host_pdb)
-        xml_tor = open(self.reparameterized_torsional_params_file, "r")
-        xml_tor_lines = xml_tor.readlines()
+        with open(self.reparameterized_torsional_params_file, "r") as xml_tor:
+            xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
+        # TODO: string formatting and clean up this code to be more concise
         for i in xml_tor_lines:
             i = i.replace(
                 "p1=" + '"' + str(int(re.findall("\d*\.?\d+", i)[2])) + '"',
