@@ -13,6 +13,11 @@ import shutil
 import sys
 import os
 import re
+
+import modules.file_modify as file_modify
+import modules.file_utilities as file_utilities
+import modules.openmm_utilities as openmm_utilities
+
 pwd_qmmmrebind = "/home/aaojha/qmmmrebind/"  # PWD of the directory where qmmmrebind is installed
 path_join = pwd_qmmmrebind + "qmmmrebind/"
 module_path = os.path.abspath(os.path.join(path_join))
@@ -26,7 +31,7 @@ args = parser.parse_args()
 ##################################################################################################################################################################################################################
 ## Step 0 : PDB standardization and/or relaxation
 qmmmrebindpdb = "qmmmrebind_init.pdb"
-singular_resid(pdbfile=args.pdbfile, qmmmrebind_init_file=qmmmrebindpdb)
+file_modify.singular_resid(pdbfile=args.pdbfile, qmmmrebind_init_file=qmmmrebindpdb)
 #relax_init_structure(pdbfile=args.pdbfile, prmtopfile=args.prmtopfile, sim_output="output.pdb", sim_steps=10000, qmmmrebindpdb=qmmmrebindpdb)
 ##################################################################################################################################################################################################################
 ## Step I : Defining QM and MM regions
@@ -146,7 +151,7 @@ hostguest_system.save_amber_params_non_qm_charges()
 hostguest_system = SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)
 hostguest_system.generate_xml_from_prmtop()
 hostguest_system.write_guest_params_non_zero()
-remove_bad_angle_params(angle=1.00, k_angle=500)
+file_modify.remove_bad_angle_params(angle=1.00, k_angle=500)
 hostguest_system.write_reparameterised_system_xml()
 hostguest_system.write_torsional_reparams()
 hostguest_system.save_amber_params()
@@ -163,14 +168,15 @@ hostguest_system.save_amber_params_non_qm_charges()
 """
 ##################################################################################################################################################################################################################
 ## Step XI : Standardisation and OpenMM Run
-change_names(inpcrd_file = "hostguest_params.inpcrd", prmtop_file = "hostguest_params.prmtop", pdb_file = qmmmrebindpdb)
-add_dim_prmtop(pdbfile = "system_qmmmrebind.pdb", prmtopfile = "system_qmmmrebind.prmtop")
+file_utilities.change_names(inpcrd_file = "hostguest_params.inpcrd", prmtop_file = "hostguest_params.prmtop", pdb_file = qmmmrebindpdb)
+file_modify.add_dim_prmtop(pdbfile = "system_qmmmrebind.pdb", prmtopfile = "system_qmmmrebind.prmtop")
 #prmtop_calibration(prmtopfile = "system_qmmmrebind.prmtop", inpcrdfile = "system_qmmmrebind.inpcrd")
-run_openmm_prmtop_pdb()
-run_openmm_prmtop_inpcrd()
+openmm_utilities.run_openmm_prmtop_pdb()
+openmm_utilities.run_openmm_prmtop_inpcrd()
 ##################################################################################################################################################################################################################
 ## Step XII: Assignment of designated directories
-move_qmmmmrebind_files()
-move_qm_files()
-move_qmmmrebind_files()
+#move_qmmmmrebind_files()
+#move_qm_files()
+#move_qmmmrebind_files()
+print("Done")
 ##################################################################################################################################################################################################################

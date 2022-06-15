@@ -1,3 +1,10 @@
+
+# Standard library imports
+
+
+# Related third party imports
+
+
 from openff.toolkit.typing.engines.smirnoff import ForceField
 from openff.toolkit.topology import Molecule, Topology
 from biopandas.pdb import PandasPdb
@@ -24,2420 +31,15 @@ import ast
 import re
 import os
 
-BOHRS_PER_ANGSTROM = 0.529
-HARTREE_PER_KCAL_MOL = 627.509391
-#kcal/mol * A^2 to kJ/mol * nm^2
-KCAL_MOL_PER_KJ_MOL = 4.184
-ANGSTROMS_PER_NM = 10.0
-RADIANS_PER_DEGREE = np.pi / 180.0
-
-
-method_basis_scale_dict = {
-    "HF STO-3G": 0.817,
-    "HF 3-21G": 0.906,
-    "HF 3-21G*": 0.903,
-    "HF 6-31G": 0.903,
-    "HF 6-31G*": 0.899,
-    "HF 6-31G**": 0.903,
-    "HF 6-31+G**": 0.904,
-    "HF 6-311G*": 0.904,
-    "HF 6-311G**": 0.909,
-    "HF TZVP": 0.909,
-    "HF cc-pVDZ": 0.908,
-    "HF cc-pVTZ": 0.91,
-    "HF cc-pVQZ": 0.908,
-    "HF aug-cc-pVDZ": 0.911,
-    "HF aug-cc-pVTZ": 0.91,
-    "HF aug-cc-pVQZ": 0.909,
-    "HF daug-cc-pVDZ": 0.912,
-    "HF daug-cc-pVTZ": 0.905,
-    "ROHF 3-21G": 0.907,
-    "ROHF 3-21G*": 0.909,
-    "ROHF 6-31G": 0.895,
-    "ROHF 6-31G*": 0.89,
-    "ROHF 6-31G**": 0.855,
-    "ROHF 6-31+G**": 0.856,
-    "ROHF 6-311G*": 0.856,
-    "ROHF 6-311G**": 0.913,
-    "ROHF cc-pVDZ": 0.861,
-    "ROHF cc-pVTZ": 0.901,
-    "LSDA STO-3G": 0.896,
-    "LSDA 3-21G": 0.984,
-    "LSDA 3-21G*": 0.982,
-    "LSDA 6-31G": 0.98,
-    "LSDA 6-31G*": 0.981,
-    "LSDA 6-31G**": 0.981,
-    "LSDA 6-31+G**": 0.985,
-    "LSDA 6-311G*": 0.984,
-    "LSDA 6-311G**": 0.988,
-    "LSDA TZVP": 0.988,
-    "LSDA cc-pVDZ": 0.989,
-    "LSDA cc-pVTZ": 0.989,
-    "LSDA aug-cc-pVDZ": 0.989,
-    "LSDA aug-cc-pVTZ": 0.991,
-    "BLYP STO-3G": 0.925,
-    "BLYP 3-21G": 0.995,
-    "BLYP 3-21G*": 0.994,
-    "BLYP 6-31G": 0.992,
-    "BLYP 6-31G*": 0.992,
-    "BLYP 6-31G**": 0.992,
-    "BLYP 6-31+G**": 0.995,
-    "BLYP 6-311G*": 0.998,
-    "BLYP 6-311G**": 0.996,
-    "BLYP TZVP": 0.998,
-    "BLYP cc-pVDZ": 1.002,
-    "BLYP cc-pVTZ": 0.997,
-    "BLYP aug-cc-pVDZ": 0.998,
-    "BLYP aug-cc-pVTZ": 0.997,
-    "B1B95 STO-3G": 0.883,
-    "B1B95 3-21G": 0.957,
-    "B1B95 3-21G*": 0.955,
-    "B1B95 6-31G": 0.954,
-    "B1B95 6-31G*": 0.949,
-    "B1B95 6-31G**": 0.955,
-    "B1B95 6-31+G**": 0.957,
-    "B1B95 6-311G*": 0.959,
-    "B1B95 6-311G**": 0.96,
-    "B1B95 TZVP": 0.957,
-    "B1B95 cc-pVDZ": 0.961,
-    "B1B95 cc-pVTZ": 0.957,
-    "B1B95 aug-cc-pVDZ": 0.958,
-    "B1B95 aug-cc-pVTZ": 0.959,
-    "B3LYP STO-3G": 0.892,
-    "B3LYP 3-21G": 0.965,
-    "B3LYP 3-21G*": 0.962,
-    "B3LYP 6-31G": 0.962,
-    "B3LYP 6-31G*": 0.96,
-    "B3LYP 6-31G**": 0.961,
-    "B3LYP 6-31+G**": 0.964,
-    "B3LYP 6-311G*": 0.966,
-    "B3LYP 6-311G**": 0.967,
-    "B3LYP TZVP": 0.965,
-    "B3LYP cc-pVDZ": 0.97,
-    "B3LYP cc-pVTZ": 0.967,
-    "B3LYP cc-pVQZ": 0.969,
-    "B3LYP aug-cc-pVDZ": 0.97,
-    "B3LYP aug-cc-pVTZ": 0.968,
-    "B3LYP aug-cc-pVQZ": 0.969,
-    "B3PW91 STO-3G": 0.885,
-    "B3PW91 3-21G": 0.961,
-    "B3PW91 3-21G*": 0.959,
-    "B3PW91 6-31G": 0.958,
-    "B3PW91 6-31G*": 0.957,
-    "B3PW91 6-31G**": 0.958,
-    "B3PW91 6-31+G**": 0.96,
-    "B3PW91 6-311G*": 0.963,
-    "B3PW91 6-311G**": 0.963,
-    "B3PW91 TZVP": 0.964,
-    "B3PW91 cc-pVDZ": 0.965,
-    "B3PW91 cc-pVTZ": 0.962,
-    "B3PW91 aug-cc-pVDZ": 0.965,
-    "B3PW91 aug-cc-pVTZ": 0.965,
-    "mPW1PW91 STO-3G": 0.879,
-    "mPW1PW91 3-21G": 0.955,
-    "mPW1PW91 3-21G*": 0.95,
-    "mPW1PW91 6-31G": 0.947,
-    "mPW1PW91 6-31G*": 0.948,
-    "mPW1PW91 6-31G**": 0.952,
-    "mPW1PW91 6-31+G**": 0.952,
-    "mPW1PW91 6-311G*": 0.954,
-    "mPW1PW91 6-311G**": 0.957,
-    "mPW1PW91 TZVP": 0.954,
-    "mPW1PW91 cc-pVDZ": 0.958,
-    "mPW1PW91 cc-pVTZ": 0.959,
-    "mPW1PW91 aug-cc-pVDZ": 0.958,
-    "mPW1PW91 aug-cc-pVTZ": 0.958,
-    "PBEPBE STO-3G": 0.914,
-    "PBEPBE 3-21G": 0.991,
-    "PBEPBE 3-21G*": 0.954,
-    "PBEPBE 6-31G": 0.986,
-    "PBEPBE 6-31G*": 0.986,
-    "PBEPBE 6-31G**": 0.986,
-    "PBEPBE 6-31+G**": 0.989,
-    "PBEPBE 6-311G*": 0.99,
-    "PBEPBE 6-311G**": 0.991,
-    "PBEPBE TZVP": 0.989,
-    "PBEPBE cc-pVDZ": 0.994,
-    "PBEPBE cc-pVTZ": 0.993,
-    "PBEPBE aug-cc-pVDZ": 0.994,
-    "PBEPBE aug-cc-pVTZ": 0.994,
-    "PBE1PBE STO-3G": 0.882,
-    "PBE1PBE 3-21G": 0.96,
-    "PBE1PBE 3-21G*": 0.96,
-    "PBE1PBE 6-31G": 0.956,
-    "PBE1PBE 6-31G*": 0.95,
-    "PBE1PBE 6-31G**": 0.953,
-    "PBE1PBE 6-31+G**": 0.955,
-    "PBE1PBE 6-311G*": 0.959,
-    "PBE1PBE 6-311G**": 0.959,
-    "PBE1PBE TZVP": 0.96,
-    "PBE1PBE cc-pVDZ": 0.962,
-    "PBE1PBE cc-pVTZ": 0.961,
-    "PBE1PBE aug-cc-pVDZ": 0.962,
-    "PBE1PBE aug-cc-pVTZ": 0.962,
-    "HSEh1PBE STO-3G": 0.883,
-    "HSEh1PBE 3-21G": 0.963,
-    "HSEh1PBE 3-21G*": 0.96,
-    "HSEh1PBE 6-31G": 0.957,
-    "HSEh1PBE 6-31G*": 0.951,
-    "HSEh1PBE 6-31G**": 0.954,
-    "HSEh1PBE 6-31+G**": 0.955,
-    "HSEh1PBE 6-311G*": 0.96,
-    "HSEh1PBE 6-311G**": 0.96,
-    "HSEh1PBE TZVP": 0.96,
-    "HSEh1PBE cc-pVDZ": 0.962,
-    "HSEh1PBE cc-pVTZ": 0.961,
-    "HSEh1PBE aug-cc-pVDZ": 0.962,
-    "HSEh1PBE aug-cc-pVTZ": 0.962,
-    "TPSSh 3-21G": 0.969,
-    "TPSSh 3-21G*": 0.966,
-    "TPSSh 6-31G": 0.962,
-    "TPSSh 6-31G*": 0.959,
-    "TPSSh 6-31G**": 0.959,
-    "TPSSh 6-31+G**": 0.963,
-    "TPSSh 6-311G*": 0.963,
-    "TPSSh TZVP": 0.964,
-    "TPSSh cc-pVDZ": 0.972,
-    "TPSSh cc-pVTZ": 0.968,
-    "TPSSh aug-cc-pVDZ": 0.967,
-    "TPSSh aug-cc-pVTZ": 0.965,
-    "B97D3 3-21G": 0.983,
-    "B97D3 6-31G*": 0.98,
-    "B97D3 6-31+G**": 0.983,
-    "B97D3 6-311G**": 0.986,
-    "B97D3 TZVP": 0.986,
-    "B97D3 cc-pVDZ": 0.992,
-    "B97D3 cc-pVTZ": 0.986,
-    "B97D3 aug-cc-pVTZ": 0.985,
-    "MP2 STO-3G": 0.872,
-    "MP2 3-21G": 0.955,
-    "MP2 3-21G*": 0.951,
-    "MP2 6-31G": 0.957,
-    "MP2 6-31G*": 0.943,
-    "MP2 6-31G**": 0.937,
-    "MP2 6-31+G**": 0.941,
-    "MP2 6-311G*": 0.95,
-    "MP2 6-311G**": 0.95,
-    "MP2 TZVP": 0.948,
-    "MP2 cc-pVDZ": 0.953,
-    "MP2 cc-pVTZ": 0.95,
-    "MP2 cc-pVQZ": 0.948,
-    "MP2 aug-cc-pVDZ": 0.959,
-    "MP2 aug-cc-pVTZ": 0.953,
-    "MP2 aug-cc-pVQZ": 0.95,
-    "MP2=FULL STO-3G": 0.889,
-    "MP2=FULL 3-21G": 0.955,
-    "MP2=FULL 3-21G*": 0.948,
-    "MP2=FULL 6-31G": 0.95,
-    "MP2=FULL 6-31G*": 0.942,
-    "MP2=FULL 6-31G**": 0.934,
-    "MP2=FULL 6-31+G**": 0.939,
-    "MP2=FULL 6-311G*": 0.947,
-    "MP2=FULL 6-311G**": 0.949,
-    "MP2=FULL TZVP": 0.953,
-    "MP2=FULL cc-pVDZ": 0.95,
-    "MP2=FULL cc-pVTZ": 0.949,
-    "MP2=FULL cc-pVQZ": 0.957,
-    "MP2=FULL aug-cc-pVDZ": 0.969,
-    "MP2=FULL aug-cc-pVTZ": 0.951,
-    "MP2=FULL aug-cc-pVQZ": 0.956,
-    "MP3 STO-3G": 0.894,
-    "MP3 3-21G": 0.968,
-    "MP3 3-21G*": 0.965,
-    "MP3 6-31G": 0.966,
-    "MP3 6-31G*": 0.939,
-    "MP3 6-31G**": 0.935,
-    "MP3 6-31+G**": 0.931,
-    "MP3 TZVP": 0.935,
-    "MP3 cc-pVDZ": 0.948,
-    "MP3 cc-pVTZ": 0.945,
-    "MP3=FULL 6-31G*": 0.938,
-    "MP3=FULL 6-31+G**": 0.932,
-    "MP3=FULL TZVP": 0.934,
-    "MP3=FULL cc-pVDZ": 0.94,
-    "MP3=FULL cc-pVTZ": 0.933,
-    "B2PLYP 6-31G*": 0.949,
-    "B2PLYP 6-31+G**": 0.952,
-    "B2PLYP TZVP": 0.954,
-    "B2PLYP cc-pVDZ": 0.958,
-    "B2PLYP cc-pVTZ": 0.959,
-    "B2PLYP cc-pVQZ": 0.957,
-    "B2PLYP aug-cc-pVTZ": 0.961,
-    "B2PLYP=FULL 3-21G": 0.952,
-    "B2PLYP=FULL 6-31G*": 0.948,
-    "B2PLYP=FULL 6-31+G**": 0.951,
-    "B2PLYP=FULL TZVP": 0.954,
-    "B2PLYP=FULL cc-pVDZ": 0.959,
-    "B2PLYP=FULL cc-pVTZ": 0.956,
-    "B2PLYP=FULL aug-cc-pVDZ": 0.962,
-    "B2PLYP=FULL aug-cc-pVTZ": 0.959,
-    "CID 3-21G": 0.932,
-    "CID 3-21G*": 0.931,
-    "CID 6-31G": 0.935,
-    "CID 6-31G*": 0.924,
-    "CID 6-31G**": 0.924,
-    "CID 6-31+G**": 0.924,
-    "CID 6-311G*": 0.929,
-    "CID cc-pVDZ": 0.924,
-    "CID cc-pVTZ": 0.927,
-    "CISD 3-21G": 0.941,
-    "CISD 3-21G*": 0.934,
-    "CISD 6-31G": 0.938,
-    "CISD 6-31G*": 0.926,
-    "CISD 6-31G**": 0.918,
-    "CISD 6-31+G**": 0.922,
-    "CISD 6-311G*": 0.925,
-    "CISD cc-pVDZ": 0.922,
-    "CISD cc-pVTZ": 0.93,
-    "QCISD 3-21G": 0.969,
-    "QCISD 3-21G*": 0.961,
-    "QCISD 6-31G": 0.964,
-    "QCISD 6-31G*": 0.952,
-    "QCISD 6-31G**": 0.941,
-    "QCISD 6-31+G**": 0.945,
-    "QCISD 6-311G*": 0.957,
-    "QCISD 6-311G**": 0.954,
-    "QCISD TZVP": 0.955,
-    "QCISD cc-pVDZ": 0.959,
-    "QCISD cc-pVTZ": 0.956,
-    "QCISD aug-cc-pVDZ": 0.969,
-    "QCISD aug-cc-pVTZ": 0.962,
-    "CCD 3-21G": 0.972,
-    "CCD 3-21G*": 0.957,
-    "CCD 6-31G": 0.96,
-    "CCD 6-31G*": 0.947,
-    "CCD 6-31G**": 0.938,
-    "CCD 6-31+G**": 0.942,
-    "CCD 6-311G*": 0.955,
-    "CCD 6-311G**": 0.955,
-    "CCD TZVP": 0.948,
-    "CCD cc-pVDZ": 0.957,
-    "CCD cc-pVTZ": 0.934,
-    "CCD aug-cc-pVDZ": 0.965,
-    "CCD aug-cc-pVTZ": 0.957,
-    "CCSD 3-21G": 0.943,
-    "CCSD 3-21G*": 0.943,
-    "CCSD 6-31G": 0.943,
-    "CCSD 6-31G*": 0.944,
-    "CCSD 6-31G**": 0.933,
-    "CCSD 6-31+G**": 0.934,
-    "CCSD 6-311G*": 0.954,
-    "CCSD TZVP": 0.954,
-    "CCSD cc-pVDZ": 0.947,
-    "CCSD cc-pVTZ": 0.941,
-    "CCSD cc-pVQZ": 0.951,
-    "CCSD aug-cc-pVDZ": 0.963,
-    "CCSD aug-cc-pVTZ": 0.956,
-    "CCSD aug-cc-pVQZ": 0.953,
-    "CCSD=FULL 6-31G*": 0.95,
-    "CCSD=FULL TZVP": 0.948,
-    "CCSD=FULL cc-pVTZ": 0.948,
-    "CCSD=FULL aug-cc-pVTZ": 0.951,
-}
-
-element_list = [
-    ["1 ", "H ", "Hydrogen"],
-    ["2 ", "He", "Helium"],
-    ["3 ", "Li", "Lithium"],
-    ["4 ", "Be", "Beryllium"],
-    ["5 ", "B ", "Boron"],
-    ["6 ", "C ", "Carbon"],
-    ["7 ", "N ", "Nitrogen"],
-    ["8 ", "O ", "Oxygen"],
-    ["9 ", "F ", "Fluorine"],
-    ["10", "Ne", "Neon"],
-    ["11", "Na", "Sodium"],
-    ["12", "Mg", "Magnesium"],
-    ["13", "Al", "Aluminum"],
-    ["14", "Si", "Silicon"],
-    ["15", "P ", "Phosphorus"],
-    ["16", "S ", "Sulfur"],
-    ["17", "Cl", "Chlorine"],
-    ["18", "Ar", "Argon"],
-    ["19", "K ", "Potassium"],
-    ["20", "Ca", "Calcium"],
-    ["21", "Sc", "Scandium"],
-    ["22", "Ti", "Titanium"],
-    ["23", "V ", "Vanadium"],
-    ["24", "Cr", "Chromium"],
-    ["25", "Mn", "Manganese"],
-    ["26", "Fe", "Iron"],
-    ["27", "Co", "Cobalt"],
-    ["28", "Ni", "Nickel"],
-    ["29", "Cu", "Copper"],
-    ["30", "Zn", "Zinc"],
-    ["31", "Ga", "Gallium"],
-    ["32", "Ge", "Germanium"],
-    ["33", "As", "Arsenic"],
-    ["34", "Se", "Selenium"],
-    ["35", "Br", "Bromine"],
-    ["36", "Kr", "Krypton"],
-    ["37", "Rb", "Rubidium"],
-    ["38", "Sr", "Strontium"],
-    ["39", "Y ", "Yttrium"],
-    ["40", "Zr", "Zirconium"],
-    ["41", "Nb", "Niobium"],
-    ["42", "Mo", "Molybdenum"],
-    ["43", "Tc", "Technetium"],
-    ["44", "Ru", "Ruthenium"],
-    ["45", "Rh", "Rhodium"],
-    ["46", "Pd", "Palladium"],
-    ["47", "Ag", "Silver"],
-    ["48", "Cd", "Cadmium"],
-    ["49", "In", "Indium"],
-    ["50", "Sn", "Tin"],
-    ["51", "Sb", "Antimony"],
-    ["52", "Te", "Tellurium"],
-    ["53", "I ", "Iodine"],
-    ["54", "Xe", "Xenon"],
-    ["55", "Cs", "Cesium"],
-    ["56", "Ba", "Barium"],
-    ["57", "La", "Lanthanum"],
-    ["58", "Ce", "Cerium"],
-    ["59", "Pr", "Praseodymium"],
-    ["60", "Nd", "Neodymium"],
-    ["61", "Pm", "Promethium"],
-    ["62", "Sm", "Samarium"],
-    ["63", "Eu", "Europium"],
-    ["64", "Gd", "Gadolinium"],
-    ["65", "Tb", "Terbium"],
-    ["66", "Dy", "Dysprosium"],
-    ["67", "Ho", "Holmium"],
-    ["68", "Er", "Erbium"],
-    ["69", "Tm", "Thulium"],
-    ["70", "Yb", "Ytterbium"],
-    ["71", "Lu", "Lutetium"],
-    ["72", "Hf", "Hafnium"],
-    ["73", "Ta", "Tantalum"],
-    ["74", "W ", "Tungsten"],
-    ["75", "Re", "Rhenium"],
-    ["76", "Os", "Osmium"],
-    ["77", "Ir", "Iridium"],
-    ["78", "Pt", "Platinum"],
-    ["79", "Au", "Gold"],
-    ["80", "Hg", "Mercury"],
-    ["81", "Tl", "Thallium"],
-    ["82", "Pb", "Lead"],
-    ["83", "Bi", "Bismuth"],
-    ["84", "Po", "Polonium"],
-    ["85", "At", "Astatine"],
-    ["86", "Rn", "Radon"],
-    ["87", "Fr", "Francium"],
-    ["88", "Ra", "Radium"],
-    ["89", "Ac", "Actinium"],
-    ["90", "Th", "Thorium"],
-    ["91", "Pa", "Protactinium"],
-    ["92", "U ", "Uranium"],
-    ["93", "Np", "Neptunium"],
-    ["94", "Pu", "Plutonium"],
-    ["95", "Am", "Americium"],
-    ["96", "Cm", "Curium"],
-    ["97", "Bk", "Berkelium"],
-    ["98", "Cf", "Californium"],
-    ["99", "Es", "Einsteinium"],
-]
-
-
-def get_vibrational_scaling(functional, basis_set):
-
-    """
-    Returns vibrational scaling factor given the functional
-    and the basis set for the QM engine.
-
-    Parameters
-    ----------
-    functional: str
-        Functional
-
-    basis_set: str
-        Basis set
-
-    Returns
-    -------
-    vib_scale: float
-        Vibrational scaling factor corresponding to the given
-        the basis_set and the functional.
-
-    Examples
-    --------
-    >>> get_vibrational_scaling("QCISD", "6-311G*")
-    0.957
-
-    """
-    vib_scale = method_basis_scale_dict.get(functional + " " + basis_set)
-    return vib_scale
-
-
-def unit_vector_N(u_BC, u_AB):
-
-    """
-    Calculates unit normal vector perpendicular to plane ABC.
-
-    Parameters
-    ----------
-    u_BC : (.. , 1, 3) array
-        Unit vector from atom B to atom C.
-
-    u_AB : (..., 1, 3) array
-        Unit vector from atom A to atom B.
-
-    Returns
-    -------
-    u_N : (..., 1, 3) array
-        Unit normal vector perpendicular to plane ABC.
-
-    Examples
-    --------
-    >>> u_BC = [0.34040355, 0.62192853, 0.27011169]
-    >>> u_AB = [0.28276792, 0.34232697, 0.02370306]
-    >>> unit_vector_N(u_BC, u_AB)
-    array([-0.65161629,  0.5726879 , -0.49741811])
-    """
-    cross_product = np.cross(u_BC, u_AB)
-    norm_u_N = np.linalg.norm(cross_product)
-    u_N = cross_product / norm_u_N
-    return u_N
-
-
-def delete_guest_angle_params(guest_qm_params_file="guest_qm_params.txt"):
-    """
-    
-    """
-    f_params = open(guest_qm_params_file, "r")
-    lines_params = f_params.readlines()
-    for i in range(len(lines_params)):
-        if "Begin writing the Angle Parameters" in lines_params[i]:
-            to_begin = int(i)
-        if "Finish writing the Angle Parameters" in lines_params[i]:
-            to_end = int(i)
-    lines_selected = lines_params[:to_begin] + lines_params[to_end + 1 :]
-    with open(guest_qm_params_file, "w") as f_:
-        f_.write("".join(lines_selected))
-    return
-
-
-def remove_bad_angle_params(
-        guest_qm_params_file="guest_qm_params.txt", angle=1.00, k_angle=500):
-    with open(guest_qm_params_file, "r") as f_params:
-        lines_params = f_params.readlines()
-    for i in range(len(lines_params)):
-        if "Begin writing the Angle Parameters" in lines_params[i]:
-            to_begin = int(i)
-        if "Finish writing the Angle Parameters" in lines_params[i]:
-            to_end = int(i)
-    angle_params = lines_params[to_begin + 1 : to_end]
-    lines_to_omit = []
-    for i in angle_params:
-        if float(re.findall(r"[-+]?\d+[.]?\d*", i)[0]) < float(angle) or float(
-            re.findall(r"[-+]?\d+[.]?\d*", i)[1]
-        ) > float(k_angle):
-            lines_to_omit.append(i)
-    for b in lines_to_omit:
-        lines_params.remove(b)
-    with open(guest_qm_params_file, "w") as file:
-        for j in lines_params:
-            file.write(j)
-
-
-def get_num_host_atoms(host_pdb):
-
-    """
-    Reads the host PDB file and returns the
-    total number of atoms.
-    """
-
-    ppdb = PandasPdb()
-    ppdb.read_pdb(host_pdb)
-    no_host_atoms = ppdb.df["ATOM"].shape[0]
-    return no_host_atoms
-
-
-def change_names(inpcrd_file, prmtop_file, pdb_file):
-    command = "cp -r " + inpcrd_file + " system_qmmmrebind.inpcrd"
-    os.system(command)
-    command = "cp -r " + prmtop_file + " system_qmmmrebind.prmtop"
-    os.system(command)
-    command = "cp -r " + pdb_file + " system_qmmmrebind.pdb"
-    os.system(command)
-
-
-def copy_file(source, destination):
-
-    """
-    Copies a file from a source to the destination.
-    """
-    shutil.copy(source, destination)
-
-
-def get_openmm_energies(system_pdb, system_xml):
-
-    """
-    Returns decomposed OPENMM energies for the
-    system.
-
-    Parameters
-    ----------
-    system_pdb : str
-        Input PDB file
-
-    system_xml : str
-        Forcefield file in XML format
-
-    """
-
-    pdb = simtk.openmm.app.PDBFile(system_pdb)
-    ff_xml_file = open(system_xml, "r")
-    system = simtk.openmm.XmlSerializer.deserialize(ff_xml_file.read())
-    integrator = simtk.openmm.LangevinIntegrator(
-        300 * simtk.unit.kelvin,
-        1 / simtk.unit.picosecond,
-        0.002 * simtk.unit.picoseconds,
-    )
-    simulation = simtk.openmm.app.Simulation(pdb.topology, system, integrator)
-    simulation.context.setPositions(pdb.positions)
-    state = simulation.context.getState(
-        getEnergy=True, getParameters=True, getForces=True
-    )
-    force_group = []
-    for i, force in enumerate(system.getForces()):
-        force_group.append(force.__class__.__name__)
-    forcegroups = {}
-    for i in range(system.getNumForces()):
-        force = system.getForce(i)
-        force.setForceGroup(i)
-        forcegroups[force] = i
-    energies = {}
-    for f, i in forcegroups.items():
-        energies[f] = (
-            simulation.context.getState(getEnergy=True, groups=2 ** i)
-            .getPotentialEnergy()
-            ._value
-        )
-    decomposed_energy = []
-    for key, val in energies.items():
-        decomposed_energy.append(val)
-    df_energy_openmm = pd.DataFrame(
-        list(zip(force_group, decomposed_energy)),
-        columns=["Energy_term", "Energy_openmm_params"],
-    )
-    energy_values = [
-        list(
-            df_energy_openmm.loc[
-                df_energy_openmm["Energy_term"] == "HarmonicBondForce"
-            ].values[0]
-        )[1],
-        list(
-            df_energy_openmm.loc[
-                df_energy_openmm["Energy_term"] == "HarmonicAngleForce"
-            ].values[0]
-        )[1],
-        list(
-            df_energy_openmm.loc[
-                df_energy_openmm["Energy_term"] == "PeriodicTorsionForce"
-            ].values[0]
-        )[1],
-        list(
-            df_energy_openmm.loc[
-                df_energy_openmm["Energy_term"] == "NonbondedForce"
-            ].values[0]
-        )[1],
-    ]
-    energy_group = [
-        "HarmonicBondForce",
-        "HarmonicAngleForce",
-        "PeriodicTorsionForce",
-        "NonbondedForce",
-    ]
-    df_energy_open_mm = pd.DataFrame(
-        list(zip(energy_group, energy_values)),
-        columns=["Energy_term", "Energy_openmm_params"],
-    )
-    df_energy_open_mm = df_energy_open_mm.set_index("Energy_term")
-    print(df_energy_open_mm)
-
-
-def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
-
-    """
-    Returns the vector in the plane A,B,C and perpendicular to AB.
-
-    Parameters
-    ----------
-    atom_A : int
-        Index of atom A (left, starting from 0).
-
-    atom_B : int
-        Index of atom B (center, starting from 0).
-
-    atom_C : int
-        Index of atom C (right, starting from 0).
-
-    coords : (..., N, 3) array
-        An array which contains the coordinates of all
-        the N atoms.
-
-    """
-    diff_AB = coords[atom_B, :] - coords[atom_A, :]
-    norm_diff_AB = np.linalg.norm(diff_AB)
-    u_AB = diff_AB / norm_diff_AB
-    diff_CB = coords[atom_B, :] - coords[atom_C, :]
-    norm_diff_CB = np.linalg.norm(diff_CB)
-    u_CB = diff_CB / norm_diff_CB
-    u_N = unit_vector_N(u_CB, u_AB)
-    u_PA = np.cross(u_N, u_AB)
-    norm_PA = np.linalg.norm(u_PA)
-    u_PA = u_PA / norm_PA
-    return u_PA
-
-
-def force_angle_constant(
-    atom_A,
-    atom_B,
-    atom_C,
-    bond_lengths,
-    eigenvalues,
-    eigenvectors,
-    coords,
-    scaling_1,
-    scaling_2,
-):
-
-    """
-    Calculates force constant according to Equation 14 of
-    Seminario calculation paper; returns angle (in kcal/mol/rad^2)
-    and equilibrium angle (in degrees).
-
-    Parameters
-    ----------
-    atom_A : int
-        Index of atom A (left, starting from 0).
-
-    atom_B : int
-        Index of atom B (center, starting from 0).
-
-    atom_C : int
-        Index of atom C (right, starting from 0).
-
-    bond_lengths : (N, N) array
-        An N * N array containing the bond lengths for
-        all the possible pairs of atoms.
-
-    eigenvalues : (N, N, 3) array
-        A numpy array of shape (N, N, 3) containing
-        eigenvalues of the hessian matrix, where N
-        is the total number of atoms.
-
-    eigenvectors : (3, 3, N, N) array
-        A numpy array of shape (3, 3, N, N) containing
-        eigenvectors of the hessian matrix.
-
-    coords : (N, 3) array
-        A numpy array of shape (N, 3) having the X, Y and Z
-        coordinates of all N atoms.
-
-    scaling_1 : float
-        Factor to scale the projections of eigenvalues for AB.
-
-    scaling_2 : float
-        Factor to scale the projections of eigenvalues for BC.
-
-    Returns
-    -------
-    k_theta : float
-        Force angle constant calculated using modified
-        seminario method.
-
-    k_0 : float
-        Equilibrium angle between AB and BC.
-
-    """
-    # Vectors along bonds calculated
-    diff_AB = coords[atom_B, :] - coords[atom_A, :]
-    norm_diff_AB = np.linalg.norm(diff_AB)
-    u_AB = diff_AB / norm_diff_AB
-    diff_CB = coords[atom_B, :] - coords[atom_C, :]
-    norm_diff_CB = np.linalg.norm(diff_CB)
-    u_CB = diff_CB / norm_diff_CB
-    # Bond lengths and eigenvalues found
-    bond_length_AB = bond_lengths[atom_A, atom_B]
-    eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
-    eigenvectors_AB = eigenvectors[0:3, 0:3, atom_A, atom_B]
-    bond_length_BC = bond_lengths[atom_B, atom_C]
-    eigenvalues_CB = eigenvalues[atom_C, atom_B, :]
-    eigenvectors_CB = eigenvectors[0:3, 0:3, atom_C, atom_B]
-    # Normal vector to angle plane found
-    u_N = unit_vector_N(u_CB, u_AB)
-    u_PA = np.cross(u_N, u_AB)
-    norm_u_PA = np.linalg.norm(u_PA)
-    u_PA = u_PA / norm_u_PA
-    u_PC = np.cross(u_CB, u_N)
-    norm_u_PC = np.linalg.norm(u_PC)
-    u_PC = u_PC / norm_u_PC
-    sum_first = 0
-    sum_second = 0
-    # Projections of eigenvalues
-    for i in range(0, 3):
-        eig_AB_i = eigenvectors_AB[:, i]
-        eig_BC_i = eigenvectors_CB[:, i]
-        sum_first = sum_first + (
-            eigenvalues_AB[i] * abs(dot_product(u_PA, eig_AB_i))
-        )
-        sum_second = sum_second + (
-            eigenvalues_CB[i] * abs(dot_product(u_PC, eig_BC_i))
-        )
-    # Scaling due to additional angles - Modified Seminario Part
-    sum_first = sum_first / scaling_1
-    sum_second = sum_second / scaling_2
-    # Added as two springs in series
-    k_theta = (1 / ((bond_length_AB ** 2) * sum_first)) + (
-        1 / ((bond_length_BC ** 2) * sum_second)
-    )
-    k_theta = 1 / k_theta
-    k_theta = -k_theta  # Change to OPLS form
-    k_theta = abs(k_theta * 0.5)  # Change to OPLS form
-    # Equilibrium Angle
-    theta_0 = math.degrees(math.acos(np.dot(u_AB, u_CB)))
-    # If the vectors u_CB and u_AB are linearly dependent u_N cannot be defined.
-    # This case is dealt with here :
-    if abs(sum((u_CB) - (u_AB))) < 0.01 or (
-        abs(sum((u_CB) - (u_AB))) > 1.99 and abs(sum((u_CB) - (u_AB))) < 2.01
-    ):
-        scaling_1 = 1
-        scaling_2 = 1
-        [k_theta, theta_0] = force_angle_constant_special_case(
-            atom_A,
-            atom_B,
-            atom_C,
-            bond_lengths,
-            eigenvalues,
-            eigenvectors,
-            coords,
-            scaling_1,
-            scaling_2,
-        )
-    return k_theta, theta_0
-
-
-def dot_product(u_PA, eig_AB):
-
-    """
-    Returns the dot product of two vectors.
-
-    Parameters
-    ----------
-    u_PA : (..., 1, 3) array
-        Unit vector perpendicular to AB and in the
-        plane of A, B, C.
-
-    eig_AB : (..., 3, 3) array
-        Eigenvectors of the hessian matrix for
-        the bond AB.
-
-    """
-    x = 0
-    for i in range(0, 3):
-        x = x + u_PA[i] * eig_AB[i].conjugate()
-    return x
-
-
-def force_angle_constant_special_case(
-    atom_A,
-    atom_B,
-    atom_C,
-    bond_lengths,
-    eigenvalues,
-    eigenvectors,
-    coords,
-    scaling_1,
-    scaling_2,
-):
-
-    """
-    Calculates force constant according to Equation 14
-    of Seminario calculation paper when the vectors
-    u_CB and u_AB are linearly dependent and u_N cannot
-    be defined. It instead takes samples of u_N across a
-    unit sphere for the calculation; returns angle
-    (in kcal/mol/rad^2) and equilibrium angle in degrees.
-
-    Parameters
-    ----------
-    atom_A : int
-        Index of atom A (left, starting from 0).
-
-    atom_B : int
-        Index of atom B (center, starting from 0).
-
-    atom_C : int
-        Index of atom C (right, starting from 0).
-
-    bond_lengths : (N, N) array
-        An N * N array containing the bond lengths for
-        all the possible pairs of atoms.
-
-    eigenvalues : (N, N, 3) array
-        A numpy array of shape (N, N, 3) containing
-        eigenvalues of the  hessian matrix, where N
-        is the total number of atoms.
-
-    eigenvectors : (3, 3, N, N) array
-        A numpy array of shape (3, 3, N, N) containing
-        eigenvectors of the hessian matrix.
-
-    coords : (N, 3) array
-        A numpy array of shape (N, 3) having the X, Y,
-        and Z coordinates of all N atoms.
-
-    scaling_1 : float
-        Factor to scale the projections of eigenvalues for AB.
-
-    scaling_2 : float
-        Factor to scale the projections of eigenvalues for BC.
-
-    Returns
-    -------
-    k_theta : float
-        Force angle constant calculated using modified
-        seminario method.
-    k_0 : float
-        Equilibrium angle between AB and BC.
-
-    """
-    # Vectors along bonds calculated
-    diff_AB = coords[atom_B, :] - coords[atom_A, :]
-    norm_diff_AB = np.linalg.norm(diff_AB)
-    u_AB = diff_AB / norm_diff_AB
-    diff_CB = coords[atom_B, :] - coords[atom_C, :]
-    norm_diff_CB = np.linalg.norm(diff_CB)
-    u_CB = diff_CB / norm_diff_CB
-    # Bond lengths and eigenvalues found
-    bond_length_AB = bond_lengths[atom_A, atom_B]
-    eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
-    eigenvectors_AB = eigenvectors[0:3, 0:3, atom_A, atom_B]
-    bond_length_BC = bond_lengths[atom_B, atom_C]
-    eigenvalues_CB = eigenvalues[atom_C, atom_B, :]
-    eigenvectors_CB = eigenvectors[0:3, 0:3, atom_C, atom_B]
-    k_theta_array = np.zeros((180, 360))
-    # Find force constant with varying u_N (with vector uniformly
-    # sampled across a sphere)
-    for theta in range(0, 180):
-        for phi in range(0, 360):
-            r = 1
-            u_N = [
-                r
-                * math.sin(math.radians(theta))
-                * math.cos(math.radians(theta)),
-                r
-                * math.sin(math.radians(theta))
-                * math.sin(math.radians(theta)),
-                r * math.cos(math.radians(theta)),
-            ]
-            u_PA = np.cross(u_N, u_AB)
-            u_PA = u_PA / np.linalg.norm(u_PA)
-            u_PC = np.cross(u_CB, u_N)
-            u_PC = u_PC / np.linalg.norm(u_PC)
-            sum_first = 0
-            sum_second = 0
-            # Projections of eigenvalues
-            for i in range(0, 3):
-                eig_AB_i = eigenvectors_AB[:, i]
-                eig_BC_i = eigenvectors_CB[:, i]
-                sum_first = sum_first + (
-                    eigenvalues_AB[i] * abs(dot_product(u_PA, eig_AB_i))
-                )
-                sum_second = sum_second + (
-                    eigenvalues_CB[i] * abs(dot_product(u_PC, eig_BC_i))
-                )
-            # Added as two springs in series
-            k_theta_ij = (1 / ((bond_length_AB ** 2) * sum_first)) + (
-                1 / ((bond_length_BC ** 2) * sum_second)
-            )
-            k_theta_ij = 1 / k_theta_ij
-            k_theta_ij = -k_theta_ij  # Change to OPLS form
-            k_theta_ij = abs(k_theta_ij * 0.5)  # Change to OPLS form
-            k_theta_array[theta, phi] = k_theta_ij
-    # Removes cases where u_N was linearly dependent of u_CB or u_AB.
-    # Force constant used is taken as the mean.
-    k_theta = np.mean(np.mean(k_theta_array))
-    # Equilibrium Angle independent of u_N
-    theta_0 = math.degrees(math.cos(np.dot(u_AB, u_CB)))
-    return k_theta, theta_0
-
-
-def force_constant_bond(atom_A, atom_B, eigenvalues, eigenvectors, coords):
-
-    """
-    Calculates the bond force constant for the bonds in the
-    molecule according to equation 10 of seminario paper,
-    given the bond atoms' indices and the corresponding
-    eigenvalues, eigenvectors and coordinates matrices.
-
-    Parameters
-    ----------
-    atom_A : int
-        Index of Atom A.
-
-    atom_B : int
-        Index of Atom B.
-
-    eigenvalues : (N, N, 3) array
-        A numpy array of shape (N, N, 3) containing eigenvalues
-        of the hessian matrix, where N is the total number
-        of atoms.
-
-    eigenvectors : (3, 3, N, N) array
-        A numpy array of shape (3, 3, N, N) containing the
-        eigenvectors of the hessian matrix.
-
-    coords : (N, 3) array
-        A numpy array of shape (N, 3) having the X, Y, and
-        Z  coordinates of all N atoms.
-
-    Returns
-    --------
-    k_AB : float
-        Bond Force Constant value for the bond with atoms A and B.
-
-    """
-    # Eigenvalues and eigenvectors calculated
-    eigenvalues_AB = eigenvalues[atom_A, atom_B, :]
-    eigenvectors_AB = eigenvectors[:, :, atom_A, atom_B]
-    # Vector along bond
-    diff_AB = np.array(coords[atom_B, :]) - np.array(coords[atom_A, :])
-    norm_diff_AB = np.linalg.norm(diff_AB)
-    unit_vectors_AB = diff_AB / norm_diff_AB
-    k_AB = 0
-    # Projections of eigenvalues
-    for i in range(0, 3):
-        dot_product = abs(np.dot(unit_vectors_AB, eigenvectors_AB[:, i]))
-        k_AB = k_AB + (eigenvalues_AB[i] * dot_product)
-    k_AB = -k_AB * 0.5  # Convert to OPLS form
-    return k_AB
-
-
-def u_PA_from_angles(atom_A, atom_B, atom_C, coords):
-
-    """
-    Returns the vector in the plane A,B,C and perpendicular to AB.
-
-    Parameters
-    ----------
-    atom_A : int
-        Index of atom A (left, starting from 0).
-
-    atom_B : int
-        Index of atom B (center, starting from 0).
-
-    atom_C : int
-        Index of atom C (right, starting from 0).
-
-    coords : (..., N, 3) array
-        An array containing the coordinates of all the N atoms.
-
-    Returns
-    -------
-    u_PA : (..., 1, 3) array
-        Unit vector perpendicular to AB and in the plane of A, B, C.
-
-    """
-    diff_AB = coords[atom_B, :] - coords[atom_A, :]
-    norm_diff_AB = np.linalg.norm(diff_AB)
-    u_AB = diff_AB / norm_diff_AB
-    diff_CB = coords[atom_B, :] - coords[atom_C, :]
-    norm_diff_CB = np.linalg.norm(diff_CB)
-    u_CB = diff_CB / norm_diff_CB
-    u_N = unit_vector_N(u_CB, u_AB)
-    u_PA = np.cross(u_N, u_AB)
-    norm_PA = np.linalg.norm(u_PA)
-    u_PA = u_PA / norm_PA
-    return u_PA
-
-
-def reverse_list(lst):
-
-    """
-    Returns the reversed form of a given list.
-
-    Parameters
-    ----------
-    lst : list
-        Input list.
-
-    Returns
-    -------
-    reversed_list : list
-        Reversed input list.
-
-    Examples
-    --------
-    >>> lst = [5, 4, 7, 2]
-    >>> reverse_list(lst)
-    [2, 7, 4, 5]
-
-    """
-    reversed_list = lst[::-1]
-    return reversed_list
-
-
-def uniq(input_):
-
-    """
-    Returns a list with only unique elements from a list
-    containing duplicate / repeating elements.
-
-    Parameters
-    ----------
-    input_ : list
-        Input list.
-
-    Returns
-    -------
-    output : list
-        List with only unique elements.
-
-    Examples
-    --------
-    >>> lst = [2, 4, 2, 9, 10, 35, 10]
-    >>> uniq(lst)
-    [2, 4, 9, 10, 35]
-
-    """
-    output = []
-    for x in input_:
-        if x not in output:
-            output.append(x)
-    return output
-
-
-def search_in_file(file: str, word: str) -> list:
-
-    """
-    Search for the given string in file and return lines
-    containing that string along with line numbers.
-
-    Parameters
-    ----------
-    file : str
-        Input file.
-
-    word : str
-        Search word.
-
-    Returns
-    -------
-    list_of_results : list
-        List of lists with each element representing the
-        line number and the line contents.
-
-    """
-    line_number = 0
-    list_of_results = []
-    with open(file, "r") as f:
-        for line in f:
-            line_number += 1
-            if word in line:
-                list_of_results.append((line_number, line.rstrip()))
-    return list_of_results
-
-
-def list_to_dict(lst):
-
-    """
-    Converts an input list with mapped characters (every
-    odd entry is the key of the dictionary and every
-    even entry adjacent to the odd entry is its correponding
-    value)  to a dictionary.
-
-    Parameters
-    ----------
-    lst : list
-        Input list.
-
-    Returns
-    -------
-    res_dct : dict
-        A dictionary with every element mapped with
-        its successive element starting from index 0.
-
-    Examples
-    --------
-    >>> lst = [5, 9, 3, 6, 2, 7]
-    >>> list_to_dict(lst)
-    {5: 9, 3: 6, 2: 7}
-
-    """
-
-    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
-    return res_dct
-
-
-def scale_list(list_):
-
-    """
-    Returns a scaled list with the minimum value
-    subtracted from each element of the corresponding list.
-
-    Parameters
-    ----------
-    list_ : list
-        Input list.
-
-    Returns
-    -------
-    scaled_list : list
-        Scaled list.
-
-    Examples
-    --------
-    >>> list_ = [6, 3, 5, 11, 3, 2, 8, 6]
-    >>> scale_list(list_)
-    [4, 1, 3, 9, 1, 0, 6, 4]
-
-    """
-    scaled_list = [i - min(list_) for i in list_]
-    return scaled_list
-
-
-def list_kJ_kcal(list_):
-
-    """
-    Convert the elements in the list from
-    kiloJoules units to kiloCalories units.
-
-    Parameters
-    ----------
-    list_ : list
-        List with elements in units of kJ.
-
-    Returns
-    -------
-    converted_list : list
-        List with elements in units of kcal.
-
-    Examples
-    --------
-    >>> list_ = [6, 3, 5]
-    >>> list_kJ_kcal(list_)
-    [1.4340344168260037, 0.7170172084130019, 1.1950286806883366]
-
-    """
-    converted_list = [i / 4.184 for i in list_]
-    return converted_list
-
-
-def list_hartree_kcal(list_):
-    """
-    Convert the elements in the list from
-    hartree units to kiloCalories units.
-
-    Parameters
-    ----------
-    list_ : list
-        List with elements in units of hartree.
-
-    Returns
-    -------
-    converted_list : list
-        List with elements in units of kcal.
-
-    Examples
-    --------
-    >>> list_ = [6, 3, 5]
-    >>> list_hartree_kcal(list_)
-    [3765.0564000000004, 1882.5282000000002, 3137.547]
-
-    """
-    converted_list = [i * 627.5094 for i in list_]
-    return converted_list
-
-
-def torsiondrive_input_to_xyz(psi_input_file, xyz_file):
-
-    """
-    Returns an xyz file from a torsiondrive formatted
-    input file.
-
-    Parameters
-    ----------
-    psi_input_file : str
-        Input file for the psi4 QM engine.
-
-    xyz_file : str
-        XYZ format file to write the coords of the system.
-
-    """
-    with open(psi_input_file, "r") as f:
-        lines = f.readlines()
-    for i in range(len(lines)):
-        if "molecule {" in lines[i]:
-            to_begin = int(i)
-        if "set {" in lines[i]:
-            to_end = int(i)
-    xyz_lines = lines[to_begin + 2 : to_end - 1]
-    with open(xyz_file, "w") as f:
-        f.write(str(len(xyz_lines)) + "\n")
-        f.write(xyz_file + "\n")
-        for i in xyz_lines:
-            f.write(i)
-
-
-def xyz_to_pdb(xyz_file, coords_file, template_pdb, system_pdb):
-    """
-    Converts a XYZ file to a PDB file.
-
-    Parameters
-    ----------
-    xyz_file : str
-        XYZ file containing the coordinates of the system.
-
-    coords_file : str
-        A text file containing the coordinates part of XYZ file.
-
-    template_pdb : str
-        A pdb file to be used as a template for the required PDB.
-
-    system_pdb : str
-        Output PDB file with the coordinates updated in the
-        template pdb using XYZ file.
-
-    """
-    with open(xyz_file, "r") as f:
-        lines = f.readlines()
-    needed_lines = lines[2:]
-    with open(coords_file, "w") as f:
-        for i in needed_lines:
-            f.write(i)
-    df = pd.read_csv(coords_file, header=None, delimiter=r"\s+")
-    df.columns = ["atom", "x", "y", "z"]
-    ppdb = PandasPdb()
-    ppdb.read_pdb(template_pdb)
-    ppdb.df["ATOM"]["x_coord"] = df["x"]
-    ppdb.df["ATOM"]["y_coord"] = df["y"]
-    ppdb.df["ATOM"]["z_coord"] = df["z"]
-    ppdb.to_pdb(system_pdb)
-
-
-def generate_xml_from_pdb_sdf(system_pdb, system_sdf, system_xml):
-    """
-    Generates an openforcefield xml file from the pdb file.
-
-    Parameters
-    ----------
-    system_pdb : str
-        Input PDB file.
-
-    system_sdf : str
-        SDF file of the system.
-
-    system_xml : str
-        XML force field file generated using PDB and SDF files.
-
-    """
-    # command = "babel -ipdb " + system_pdb + " -osdf " + system_sdf
-    command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_sdf
-    os.system(command)
-    # off_molecule = openforcefield.topology.Molecule(system_sdf)
-    off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
-    system = force_field.create_openmm_system(off_molecule.to_topology())
-    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
-    structure = parmed.openmm.load_topology(
-        pdbfile.topology, system, xyz=pdbfile.positions
-    )
-    with open(system_xml, "w") as f:
-        f.write(simtk.openmm.XmlSerializer.serialize(system))
-
-
-def generate_xml_from_charged_pdb_sdf(
-    system_pdb,
-    system_init_sdf,
-    system_sdf,
-    num_charge_atoms,
-    index_charge_atom_1,
-    charge_atom_1,
-    system_xml,
-):
-    """
-    Generates an openforcefield xml file from the pdb
-    file via SDF file and openforcefield.
-
-    Parameters
-    ----------
-    system_pdb : str
-        Input PDB file.
-
-    system_init_sdf : str
-        SDF file for the system excluding charge information.
-
-    system_sdf : str
-        SDF file of the system.
-
-    num_charge_atoms : int
-        Total number of charged atoms in the PDB.
-
-    index_charge_atom_1 : int
-        Index of the first charged atom.
-
-    charge_atom_1 : float
-        Charge on first charged atom.
-    system_xml : str
-        XML force field file generated using PDB and SDF files.
-
-    """
-    # command = "babel -ipdb " + system_pdb + " -osdf " + system_init_sdf
-    command = "obabel -ipdb " + system_pdb + " -osdf -O " + system_init_sdf
-    os.system(command)
-    with open(system_init_sdf, "r") as f1:
-        filedata = f1.readlines()
-        filedata = filedata[:-2]
-    with open(system_sdf, "w+") as out:
-        for i in filedata:
-            out.write(i)
-        line_1 = (
-            "M  CHG  "
-            + str(num_charge_atoms)
-            + "   "
-            + str(index_charge_atom_1)
-            + "   "
-            + str(charge_atom_1)
-            + "\n"
-        )
-        line_2 = "M  END" + "\n"
-        line_3 = "$$$$"
-        out.write(line_1)
-        out.write(line_2)
-        out.write(line_3)
-    # off_molecule = openforcefield.topology.Molecule(system_sdf)
-    off_molecule = Molecule(system_sdf)
-    # force_field = openforcefield.typing.engines.smirnoff.ForceField("openff_unconstrained-1.0.0.offxml")
-    force_field = ForceField("openff_unconstrained-1.0.0.offxml")
-    system = force_field.create_openmm_system(off_molecule.to_topology())
-    pdbfile = simtk.openmm.app.PDBFile(system_pdb)
-    structure = parmed.openmm.load_topology(
-        pdbfile.topology, system, xyz=pdbfile.positions
-    )
-    with open(system_xml, "w") as f:
-        f.write(simtk.openmm.XmlSerializer.serialize(system))
-
-
-def get_dihedrals(qm_scan_file):
-
-    """
-    Returns dihedrals from the torsiondrive scan file.
-
-    Parameters
-    ----------
-    qm_scan_file : str
-        Output scan file containing torsiondrive scans.
-
-    Returns
-    -------
-    dihedrals : list
-        List of all the dihedral values from the qm scan file.
-
-    """
-    with open(qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    dihedrals = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i
-        energy_dihedral = re.findall(r"[-+]?\d+[.]?\d*", energy_dihedral)
-        dihedral = float(energy_dihedral[0])
-        dihedrals.append(dihedral)
-    return dihedrals
-
-
-def get_qm_energies(qm_scan_file):
-
-    """
-    Returns QM optimized energies from the torsiondrive
-    scan file.
-
-    Parameters
-    ----------
-    qm_scan_file : str
-        Output scan file containing torsiondrive scans.
-
-    Returns
-    -------
-    qm_energies : list
-        List of all the qm optimiseed energies extracted from the torsiondrive
-        scan file.
-    """
-    with open(qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    qm_energies = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i
-        energy_dihedral = re.findall(r"[-+]?\d+[.]?\d*", energy_dihedral)
-        energy = float(energy_dihedral[1])
-        qm_energies.append(energy)
-    return qm_energies
-
-
-def generate_mm_pdbs(qm_scan_file, template_pdb):
-
-    """
-    Generate PDBs from the torsiondrive scan file
-    based on a template PDB.
-
-    """
-    with open(qm_scan_file, "r") as f:
-        lines = f.readlines()
-    energy_dihedral_lines = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            energy_dihedral_lines.append(lines[i])
-    dihedrals = []
-    for i in energy_dihedral_lines:
-        energy_dihedral = i
-        energy_dihedral = re.findall(r"[-+]?\d+[.]?\d*", energy_dihedral)
-        dihedral = float(energy_dihedral[0])
-        dihedrals.append(dihedral)
-    lines_markers = []
-    for i in range(len(lines)):
-        if "Dihedral" in lines[i]:
-            lines_markers.append(i)
-    lines_markers.append(len(lines) + 1)
-    for i in range(len(lines_markers) - 1):
-        # pdb_file_to_write = str(dihedrals[i]) + ".pdb"
-        if dihedrals[i] > 0:
-            pdb_file_to_write = "plus_" + str(abs(dihedrals[i])) + ".pdb"
-        if dihedrals[i] < 0:
-            pdb_file_to_write = "minus_" + str(abs(dihedrals[i])) + ".pdb"
-        to_begin = lines_markers[i]
-        to_end = lines_markers[i + 1]
-        lines_to_write = lines[to_begin + 1 : to_end - 1]
-        x_coords = []
-        y_coords = []
-        z_coords = []
-        for i in lines_to_write:
-            coordinates = i
-            coordinates = re.findall(r"[-+]?\d+[.]?\d*", coordinates)
-            x = float(coordinates[0])
-            y = float(coordinates[1])
-            z = float(coordinates[2])
-            x_coords.append(x)
-            y_coords.append(y)
-            z_coords.append(z)
-        ppdb = PandasPdb()
-        ppdb.read_pdb(template_pdb)
-        ppdb.df["ATOM"]["x_coord"] = x_coords
-        ppdb.df["ATOM"]["y_coord"] = y_coords
-        ppdb.df["ATOM"]["z_coord"] = z_coords
-        ppdb.to_pdb(pdb_file_to_write)
-
-
-def remove_mm_files(qm_scan_file):
-    """
-    Delete all generated PDB files.
-
-    Parameters
-    ----------
-    qm_scan_file : str
-        Output scan file containing torsiondrive scans.
-
-    """
-    mm_pdb_list = []
-    for i in get_dihedrals(qm_scan_file):
-        if i > 0:
-            pdb_file = "plus_" + str(abs(i)) + ".pdb"
-        if i < 0:
-            pdb_file = "minus_" + str(abs(i)) + ".pdb"
-        mm_pdb_list.append(pdb_file)
-    for i in mm_pdb_list:
-        command = "rm -rf  " + i
-        os.system(command)
-        command = "rm -rf  " + i[:-4] + ".inpcrd"
-        os.system(command)
-        command = "rm -rf  " + i[:-4] + ".prmtop"
-        os.system(command)
-
-
-def get_non_torsion_mm_energy(system_pdb, load_topology, system_xml):
-
-    """
-    Returns sum of all the non-torsional energies (that
-    includes HarmonicBondForce, HarmonicAngleForce
-    and NonBondedForce) of the system from the PDB
-    file given the topology and the forcefield file.
-
-    Parameters
-    ----------
-    system_pdb : str
-        System PDB file to load the openmm system topology
-        and coordinates.
-
-    load_topology : {"openmm", "parmed"}
-        Argument to specify how to load the topology.
-
-    system_xml : str
-        XML force field file for the openmm system.
-
-    Returns
-    -------
-    Sum of all the non-torsional energies of the system.
-
-    """
-    system_prmtop = system_pdb[:-4] + ".prmtop"
-    system_inpcrd = system_pdb[:-4] + ".inpcrd"
-    if load_topology == "parmed":
-        openmm_system = parmed.openmm.load_topology(
-            parmed.load_file(system_pdb, structure=True).topology,
-            parmed.load_file(system_xml),
-        )
-    if load_topology == "openmm":
-        openmm_system = parmed.openmm.load_topology(
-            simtk.openmm.app.PDBFile(system_pdb).topology,
-            parmed.load_file(system_xml),
-        )
-    openmm_system.save(system_prmtop, overwrite=True)
-    openmm_system.coordinates = parmed.load_file(
-        system_pdb, structure=True
-    ).coordinates
-    openmm_system.save(system_inpcrd, overwrite=True)
-    parm = parmed.load_file(system_prmtop, system_inpcrd)
-    prmtop_energy_decomposition = parmed.openmm.energy_decomposition_system(
-        parm, parm.createSystem()
-    )
-    # print(prmtop_energy_decomposition)
-    prmtop_energy_decomposition_value_no_torsion = [
-        list_to_dict(
-            [
-                item
-                for sublist in [
-                    list(elem) for elem in prmtop_energy_decomposition
-                ]
-                for item in sublist
-            ]
-        ).get("HarmonicBondForce"),
-        list_to_dict(
-            [
-                item
-                for sublist in [
-                    list(elem) for elem in prmtop_energy_decomposition
-                ]
-                for item in sublist
-            ]
-        ).get("HarmonicAngleForce"),
-        list_to_dict(
-            [
-                item
-                for sublist in [
-                    list(elem) for elem in prmtop_energy_decomposition
-                ]
-                for item in sublist
-            ]
-        ).get("NonbondedForce"),
-    ]
-    return sum(prmtop_energy_decomposition_value_no_torsion)
-
-
-def get_mm_potential_energies(qm_scan_file, load_topology, system_xml):
-
-    """
-    Returns potential energy of the system from the PDB file
-    given the topology and the forcefield file.
-
-    Parameters
-    ----------
-    qm_scan_file : str
-        Output scan file containing torsiondrive scans.
-
-    load_topology : {"openmm", "parmed"}
-        Argument to spcify how to load the topology.
-
-    system_xml : str
-        XML file to load the openmm system.
-
-    Returns
-    -------
-    mm_potential_energies : list
-        List of all the non torsion mm energies for the
-        generated PDB files.
-
-    """
-    mm_pdb_list = []
-    for i in get_dihedrals(qm_scan_file):
-        if i > 0:
-            pdb_file = "plus_" + str(abs(i)) + ".pdb"
-        if i < 0:
-            pdb_file = "minus_" + str(abs(i)) + ".pdb"
-        mm_pdb_list.append(pdb_file)
-    for i in mm_pdb_list:
-        mm_pdb_file = i
-    mm_potential_energies = []
-    for i in mm_pdb_list:
-        mm_pdb_file = i
-        mm_energy = get_non_torsion_mm_energy(
-            system_pdb=i, load_topology=load_topology, system_xml=system_xml,
-        )
-        mm_potential_energies.append(mm_energy)
-    return mm_potential_energies
-
-
-def list_diff(list_1, list_2):
-
-    """
-    Returns the difference between two lists as a list.
-
-    Parameters
-    ----------
-    list_1 : list
-        First list
-
-    list_2 : list
-        Second list.
-
-    Returns
-    -------
-    diff_list : list
-        List containing the diferences between the elements of
-        the two lists.
-    Examples
-    --------
-    >>> list_1 = [4, 2, 8, 3, 0, 6, 7]
-    >>> list_2 = [5, 3, 1, 5, 6, 0, 4]
-    >>> list_diff(list_1, list_2)
-    [-1, -1, 7, -2, -6, 6, 3]
-
-    """
-    diff_list = []
-    zipped_list = zip(list_1, list_2)
-    for list1_i, list2_i in zipped_list:
-        diff_list.append(list1_i - list2_i)
-    return diff_list
-
-
-def dihedral_energy(x, k1, k2, k3, k4=0):
-    """
-    Expression for the dihedral energy.
-    """
-    energy_1 = k1 * (1 + np.cos(1 * x * 0.01745))
-    energy_2 = k2 * (1 - np.cos(2 * x * 0.01745))
-    energy_3 = k3 * (1 + np.cos(3 * x * 0.01745))
-    energy_4 = k4 * (1 - np.cos(4 * x * 0.01745))
-    dihedral_energy = energy_1 + energy_2 + energy_3 + energy_4
-    return dihedral_energy
-
-
-def error_function(delta_qm, delta_mm):
-    """
-    Root Mean Squared Error.
-    """
-    squared_error = np.square(np.subtract(delta_qm, delta_mm))
-    mean_squared_error = squared_error.mean()
-    root_mean_squared_error = math.sqrt(mean_squared_error)
-    return root_mean_squared_error
-
-
-def error_function_boltzmann(delta_qm, delta_mm, T):
-    """
-    Boltzmann Root Mean Squared Error.
-    """
-    kb = 3.297623483 * 10 ** (-24)  # in cal/K
-    delta_qm_boltzmann_weighted = [np.exp(-i / (kb * T)) for i in delta_qm]
-    squared_error = (
-        np.square(np.subtract(delta_qm, delta_mm))
-        * delta_qm_boltzmann_weighted
-    )
-    mean_squared_error = squared_error.mean()
-    root_mean_squared_error = math.sqrt(mean_squared_error)
-    return root_mean_squared_error
-
-
-def gen_init_guess(qm_scan_file, load_topology, system_xml):
-
-    """
-    Initial guess for the torsional parameter.
-
-    Parameters
-    ----------
-    qm_scan_file : str
-        Output scan file containing torsiondrive scans.
-
-    load_topology : {"openmm", "parmed"}
-        Argument to speify how to load the topology.
-
-    system_xml : str
-        XML force field file for the system.
-
-    Returns
-    -------
-    k_init_guess : list
-        Initial guess for the torsional parameters.
-
-    """
-    x = get_dihedrals(qm_scan_file)
-    y = scale_list(
-        list_=get_mm_potential_energies(
-            qm_scan_file=qm_scan_file,
-            load_topology=load_topology,
-            system_xml=system_xml,
-        )
-    )
-    init_vals = [0.0, 0.0, 0.0, 0.0]
-    k_init_guess, covar = scipy.optimize.curve_fit(
-        dihedral_energy, x, y, p0=init_vals
-    )
-    for i in range(len(k_init_guess)):
-        if k_init_guess[i] < 0:
-            k_init_guess[i] = 0
-    return k_init_guess
-
-
-def objective_function(k_array, x, delta_qm):
-    """
-    Objective function for the torsional parameter fitting.
-    """
-    delta_mm = dihedral_energy(
-        x, k1=k_array[0], k2=k_array[1], k3=k_array[2], k4=k_array[3]
-    )
-    loss_function = error_function(delta_qm, delta_mm)
-    return loss_function
-
-
-def fit_params(qm_scan_file, load_topology, system_xml, method):
-    """
-    Optimization of the objective function.
-    """
-    k_guess = gen_init_guess(
-        qm_scan_file=qm_scan_file,
-        load_topology=load_topology,
-        system_xml=system_xml,
-    )
-    x_data = np.array(get_dihedrals(qm_scan_file))
-    delta_qm = np.array(
-        scale_list(list_hartree_kcal(list_=get_qm_energies(qm_scan_file)))
-    )
-    optimise = scipy.optimize.minimize(
-        objective_function,
-        k_guess,
-        args=(x_data, delta_qm),
-        method=method,
-        bounds=[(0.00, None), (0.00, None), (0.00, None), (0.00, None),],
-    )
-    return optimise.x
-
-
-def get_tor_params(
-    qm_scan_file, template_pdb, load_topology, system_xml, method
-):
-    """
-    Returns the fitted torsional parameters.
-    """
-    qm_e = get_qm_energies(qm_scan_file=qm_scan_file)
-    qm_e_kcal = list_hartree_kcal(qm_e)
-    delta_qm = scale_list(qm_e_kcal)
-    generate_mm_pdbs(qm_scan_file=qm_scan_file, template_pdb=template_pdb)
-    mm_pe_no_torsion_kcal = get_mm_potential_energies(
-        qm_scan_file=qm_scan_file,
-        load_topology=load_topology,
-        system_xml=system_xml,
-    )
-    delta_mm = scale_list(mm_pe_no_torsion_kcal)
-    opt_param = fit_params(
-        qm_scan_file=qm_scan_file,
-        load_topology=load_topology,
-        system_xml=system_xml,
-        method=method,
-    )
-    return opt_param
-
-
-def get_torsional_lines(
-    template_pdb,
-    system_xml,
-    qm_scan_file,
-    load_topology,
-    method,
-    dihedral_text_file,
-):
-    """
-    Returns the torsional lines for the XML forcefield file.
-    """
-    opt_param = get_tor_params(
-        qm_scan_file=qm_scan_file,
-        template_pdb=template_pdb,
-        load_topology=load_topology,
-        system_xml=system_xml,
-        method=method,
-    )
-    dihedral_text = open(dihedral_text_file, "r")
-    dihedral_text_lines = dihedral_text.readlines()
-    atom_numbers = dihedral_text_lines[-1]
-    atom_index_from_1 = [
-        int(re.findall(r"\d+", atom_numbers)[0]),
-        int(re.findall(r"\d+", atom_numbers)[1]),
-        int(re.findall(r"\d+", atom_numbers)[2]),
-        int(re.findall(r"\d+", atom_numbers)[3]),
-    ]
-    atom_index = [i - 1 for i in atom_index_from_1]
-    atom_index_lines = (
-        " "
-        + "p1="
-        + '"'
-        + str(atom_index[0])
-        + '"'
-        + " "
-        + "p2="
-        + '"'
-        + str(atom_index[1])
-        + '"'
-        + " "
-        + "p3="
-        + '"'
-        + str(atom_index[2])
-        + '"'
-        + " "
-        + "p4="
-        + '"'
-        + str(atom_index[3])
-        + '"'
-        + " "
-    )
-    tor_lines = []
-    for i in range(len(opt_param)):
-        line_to_append = (
-            "                "
-            + "<Torsion "
-            + "k="
-            + '"'
-            + str(round(opt_param[i], 8))
-            + '"'
-            + atom_index_lines
-            + "periodicity="
-            + '"'
-            + str(i + 1)
-            + '"'
-            + " "
-            + "phase="
-            + '"'
-            + "0"
-            + '"'
-            + "/>"
-        )
-        # print(line_to_append)
-        tor_lines.append(line_to_append)
-    return tor_lines
-
-
-def singular_resid(pdbfile, qmmmrebind_init_file):
-
-    """
-    Returns a PDB file with chain ID = A
-
-    Parameters
-    ----------
-    pdbfile: str
-        Input PDB file
-
-    qmmmrebind_init_file: str
-        Output PDB file
-
-    """
-
-    ppdb = PandasPdb().read_pdb(pdbfile)
-    ppdb.df["HETATM"]["chain_id"] = "A"
-    ppdb.df["ATOM"]["chain_id"] = "A"
-    ppdb.to_pdb(
-        path=qmmmrebind_init_file, records=None, gz=False, append_newline=True
-    )
-
-
-def relax_init_structure(
-    pdbfile,
-    prmtopfile,
-    qmmmrebindpdb,
-    sim_output="output.pdb",
-    sim_steps=100000,
-):
-
-    """
-    Minimizing the initial PDB file with the given topology
-    file
-
-    Parameters
-    ----------
-    pdbfile: str
-        Input PDB file.
-
-    prmtopfile : str
-        Input prmtop file.
-
-    qmmmrebind_init_file: str
-        Output PDB file.
-
-    sim_output: str
-        Simulation output trajectory file.
-
-    sim_steps: int
-        MD simulation steps.
-
-    """
-
-    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
-    pdb = simtk.openmm.app.PDBFile(pdbfile)
-    system = prmtop.createSystem(
-        nonbondedMethod=simtk.openmm.app.PME,
-        nonbondedCutoff=1 * simtk.unit.nanometer,
-        constraints=simtk.openmm.app.HBonds,
-    )
-    integrator = simtk.openmm.LangevinIntegrator(
-        300 * simtk.unit.kelvin,
-        1 / simtk.unit.picosecond,
-        0.002 * simtk.unit.picoseconds,
-    )
-    simulation = simtk.openmm.app.Simulation(
-        prmtop.topology, system, integrator
-    )
-    simulation.context.setPositions(pdb.positions)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.minimizeEnergy(maxIterations=10000000)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.reporters.append(
-        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
-    )
-    simulation.reporters.append(
-        simtk.openmm.app.StateDataReporter(
-            stdout,
-            int(sim_steps / 10),
-            step=True,
-            potentialEnergy=True,
-            temperature=True,
-        )
-    )
-    simulation.reporters.append(
-        simtk.openmm.app.PDBReporter(qmmmrebindpdb, sim_steps)
-    )
-    simulation.step(sim_steps)
-    command = "rm -rf " + sim_output
-    os.system(command)
-
-
-def truncate(x):
-
-    """
-    Returns a float or an integer with an exact number
-    of characters.
-
-    Parameters
-    ----------
-    x: str
-       input value
-
-    """
-    if len(str(int(float(x)))) == 1:
-        x = format(x, ".8f")
-    if len(str(int(float(x)))) == 2:
-        x = format(x, ".7f")
-    if len(str(int(float(x)))) == 3:
-        x = format(x, ".6f")
-    if len(str(int(float(x)))) == 4:
-        x = format(x, ".5f")
-    if len(str(x)) > 10:
-        x = round(x, 10)
-    return x
-
-
-def add_vectors_inpcrd(pdbfile, inpcrdfile):
-
-    """
-    Adds periodic box dimensions to the inpcrd file
-
-    Parameters
-    ----------
-    pdbfile: str
-       PDB file containing the periodic box information.
-
-    inpcrdfile: str
-       Input coordinate file.
-
-    """
-
-    pdbfilelines = open(pdbfile, "r").readlines()
-    for i in pdbfilelines:
-        if "CRYST" in i:
-            vector_list = re.findall(r"[-+]?\d*\.\d+|\d+", i)
-            vector_list = [float(i) for i in vector_list]
-            vector_list = vector_list[1 : 1 + 6]
-            line_to_add = (
-                "  "
-                + truncate(vector_list[0])
-                + "  "
-                + truncate(vector_list[1])
-                + "  "
-                + truncate(vector_list[2])
-                + "  "
-                + truncate(vector_list[3])
-                + "  "
-                + truncate(vector_list[4])
-                + "  "
-                + truncate(vector_list[5])
-            )
-            print(line_to_add)
-    with open(inpcrdfile, "a+") as f:
-        f.write(line_to_add)
-
-
-def add_dim_prmtop(pdbfile, prmtopfile):
-
-    """
-    Adds periodic box dimensions flag in the prmtop file.
-
-    Parameters
-    ----------
-    prmtopfile: str
-       Input prmtop file.
-
-    pdbfile: str
-       PDB file containing the periodic box information.
-
-    """
-    pdbfilelines = open(pdbfile, "r").readlines()
-    for i in pdbfilelines:
-        if "CRYST" in i:
-            vector_list = re.findall(r"[-+]?\d*\.\d+|\d+", i)
-            vector_list = [float(i) for i in vector_list]
-            vector_list = vector_list[1 : 1 + 6]
-            vector_list = [i / 10 for i in vector_list]
-            vector_list = [truncate(i) for i in vector_list]
-            vector_list = [i + "E+01" for i in vector_list]
-            line3 = (
-                "  "
-                + vector_list[3]
-                + "  "
-                + vector_list[0]
-                + "  "
-                + vector_list[1]
-                + "  "
-                + vector_list[2]
-            )
-            print(line3)
-    line1 = "%FLAG BOX_DIMENSIONS"
-    line2 = "%FORMAT(5E16.8)"
-    with open(prmtopfile) as f1, open("intermediate.prmtop", "w") as f2:
-        for line in f1:
-            if line.startswith("%FLAG RADIUS_SET"):
-                line = line1 + "\n" + line2 + "\n" + line3 + "\n" + line
-            f2.write(line)
-    command = "rm -rf " + prmtopfile
-    os.system(command)
-    command = "mv  intermediate.prmtop " + prmtopfile
-    os.system(command)
-
-
-def add_period_prmtop(parm_file, ifbox):
-
-    """
-    Changes the value of IFBOX if needed for the prmtop / parm file.
-    Set to 1 if standard periodic box and 2 when truncated octahedral.
-    """
-    with open(parm_file) as f:
-        parm_lines = f.readlines()
-    lines_contain = []
-    for i in range(len(parm_lines)):
-        if parm_lines[i].startswith("%FLAG POINTERS"):
-            lines_contain.append(i + 4)
-    line = parm_lines[lines_contain[0]]
-    line_new = "%8s  %6s  %6s  %6s  %6s  %6s  %6s  %6s  %6s  %6s" % (
-        re.findall(r"\d+", line)[0],
-        re.findall(r"\d+", line)[1],
-        re.findall(r"\d+", line)[2],
-        re.findall(r"\d+", line)[3],
-        re.findall(r"\d+", line)[4],
-        re.findall(r"\d+", line)[5],
-        re.findall(r"\d+", line)[6],
-        str(ifbox),
-        re.findall(r"\d+", line)[8],
-        re.findall(r"\d+", line)[9],
-    )
-    parm_lines[lines_contain[0]] = line_new + "\n"
-    with open(parm_file, "w") as f:
-        for i in parm_lines:
-            f.write(i)
-
-def add_solvent_pointers_prmtop(non_reparams_file, reparams_file):
-
-    """
-    Adds the flag solvent pointers to the topology file.
-    """
-    f_non_params = open(non_reparams_file, "r")
-    lines_non_params = f_non_params.readlines()
-    for i in range(len(lines_non_params)):
-        if "FLAG SOLVENT_POINTERS" in lines_non_params[i]:
-            to_begin = int(i)
-    solvent_pointers = lines_non_params[to_begin : to_begin + 3]
-    file = open(reparams_file, "a") 
-    for i in solvent_pointers:
-        file.write(i)
-
-def prmtop_calibration(
-    prmtopfile="system_qmmmrebind.prmtop",
-    inpcrdfile="system_qmmmrebind.inpcrd",
-):
-
-    """
-    Standardizes the topology files
-
-    Parameters
-    ----------
-
-    prmtopfile: str
-       Input prmtop file.
-
-    inpcrdfile: str
-       Input coordinate file.
-
-    """
-    parm = parmed.load_file(prmtopfile, inpcrdfile)
-    parm_1 = parmed.tools.actions.changeRadii(parm, "mbondi3")
-    parm_1.execute()
-    parm_2 = parmed.tools.actions.setMolecules(parm)
-    parm_2.execute()
-    parm.save(prmtopfile, overwrite=True)
-
-
-def run_openmm_prmtop_inpcrd(
-    pdbfile="system_qmmmrebind.pdb",
-    prmtopfile="system_qmmmrebind.prmtop",
-    inpcrdfile="system_qmmmrebind.inpcrd",
-    sim_output="output.pdb",
-    sim_steps=10000,
-):
-
-    """
-    Runs OpenMM simulation with inpcrd and prmtop files.
-
-    Parameters
-    ----------
-    pdbfile: str
-       Input PDB file.
-
-    prmtopfile: str
-       Input prmtop file.
-
-    inpcrdfile: str
-       Input coordinate file.
-
-    sim_output: str
-       Output trajectory file.
-
-    sim_steps: int
-       Simulation steps.
-
-    """
-
-    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
-    inpcrd = simtk.openmm.app.AmberInpcrdFile(inpcrdfile)
-    system = prmtop.createSystem(
-        nonbondedCutoff=1 * simtk.unit.nanometer,
-        constraints=simtk.openmm.app.HBonds,
-    )
-    integrator = simtk.openmm.LangevinIntegrator(
-        300 * simtk.unit.kelvin,
-        1 / simtk.unit.picosecond,
-        0.002 * simtk.unit.picoseconds,
-    )
-    simulation = simtk.openmm.app.Simulation(
-        prmtop.topology, system, integrator
-    )
-    if inpcrd.boxVectors is None:
-        add_vectors_inpcrd(
-            pdbfile=pdbfile, inpcrdfile=inpcrdfile,
-        )
-    if inpcrd.boxVectors is not None:
-        simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
-        print(inpcrd.boxVectors)
-    simulation.context.setPositions(inpcrd.positions)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.minimizeEnergy(maxIterations=1000000)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.reporters.append(
-        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
-    )
-    simulation.reporters.append(
-        simtk.openmm.app.StateDataReporter(
-            stdout,
-            int(sim_steps / 10),
-            step=True,
-            potentialEnergy=True,
-            temperature=True,
-        )
-    )
-    simulation.step(sim_steps)
-
-
-def run_openmm_prmtop_pdb(
-    pdbfile="system_qmmmrebind.pdb",
-    prmtopfile="system_qmmmrebind.prmtop",
-    sim_output="output.pdb",
-    sim_steps=10000,
-):
-
-    """
-    Runs OpenMM simulation with pdb and prmtop files.
-
-    Parameters
-    ----------
-    pdbfile: str
-       Input PDB file.
-
-    prmtopfile: str
-       Input prmtop file.
-
-    sim_output: str
-       Output trajectory file.
-
-    sim_steps: int
-       Simulation steps.
-
-    """
-    prmtop = simtk.openmm.app.AmberPrmtopFile(prmtopfile)
-    pdb = simtk.openmm.app.PDBFile(pdbfile)
-    system = prmtop.createSystem(
-        nonbondedCutoff=1 * simtk.unit.nanometer,
-        constraints=simtk.openmm.app.HBonds,
-    )
-    integrator = simtk.openmm.LangevinIntegrator(
-        300 * simtk.unit.kelvin,
-        1 / simtk.unit.picosecond,
-        0.002 * simtk.unit.picoseconds,
-    )
-    simulation = simtk.openmm.app.Simulation(
-        prmtop.topology, system, integrator
-    )
-    simulation.context.setPositions(pdb.positions)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.minimizeEnergy(maxIterations=1000000)
-    print(simulation.context.getState(getEnergy=True).getPotentialEnergy())
-    simulation.reporters.append(
-        simtk.openmm.app.PDBReporter(sim_output, int(sim_steps / 10))
-    )
-    simulation.reporters.append(
-        simtk.openmm.app.StateDataReporter(
-            stdout,
-            int(sim_steps / 10),
-            step=True,
-            potentialEnergy=True,
-            temperature=True,
-        )
-    )
-    simulation.step(sim_steps)
-
-
-def move_qmmmmrebind_files(
-    prmtopfile="system_qmmmrebind.prmtop",
-    inpcrdfile="system_qmmmrebind.inpcrd",
-    pdbfile="system_qmmmrebind.pdb",
-):
-
-    """
-    Moves QMMMReBind generated topology and parameter files
-    to a new directory .
-
-    Parameters
-    ----------
-    prmtopfile: str
-       QMMMReBind generated prmtop file.
-
-    inpcrdfile: str
-        QMMMReBind generated inpcrd file.
-
-    pdbfile: str
-        QMMMReBind generated PDB file.
-
-    """
-    current_pwd = os.getcwd()
-    command = "rm -rf reparameterized_files"
-    os.system(command)
-    command = "mkdir reparameterized_files"
-    os.system(command)
-    shutil.copy(
-        current_pwd + "/" + prmtopfile,
-        current_pwd + "/" + "reparameterized_files" + "/" + prmtopfile,
-    )
-    shutil.copy(
-        current_pwd + "/" + inpcrdfile,
-        current_pwd + "/" + "reparameterized_files" + "/" + inpcrdfile,
-    )
-    shutil.copy(
-        current_pwd + "/" + pdbfile,
-        current_pwd + "/" + "reparameterized_files" + "/" + pdbfile,
-    )
-
-
-def move_qm_files():
-
-    """
-    Moves QM engine generated files to a new directory .
-
-    """
-    current_pwd = os.getcwd()
-    command = "rm -rf qm_data"
-    os.system(command)
-    command = "mkdir qm_data"
-    os.system(command)
-    command = "cp -r " + "*.com* " + current_pwd + "/" + "qm_data"
-    os.system(command)
-    command = "cp -r " + "*.log* " + current_pwd + "/" + "qm_data"
-    os.system(command)
-    command = "cp -r " + "*.chk* " + current_pwd + "/" + "qm_data"
-    os.system(command)
-    command = "cp -r " + "*.fchk* " + current_pwd + "/" + "qm_data"
-    os.system(command)
-
-
-def move_qmmmrebind_files():
-
-    """
-    Moves all QMMMREBind files to a new directory.
-
-    """
-    current_pwd = os.getcwd()
-    command = "rm -rf qmmmrebind_data"
-    os.system(command)
-    command = "mkdir qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.sdf* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.txt* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.pdb* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.xml* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.chk* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.fchk* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.com* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.log* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.inpcrd* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.prmtop* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.parm7* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.out* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*run_command* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.dat* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
-    command = "mv " + "*.xyz* " + current_pwd + "/" + "qmmmrebind_data"
-    os.system(command)
+# Local application/library specific imports
+import modules.constants as const
+import modules.base as base
+import modules.modified_seminario as modified_seminario
+import modules.linear_algebra as linear_algebra
+import modules.file_utilities as file_utilities
+import modules.file_modify as file_modify
+import modules.torsion_drive_inputs as torsion_inputs
+import modules.torsion_drive_outputs as torsion_outputs
 
 
 class PrepareQMMM:
@@ -3551,7 +1153,7 @@ class ParameterizeGuest:
             item for sublist in cartesian_list for item in sublist
         ]
         # Converted from Atomic units (Bohrs) to Angstroms
-        list_coords = [float(x) * BOHRS_PER_ANGSTROM for x in coordinates_list]
+        list_coords = [float(x) * const.BOHRS_PER_ANGSTROM for x in coordinates_list]
         for i in range(len(lines)):
             if "Atomic numbers" in lines[i]:
                 to_begin = int(i)
@@ -3571,7 +1173,7 @@ class ParameterizeGuest:
             names = []
             # Gives name for atomic number
             for x in range(0, len(numbers)):
-                names.append(element_list[int(numbers[x]) - 1][1])
+                names.append(const.element_list[int(numbers[x]) - 1][1])
             # Print coordinates to new input_coords.xyz file
             for i in range(0, N):
                 for j in range(0, 3):
@@ -3685,8 +1287,8 @@ class ParameterizeGuest:
                 hessian[i][j] = unprocessed_Hessian[m]
                 hessian[j][i] = unprocessed_Hessian[m]
                 m = m + 1
-        hessian = (hessian * HARTREE_PER_KCAL_MOL) / (
-            BOHRS_PER_ANGSTROM ** 2
+        hessian = (hessian * const.HARTREE_PER_KCAL_MOL) / (
+            const.BOHRS_PER_ANGSTROM ** 2
         )  # Change from Hartree/bohr to kcal/mol/ang
         np.savetxt(self.hessian_file, hessian, fmt="%s")
 
@@ -3710,7 +1312,7 @@ class ParameterizeGuest:
         names = []
         # Gives name for atomic number
         for x in range(0, len(numbers)):
-            names.append(element_list[int(numbers[x]) - 1][1])
+            names.append(const.element_list[int(numbers[x]) - 1][1])
         atom_names = []
         for i in range(0, len(names)):
             atom_names.append(names[i].strip() + str(i + 1))
@@ -3757,14 +1359,14 @@ class ParameterizeGuest:
         bond_length_list = np.zeros(len(bond_list))
         unique_values_bonds = []  # Used to find average values
         for i in range(0, len(bond_list)):
-            AB = force_constant_bond(
+            AB = modified_seminario.force_constant_bond(
                 bond_list[i][0],
                 bond_list[i][1],
                 eigenvalues,
                 eigenvectors,
                 coords,
             )
-            BA = force_constant_bond(
+            BA = modified_seminario.force_constant_bond(
                 bond_list[i][1],
                 bond_list[i][0],
                 eigenvalues,
@@ -3776,7 +1378,7 @@ class ParameterizeGuest:
             k_b[i] = np.real((AB + BA) / 2)
             # Vibrational_scaling takes into account DFT deficities /
             # anharmocity
-            vibrational_scaling = get_vibrational_scaling(
+            vibrational_scaling = const.get_vibrational_scaling(
                 functional=self.functional, basis_set=self.basis_set
             )
             vibrational_scaling_squared = vibrational_scaling ** 2
@@ -3852,7 +1454,7 @@ class ParameterizeGuest:
                 # of the arguements. This is why the reverse order
                 # was also added
                 unit_PA_all_angles[i].append(
-                    u_PA_from_angles(
+                    linear_algebra.u_PA_from_angles(
                         central_atoms_angles[i][j][0],
                         i,
                         central_atoms_angles[i][j][1],
@@ -3940,7 +1542,7 @@ class ParameterizeGuest:
         for i in range(0, len(angle_list)):
             # Ensures that there is no difference when the
             # ordering is changed
-            [AB_k_theta, AB_theta_0] = force_angle_constant(
+            [AB_k_theta, AB_theta_0] = modified_seminario.force_angle_constant(
                 angle_list[i][0],
                 angle_list[i][1],
                 angle_list[i][2],
@@ -3951,7 +1553,7 @@ class ParameterizeGuest:
                 scaling_factors_angles_list[i][0],
                 scaling_factors_angles_list[i][1],
             )
-            [BA_k_theta, BA_theta_0] = force_angle_constant(
+            [BA_k_theta, BA_theta_0] = modified_seminario.force_angle_constant(
                 angle_list[i][2],
                 angle_list[i][1],
                 angle_list[i][0],
@@ -4058,7 +1660,7 @@ class ParameterizeGuest:
             bond_list_list.append(list(args))
         reverse_bond_list_list = []
         for bonds in bond_list_list:
-            reverse_bond_list_list.append(reverse_list(bonds))
+            reverse_bond_list_list.append(base.reverse_list(bonds))
         bond_lists = bond_list_list + reverse_bond_list_list
         proper_dihed_repeated = []
         for i in range(len(possible_dihedrals)):
@@ -4425,7 +2027,7 @@ class ParameterizeHost:
         names = []
         # Gives name for atomic number
         for x in range(0, len(numbers)):
-            names.append(element_list[int(numbers[x]) - 1][1])
+            names.append(const.element_list[int(numbers[x]) - 1][1])
         # Print coordinates to new input_coords.xyz file
         for i in range(0, N):
             for j in range(0, 3):
@@ -4569,7 +2171,7 @@ class ParameterizeHost:
         names = []
         # Gives name for atomic number
         for x in range(0, len(numbers)):
-            names.append(element_list[int(numbers[x]) - 1][1])
+            names.append(const.element_list[int(numbers[x]) - 1][1])
         atom_names = []
         for i in range(0, len(names)):
             atom_names.append(names[i].strip() + str(i + 1))
@@ -4616,14 +2218,14 @@ class ParameterizeHost:
         bond_length_list = np.zeros(len(bond_list))
         unique_values_bonds = []  # Used to find average values
         for i in range(0, len(bond_list)):
-            AB = force_constant_bond(
+            AB = modified_seminario.force_constant_bond(
                 bond_list[i][0],
                 bond_list[i][1],
                 eigenvalues,
                 eigenvectors,
                 coords,
             )
-            BA = force_constant_bond(
+            BA = modified_seminario.force_constant_bond(
                 bond_list[i][1],
                 bond_list[i][0],
                 eigenvalues,
@@ -4635,7 +2237,7 @@ class ParameterizeHost:
             k_b[i] = np.real((AB + BA) / 2)
             # Vibrational_scaling takes into account DFT deficities
             # / anharmocity
-            vibrational_scaling = get_vibrational_scaling(
+            vibrational_scaling = const.get_vibrational_scaling(
                 functional=self.functional, basis_set=self.basis_set
             )
             vibrational_scaling_squared = vibrational_scaling ** 2
@@ -4709,7 +2311,7 @@ class ParameterizeHost:
                 # where ABC corresponds to the order of the arguements.
                 # This is why the reverse order was also added
                 unit_PA_all_angles[i].append(
-                    u_PA_from_angles(
+                    linear_algebra.u_PA_from_angles(
                         central_atoms_angles[i][j][0],
                         i,
                         central_atoms_angles[i][j][1],
@@ -4794,7 +2396,7 @@ class ParameterizeHost:
         for i in range(0, len(angle_list)):
             # Ensures that there is no difference when the
             # ordering is changed
-            [AB_k_theta, AB_theta_0] = force_angle_constant(
+            [AB_k_theta, AB_theta_0] = modified_seminario.force_angle_constant(
                 angle_list[i][0],
                 angle_list[i][1],
                 angle_list[i][2],
@@ -4805,7 +2407,7 @@ class ParameterizeHost:
                 scaling_factors_angles_list[i][0],
                 scaling_factors_angles_list[i][1],
             )
-            [BA_k_theta, BA_theta_0] = force_angle_constant(
+            [BA_k_theta, BA_theta_0] = modified_seminario.force_angle_constant(
                 angle_list[i][2],
                 angle_list[i][1],
                 angle_list[i][0],
@@ -5323,7 +2925,7 @@ class GuestAmberXMLAmber:
         #]  # kcal/mol * A^2 to kJ/mol * nm^2
         
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
+            i * const.KCAL_MOL_PER_KJ_MOL * const.ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -5361,12 +2963,12 @@ class GuestAmberXMLAmber:
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
         k_angle_list = [
-            i * KCAL_MOL_PER_KJ_MOL for i in k_angle_list
+            i * const.KCAL_MOL_PER_KJ_MOL for i in k_angle_list
         ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [i * RADIANS_PER_DEGREE for i in angle_list]
+        angle_list = [i * const.RADIANS_PER_DEGREE for i in angle_list]
         angle_list = [round(num, 6) for num in angle_list]
         # print(angle_list)
         xml = open(self.system_qm_params_file, "w")
@@ -5515,8 +3117,8 @@ class GuestAmberXMLAmber:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -5657,12 +3259,12 @@ class GuestAmberXMLAmber:
             ]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -5738,8 +3340,8 @@ class GuestAmberXMLAmber:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -5880,12 +3482,12 @@ class GuestAmberXMLAmber:
             ]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -6046,7 +3648,7 @@ class GuestAmberXMLAmber:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6055,7 +3657,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6064,7 +3666,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6073,7 +3675,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6103,7 +3705,7 @@ class GuestAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6112,7 +3714,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6121,7 +3723,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6130,7 +3732,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6188,7 +3790,7 @@ class GuestAmberXMLAmber:
             ),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6197,7 +3799,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6206,7 +3808,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6215,7 +3817,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6246,7 +3848,7 @@ class GuestAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6255,7 +3857,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6264,7 +3866,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6273,7 +3875,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6330,7 +3932,7 @@ class GuestAmberXMLAmber:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6339,7 +3941,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6348,7 +3950,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6357,7 +3959,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6388,7 +3990,7 @@ class GuestAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6397,7 +3999,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6406,7 +4008,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6415,7 +4017,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6469,7 +4071,7 @@ class GuestAmberXMLAmber:
             parmed.load_file(self.reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6478,7 +4080,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6487,7 +4089,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6496,7 +4098,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6527,7 +4129,7 @@ class GuestAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6536,7 +4138,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6545,7 +4147,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6554,7 +4156,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6596,7 +4198,7 @@ class GuestAmberXMLAmber:
             parm_non_params, parm_non_params.createSystem()
         )
         prmtop_energy_decomposition_non_params_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6606,7 +4208,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6616,7 +4218,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6626,7 +4228,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6661,7 +4263,7 @@ class GuestAmberXMLAmber:
             parm_params, parm_params.createSystem()
         )
         prmtop_energy_decomposition_params_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6671,7 +4273,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6681,7 +4283,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -6691,7 +4293,7 @@ class GuestAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7061,7 +4663,7 @@ class HostAmberXMLAmber:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
+            i * const.KCAL_MOL_PER_KJ_MOL * const.ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -7250,8 +4852,8 @@ class HostAmberXMLAmber:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -7392,12 +4994,12 @@ class HostAmberXMLAmber:
             ]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -7556,7 +5158,7 @@ class HostAmberXMLAmber:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7565,7 +5167,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7574,7 +5176,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7583,7 +5185,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7614,7 +5216,7 @@ class HostAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7623,7 +5225,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7632,7 +5234,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7641,7 +5243,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7695,7 +5297,7 @@ class HostAmberXMLAmber:
             parmed.load_file(self.reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7704,7 +5306,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7713,7 +5315,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7722,7 +5324,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7753,7 +5355,7 @@ class HostAmberXMLAmber:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7762,7 +5364,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7771,7 +5373,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7780,7 +5382,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7822,7 +5424,7 @@ class HostAmberXMLAmber:
             parm_non_params, parm_non_params.createSystem()
         )
         prmtop_energy_decomposition_non_params_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7832,7 +5434,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7842,7 +5444,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7852,7 +5454,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7887,7 +5489,7 @@ class HostAmberXMLAmber:
             parm_params, parm_params.createSystem()
         )
         prmtop_energy_decomposition_params_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7897,7 +5499,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7907,7 +5509,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -7917,7 +5519,7 @@ class HostAmberXMLAmber:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -8837,7 +6439,7 @@ class TorsionDriveSims:
         # print(bonds_list_list)
         reverse_bond_list_list = []
         for i in bonds_list_list:
-            reverse_bond_list_list.append(reverse_list(i))
+            reverse_bond_list_list.append(base.reverse_list(i))
         # print(reverse_bond_list_list)
         bond_list = bonds_list_list + reverse_bond_list_list
         # print(bond_list)
@@ -9118,16 +6720,16 @@ class TorsionDriveParams:
             os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
-                torsiondrive_input_to_xyz(
+                torsion_inputs.torsiondrive_input_to_xyz(
                     psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
                 )
-                xyz_to_pdb(
+                file_modify.xyz_to_pdb(
                     xyz_file=self.xyz_file,
                     coords_file=self.coords_file,
                     template_pdb=self.template_pdb,
                     system_pdb=self.system_pdb,
                 )
-                generate_xml_from_charged_pdb_sdf(
+                file_modify.generate_xml_from_charged_pdb_sdf(
                     system_pdb=self.system_pdb,
                     system_init_sdf=self.system_init_sdf,
                     system_sdf=self.system_sdf,
@@ -9136,7 +6738,7 @@ class TorsionDriveParams:
                     charge_atom_1=self.charge_atom_1,
                     system_xml=self.system_xml,
                 )
-                torsional_lines = get_torsional_lines(
+                torsional_lines = torsion_outputs.get_torsional_lines(
                     template_pdb=self.template_pdb,
                     system_xml=self.system_xml,
                     qm_scan_file=self.qm_scan_file,
@@ -9146,7 +6748,7 @@ class TorsionDriveParams:
                 )
                 # print(torsional_lines)
                 torsional_parameters_list.append(torsional_lines)
-                remove_mm_files(qm_scan_file=self.qm_scan_file)
+                file_utilities.remove_mm_files(qm_scan_file=self.qm_scan_file)
                 os.chdir(parent_cwd)
             else:
                 print("Entering directory" + " : " + os.getcwd())
@@ -9174,16 +6776,16 @@ class TorsionDriveParams:
             os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
             if os.path.isfile(self.qm_scan_file):
                 print("Entering directory" + " : " + os.getcwd())
-                torsiondrive_input_to_xyz(
+                torsion_inputs.torsiondrive_input_to_xyz(
                     psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
                 )
-                xyz_to_pdb(
+                file_modify.xyz_to_pdb(
                     xyz_file=self.xyz_file,
                     coords_file=self.coords_file,
                     template_pdb=self.template_pdb,
                     system_pdb=self.system_pdb,
                 )
-                generate_xml_from_charged_pdb_sdf(
+                file_modify.generate_xml_from_charged_pdb_sdf(
                     system_pdb=self.system_pdb,
                     system_init_sdf=self.system_init_sdf,
                     system_sdf=self.system_sdf,
@@ -9192,7 +6794,7 @@ class TorsionDriveParams:
                     charge_atom_1=self.charge_atom_1,
                     system_xml=self.system_xml,
                 )
-                torsional_lines = get_torsional_lines(
+                torsional_lines = torsion_outputs.get_torsional_lines(
                     template_pdb=self.template_pdb,
                     system_xml=self.system_xml,
                     qm_scan_file=self.qm_scan_file,
@@ -9202,7 +6804,7 @@ class TorsionDriveParams:
                 )
                 # print(torsional_lines)
                 torsional_parameters_list.append(torsional_lines)
-                remove_mm_files(qm_scan_file=self.qm_scan_file)
+                file_utilities.remove_mm_files(qm_scan_file=self.qm_scan_file)
                 os.chdir(parent_cwd)
             else:
                 print("Entering directory" + " : " + os.getcwd())
@@ -9907,7 +7509,7 @@ class SystemAmberSystem:
         ppdb.read_pdb(self.guest_qm_pdb)
         atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
         # atom_name_list = [i - 1 for i in atom_name_list]
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         atom_name_list = [i - 1 + no_host_atoms for i in atom_name_list]
         # print(atom_name_list)
         df = pd.read_csv(
@@ -9923,7 +7525,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
+            i * const.KCAL_MOL_PER_KJ_MOL * const.ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -9936,7 +7538,7 @@ class SystemAmberSystem:
         ppdb.read_pdb(self.guest_qm_pdb)
         atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
         # atom_name_list = [i - 1 for i in atom_name_list]
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         atom_name_list = [i - 1 + no_host_atoms for i in atom_name_list]
         # print(atom_name_list)
         df = pd.read_csv(
@@ -10098,7 +7700,7 @@ class SystemAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
+            i * const.KCAL_MOL_PER_KJ_MOL * const.ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -10376,8 +7978,8 @@ class SystemAmberSystem:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -10511,12 +8113,12 @@ class SystemAmberSystem:
             comb_list_angle = [comb_1, comb_2, comb_3, comb_4, comb_5, comb_6]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -10593,8 +8195,8 @@ class SystemAmberSystem:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -10728,12 +8330,12 @@ class SystemAmberSystem:
             comb_list_angle = [comb_1, comb_2, comb_3, comb_4, comb_5, comb_6]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -10865,7 +8467,7 @@ class SystemAmberSystem:
         QM charges ) with reparameterized torsional parameters of the ligand.
         """
 
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         xml_tor = open(self.reparameterized_torsional_params_file, "r")
         xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
@@ -10975,7 +8577,7 @@ class SystemAmberSystem:
         torsional parameters of the ligand.
         """
 
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         xml_tor = open(self.reparameterized_torsional_params_file, "r")
         xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
@@ -11105,7 +8707,7 @@ class SystemAmberSystem:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11114,7 +8716,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11123,7 +8725,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11132,7 +8734,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11162,7 +8764,7 @@ class SystemAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11171,7 +8773,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11180,7 +8782,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11189,7 +8791,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11251,7 +8853,7 @@ class SystemAmberSystem:
             ),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11260,7 +8862,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11269,7 +8871,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11278,7 +8880,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11308,7 +8910,7 @@ class SystemAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11317,7 +8919,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11326,7 +8928,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11335,7 +8937,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11393,7 +8995,7 @@ class SystemAmberSystem:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11402,7 +9004,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11411,7 +9013,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11420,7 +9022,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11450,7 +9052,7 @@ class SystemAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11459,7 +9061,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11468,7 +9070,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11477,7 +9079,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11532,7 +9134,7 @@ class SystemAmberSystem:
             parmed.load_file(self.reparameterised_torsional_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11541,7 +9143,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11550,7 +9152,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11559,7 +9161,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11589,7 +9191,7 @@ class SystemAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11598,7 +9200,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11607,7 +9209,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11616,7 +9218,7 @@ class SystemAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -11851,7 +9453,7 @@ class SystemGuestAmberSystem:
         ppdb.read_pdb(self.guest_qm_pdb)
         atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
         # atom_name_list = [i - 1 for i in atom_name_list]
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         atom_name_list = [i - 1 + no_host_atoms for i in atom_name_list]
         # print(atom_name_list)
         df = pd.read_csv(
@@ -11867,7 +9469,7 @@ class SystemGuestAmberSystem:
         # print(bond_2_list)
         k_bond_list = df["k_bond"].values.tolist()
         k_bond_list = [
-            i * KCAL_MOL_PER_KJ_MOL * ANGSTROMS_PER_NM**2 for i in k_bond_list
+            i * const.KCAL_MOL_PER_KJ_MOL * const.ANGSTROMS_PER_NM**2 for i in k_bond_list
         ]  # kcal/mol * A^2 to kJ/mol * nm^2
         k_bond_list = [round(num, 10) for num in k_bond_list]
         # print(k_bond_list)
@@ -11880,7 +9482,7 @@ class SystemGuestAmberSystem:
         ppdb.read_pdb(self.guest_qm_pdb)
         atom_name_list = ppdb.df["ATOM"]["atom_number"].values.tolist()
         # atom_name_list = [i - 1 for i in atom_name_list]
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         atom_name_list = [i - 1 + no_host_atoms for i in atom_name_list]
         # print(atom_name_list)
         df = pd.read_csv(
@@ -11906,12 +9508,12 @@ class SystemGuestAmberSystem:
         # print(angle_3_list)
         k_angle_list = df["k_angle"].values.tolist()
         k_angle_list = [
-            i * KCAL_MOL_PER_KJ_MOL for i in k_angle_list
+            i * const.KCAL_MOL_PER_KJ_MOL for i in k_angle_list
         ]  # kcal/mol * radian^2 to kJ/mol * radian^2
         k_angle_list = [round(num, 6) for num in k_angle_list]
         # print(k_angle_list)
         angle_list = df["angle_degrees"].values.tolist()
-        angle_list = [i * RADIANS_PER_DEGREE for i in angle_list]
+        angle_list = [i * const.RADIANS_PER_DEGREE for i in angle_list]
         angle_list = [round(num, 6) for num in angle_list]
         # print(angle_list)
         xml = open(self.guest_qm_params_file, "w")
@@ -12062,8 +9664,8 @@ class SystemGuestAmberSystem:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -12197,12 +9799,12 @@ class SystemGuestAmberSystem:
             comb_list_angle = [comb_1, comb_2, comb_3, comb_4, comb_5, comb_6]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -12280,8 +9882,8 @@ class SystemGuestAmberSystem:
             comb_list_bond = [comb_1, comb_2]
             # print(comb_list_bond)
             list_search_bond = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
             ]
             # print(list_search_bond)
             for j in range(len(list_search_bond)):
@@ -12416,12 +10018,12 @@ class SystemGuestAmberSystem:
             comb_list_angle = [comb_1, comb_2, comb_3, comb_4, comb_5, comb_6]
             # print(comb_list_angle)
             list_search_angle = [
-                search_in_file(file=self.system_xml, word=comb_1),
-                search_in_file(file=self.system_xml, word=comb_2),
-                search_in_file(file=self.system_xml, word=comb_3),
-                search_in_file(file=self.system_xml, word=comb_4),
-                search_in_file(file=self.system_xml, word=comb_5),
-                search_in_file(file=self.system_xml, word=comb_6),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_1),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_2),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_3),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_4),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_5),
+                file_utilities.search_in_file(file=self.system_xml, word=comb_6),
             ]
             # print(list_search_angle)
             for j in range(len(list_search_angle)):
@@ -12553,7 +10155,7 @@ class SystemGuestAmberSystem:
         QM charges ) with reparameterized torsional parameters of the ligand.
         """
 
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         xml_tor = open(self.reparameterized_torsional_params_file, "r")
         xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
@@ -12663,7 +10265,7 @@ class SystemGuestAmberSystem:
         torsional parameters of the ligand.
         """
 
-        no_host_atoms = get_num_host_atoms(self.host_pdb)
+        no_host_atoms = base.get_num_host_atoms(self.host_pdb)
         with open(self.reparameterized_torsional_params_file, "r") as xml_tor:
             xml_tor_lines = xml_tor.readlines()
         xml_tor_lines_renum = []
@@ -12794,7 +10396,7 @@ class SystemGuestAmberSystem:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12803,7 +10405,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12812,7 +10414,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12821,7 +10423,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12851,7 +10453,7 @@ class SystemGuestAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12860,7 +10462,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12869,7 +10471,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12878,7 +10480,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12940,7 +10542,7 @@ class SystemGuestAmberSystem:
             ),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12949,7 +10551,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12958,7 +10560,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12967,7 +10569,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -12997,7 +10599,7 @@ class SystemGuestAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13006,7 +10608,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13015,7 +10617,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13024,7 +10626,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13082,7 +10684,7 @@ class SystemGuestAmberSystem:
             parmed.load_file(self.non_reparameterised_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13091,7 +10693,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13100,7 +10702,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13109,7 +10711,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13139,7 +10741,7 @@ class SystemGuestAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13148,7 +10750,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13157,7 +10759,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13166,7 +10768,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13221,7 +10823,7 @@ class SystemGuestAmberSystem:
             parmed.load_file(self.reparameterised_torsional_system_xml_file),
         )
         xml_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13230,7 +10832,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13239,7 +10841,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13248,7 +10850,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13278,7 +10880,7 @@ class SystemGuestAmberSystem:
             parm, parm.createSystem()
         )
         prmtop_energy_decomposition_value = [
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13287,7 +10889,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicBondForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13296,7 +10898,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("HarmonicAngleForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
@@ -13305,7 +10907,7 @@ class SystemGuestAmberSystem:
                     for item in sublist
                 ]
             ).get("PeriodicTorsionForce"),
-            list_to_dict(
+            base.list_to_dict(
                 [
                     item
                     for sublist in [
