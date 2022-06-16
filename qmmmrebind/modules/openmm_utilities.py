@@ -13,6 +13,186 @@ import modules.base as base
 import modules.torsion_drive_outputs as torsion_outputs
 import modules.file_modify as file_modify
 
+class RunOpenMMSims:
+
+    """
+    A class used to run the OpenMM simulation on any specified system.
+
+    This class contain methods to run a MD simulation to confirm the
+    proper structure of the reparameterized forcefield files.
+
+
+    ...
+
+    Attributes
+    ----------
+    system_prmtop : str
+        Topology file of the system (receptor, ligand or
+        receptor - ligand complex)
+
+    system_inpcrd : str
+        Coordinate file of the system (receptor, ligand or
+        receptor - ligand complex)
+
+    system_pdb: str
+        PDB file of the system to run MD simulation (receptor,
+        ligand or receptor - ligand complex).
+
+    system_xml: str
+        Serialised XML file for the system.
+
+    sim_output: str, optional
+        PDB file containing the trajectory coordinates for the OpenMM
+        simulation.
+
+    sim_steps: str, optional
+        Number of steps in the OpenMM MD simulation.
+
+    """
+
+    def __init__(
+        self,
+        system_prmtop,
+        system_inpcrd,
+        system_pdb,
+        system_xml,
+        system_output="sim_output.pdb",
+        sim_steps=1000,
+    ):
+
+        self.system_prmtop = system_prmtop
+        self.system_inpcrd = system_inpcrd
+        self.system_pdb = system_pdb
+        self.system_xml = system_xml
+        self.system_output = system_output
+        self.sim_steps = sim_steps
+
+    def run_openmm_prmtop_inpcrd(self):
+        """
+        Runs OpenMM MD simulation with prmtop and inpcrd file.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_prmtop
+            + " and "
+            + self.system_inpcrd
+        )
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_prmtop)
+        inpcrd = simtk.openmm.app.AmberInpcrdFile(self.system_inpcrd)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(inpcrd.positions)
+        if inpcrd.boxVectors is not None:
+            simulation.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
+        simulation.minimizeEnergy(maxIterations=100000)
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+    def run_openmm_prmtop_pdb(self):
+        """
+        Runs OpenMM MD simulation with prmtop and PDB file.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_prmtop
+            + " and "
+            + self.system_pdb
+        )
+        pdb = simtk.openmm.app.PDBFile(self.system_pdb)
+        prmtop = simtk.openmm.app.AmberPrmtopFile(self.system_prmtop)
+        system = prmtop.createSystem()
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            prmtop.topology, system, integrator
+        )
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy(maxIterations=100000)
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+    def run_openmm_xml_pdb(self):
+        """
+        Runs OpenMM MD simulation with XML and PDB file.
+        """
+        print(
+            "Running OpenMM simulation for "
+            + self.system_xml
+            + " and "
+            + self.system_pdb
+        )
+        pdb = simtk.openmm.app.PDBFile(self.system_pdb)
+        ff_xml_file = open(self.system_xml, "r")
+        system = simtk.openmm.XmlSerializer.deserialize(ff_xml_file.read())
+        integrator = simtk.openmm.LangevinIntegrator(
+            300 * simtk.unit.kelvin,
+            1 / simtk.unit.picosecond,
+            0.002 * simtk.unit.picoseconds,
+        )
+        simulation = simtk.openmm.app.Simulation(
+            pdb.topology, system, integrator
+        )
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy(maxIterations=100000)
+        simulation.reporters.append(
+            simtk.openmm.app.PDBReporter(
+                self.system_output, self.sim_steps / 10
+            )
+        )
+        simulation.reporters.append(
+            simtk.openmm.app.StateDataReporter(
+                stdout,
+                reportInterval=int(self.sim_steps / 10),
+                step=True,
+                potentialEnergy=True,
+                temperature=True,
+            )
+        )
+        simulation.step(self.sim_steps)
+        command = "rm -rf " + self.system_output
+        os.system(command)
+
+
 def get_openmm_energies(system_pdb, system_xml):
 
     """

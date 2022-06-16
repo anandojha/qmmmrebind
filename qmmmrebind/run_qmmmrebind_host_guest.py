@@ -14,16 +14,28 @@ import sys
 import os
 import re
 
+import modules.base as base
+import modules.constants as const
 import modules.file_modify as file_modify
 import modules.file_utilities as file_utilities
+import modules.forcefield_utils as ff_utils
+import modules.gaussian_inputs as gaussian_inputs
+import modules.gaussian_outputs as gaussian_outputs
+import modules.linear_algebra as linear_algebra
+import modules.modified_seminario as modified_seminario
 import modules.openmm_utilities as openmm_utilities
+import modules.stage_inputs as stage_inputs
+import modules.template_ff as template_ff
+import modules.torsion_drive_inputs as torsion_inputs
+import modules.torsion_drive_outputs as torsion_outputs
+import modules.torsion_drive_run as torsion_run
 
 pwd_qmmmrebind = "/home/aaojha/qmmmrebind/"  # PWD of the directory where qmmmrebind is installed
 path_join = pwd_qmmmrebind + "qmmmrebind/"
 module_path = os.path.abspath(os.path.join(path_join))
 if module_path not in sys.path:
     sys.path.append(module_path)
-from parameterize import *
+#from parameterize import *
 parser = argparse.ArgumentParser()
 parser.add_argument("--pdbfile", type=str, help="System's PDB file to be parameterized")
 parser.add_argument("--prmtopfile", type=str, help="System's initial topology file")
@@ -35,26 +47,26 @@ file_modify.singular_resid(pdbfile=args.pdbfile, qmmmrebind_init_file=qmmmrebind
 #relax_init_structure(pdbfile=args.pdbfile, prmtopfile=args.prmtopfile, sim_output="output.pdb", sim_steps=10000, qmmmrebindpdb=qmmmrebindpdb)
 ##################################################################################################################################################################################################################
 ## Step I : Defining QM and MM regions
-system = PrepareQMMM(init_pdb=qmmmrebindpdb, distance=6.0, num_residues=8, guest_resname="APN")
+system = stage_inputs.PrepareQMMM(init_pdb=qmmmrebindpdb, distance=6.0, num_residues=8, guest_resname="APN")
 ## Step II : Ligand QM calculation
-qm_guest = PrepareGaussianGuest(functional="B3LYP", basis_set="cc-pVDZ")
+qm_guest = gaussian_inputs.PrepareGaussianGuest(functional="B3LYP", basis_set="cc-pVDZ")
 ## Step III : QM calculation of the receptor-ligand region for QM-derived charges
-qm_system = PrepareGaussianHostGuest(basis_set="6-31G(d,p)", functional="B3LYP", add_keywords_II="POP(CHELPG, REGULAR)", add_keywords_III="IOP(6/33=2) SCRF=PCM")
+qm_system = gaussian_inputs.PrepareGaussianHostGuest(basis_set="6-31G(d,p)", functional="B3LYP", add_keywords_II="POP(CHELPG, REGULAR)", add_keywords_III="IOP(6/33=2) SCRF=PCM")
 ## Step IV : Ligand QM reparameterization
-params_guest = ParameterizeGuest(functional="B3LYP", basis_set="cc-pVDZ")
+params_guest = gaussian_outputs.ParameterizeGuest(functional="B3LYP", basis_set="cc-pVDZ")
 ## Step V : Generation of reparameterized prmtop & inpcrd files for the ligand
-system_guest = GuestAmberXMLAmber(charge_parameter_file="guest_qm_surround_charges.txt") # Use charge_parameter_file="guest_qm_atom_surround_charges.txt" for bound state polarised charges and charge_parameter_file="guest_qm_surround_charges.txt" for non-polarised charges
+system_guest = template_ff.GuestAmberXMLAmber(charge_parameter_file="guest_qm_surround_charges.txt") # Use charge_parameter_file="guest_qm_atom_surround_charges.txt" for bound state polarised charges and charge_parameter_file="guest_qm_surround_charges.txt" for non-polarised charges
 ## Step VI : Reparameterization of the torsion angles for the ligand
-guest_torsion_params = TorsionDriveSims(method_torsion_drive="geometric")
+guest_torsion_params = torsion_run.TorsionDriveSims(method_torsion_drive="geometric")
 ## Step VII : Generation of torsional parameters for the ligand
-guest_write_params = TorsionDriveParams()
+guest_write_params = torsion_outputs.TorsionDriveParams()
 ## Step VIII : Receptor (Residues Surrounding the ligand) QM calculation
-qm_host = PrepareGaussianHost()
+qm_host = gaussian_inputs.PrepareGaussianHost()
 ## Step IX : Receptor (Residues surrounding the ligand) reparameterization
-params_host = ParameterizeHost()
+params_host = gaussian_outputs.ParameterizeHost()
 ## Step X : System reparameterization
 #hostguest_system = SystemAmberSystem(system_pdb = qmmmrebindpdb)
-hostguest_system = SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)
+hostguest_system = ff_utils.SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)
 ##################################################################################################################################################################################################################
 ## Step I : Defining QM and MM regions
 system.clean_up()
@@ -148,7 +160,7 @@ hostguest_system.save_amber_params_non_qm_charges()
 """
 
 # Reparameterize the ligand (angle, bond, torsion and charge)
-hostguest_system = SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)
+hostguest_system = ff_utils.SystemGuestAmberSystem(system_pdb = qmmmrebindpdb)
 hostguest_system.generate_xml_from_prmtop()
 hostguest_system.write_guest_params_non_zero()
 file_modify.remove_bad_angle_params(angle=1.00, k_angle=500)

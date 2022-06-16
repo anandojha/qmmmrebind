@@ -3,15 +3,341 @@
 """
 
 import re
+import os
 
 from biopandas.pdb import PandasPdb
+from scipy import optimize
 import numpy as np
 import scipy
 
 import modules.constants as const
 import modules.base as base
+import modules.file_utilities as file_utilities
+import modules.file_modify as file_modify
 import modules.openmm_utilities as openmm_utilities
 import modules.torsion_drive_inputs as torsion_inputs
+
+class TorsionDriveParams:
+
+    """
+
+    A class used to parameterize the torsional parameters
+    of the ligand by fitting the torsional parameters obtained
+    from torsiondrive calculations.
+
+    Previously obtained reparameterized XML forcefield file did
+    not have the torsional parameters obtained from QM calculations.
+    The torsional parameters obtained from torsiondrive scans are
+    fitted and a new XML forcefield file is generated.
+
+    ...
+
+    Attributes
+    ----------
+    num_charge_atoms : int, optional
+        Number of charged atoms in the molecule.
+
+    index_charge_atom_1: int, optional
+        Index of the first charged atom.
+
+    charge_atom_1 : int, optional
+        Charge on the first charged atom.
+
+    tor_dir : str, optional
+        Torsiondrive directory containing separate torsiondrive folders,
+        each containing files for a separate torsiondrive calculation
+        for a particular dihedral angle.
+
+    reparameterized_torsional_params_file : str, optional
+        Text file containing the forcefield parameters for the
+        ligand previously obtained without torsional reparameterization.
+
+    psi_input_file : str, optional
+        Input file for psi4 QM engine.
+
+    xyz_file : str, optional
+        XYZ file for ligand coordinates.
+
+    coords_file : str, optional
+        Text file containing the XYZ coordinates of the ligand.
+
+    template_pdb: str, optional
+        Ligand PDB with atoms beginning from 1 to be used as a template PDB
+        to retrieve atom indices and symbols.
+
+    system_pdb: str, optional
+        PDB file for the torsiondrive torsion scans
+
+    system_sdf : str, optional
+        Maximum number of geometry optimization steps.
+
+    system_xml : str, optional
+        XML force field file for the ligand.
+
+    qm_scan_file : str, optional
+        Output scan file for the torsiondrive scans.
+
+    load_topology : str, optional
+        Argument to specify how to load the topology. Can either
+        be "openmm" or "parmed".
+
+    method : str, optional
+        Minimization method for fitting of torsional
+        parameters.
+
+    dihedral_text_file : str, optional
+        Dihedral information file for torsiondrive.
+
+    system_init_sdf : str, optional
+        Ligand SDF (structure-data) format file. This file will be generated
+        only if the ligand is charged.
+
+    reparameterised_system_xml_file : str, optional
+        Reparameterized force field XML file obtained using
+        openforcefield without torsional reparamaterization.
+
+    reparameterised_torsional_system_xml_file : str, optional
+        XML force field file for the ligand obtained with
+        torsional reparamaterization.
+
+    """
+    
+    def __init__(
+        self,
+        # TODO: some of these variables are ints, and should be initialized as ints
+        num_charge_atoms="",
+        index_charge_atom_1="",
+        charge_atom_1="",
+        tor_dir="torsion_dir",
+        reparameterized_torsional_params_file="reparameterized_torsional_params.txt",
+        psi_input_file="torsion_drive_input.dat",
+        xyz_file="torsion_drive_input.xyz",
+        coords_file="torsion_drive_input.txt",
+        template_pdb="guest_init_II.pdb",
+        system_pdb="torsion_drive_input.pdb",
+        system_sdf="torsion_drive_input.sdf",
+        system_xml="torsion_drive_input.xml",
+        qm_scan_file="scan.xyz",
+        load_topology="openmm",
+        method="L-BFGS-B",
+        dihedral_text_file="dihedrals.txt",
+        system_init_sdf="torsion_drive_input_init.sdf",
+        reparameterised_system_xml_file="guest_reparameterised.xml",
+        reparameterised_torsional_system_xml_file="guest_torsional_reparameterized.xml",
+    ):
+
+        self.num_charge_atoms = num_charge_atoms
+        self.index_charge_atom_1 = index_charge_atom_1
+        self.charge_atom_1 = charge_atom_1
+        self.tor_dir = tor_dir
+        self.reparameterized_torsional_params_file = (
+            reparameterized_torsional_params_file
+        )
+        self.psi_input_file = psi_input_file
+        self.xyz_file = xyz_file
+        self.coords_file = coords_file
+        self.template_pdb = template_pdb
+        self.system_pdb = system_pdb
+        self.system_sdf = system_sdf
+        self.system_xml = system_xml
+        self.qm_scan_file = qm_scan_file
+        self.method = method
+        self.dihedral_text_file = dihedral_text_file
+        self.system_init_sdf = system_init_sdf
+        self.load_topology = load_topology
+        self.reparameterised_system_xml_file = reparameterised_system_xml_file
+        self.reparameterised_torsional_system_xml_file = (
+            reparameterised_torsional_system_xml_file
+        )
+
+    def write_reparams_torsion_lines(self):
+        """
+        Saves a text file containing torsional parameters for the ligand
+        obtained through openforcefield.
+        """
+        torsional_parameters_list = []
+        parent_cwd = os.getcwd()
+        # TODO: use os.path.join
+        target_dir = os.path.join(parent_cwd, self.tor_dir)
+        # TODO: let's use a more informative variable name than 'i'
+        for i in os.listdir(target_dir):
+            os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
+            if os.path.isfile(self.qm_scan_file):
+                print("Entering directory" + " : " + os.getcwd())
+                torsion_inputs.torsiondrive_input_to_xyz(
+                    psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
+                )
+                file_modify.xyz_to_pdb(
+                    xyz_file=self.xyz_file,
+                    coords_file=self.coords_file,
+                    template_pdb=self.template_pdb,
+                    system_pdb=self.system_pdb,
+                )
+                file_modify.generate_xml_from_charged_pdb_sdf(
+                    system_pdb=self.system_pdb,
+                    system_init_sdf=self.system_init_sdf,
+                    system_sdf=self.system_sdf,
+                    num_charge_atoms=self.num_charge_atoms,
+                    index_charge_atom_1=self.index_charge_atom_1,
+                    charge_atom_1=self.charge_atom_1,
+                    system_xml=self.system_xml,
+                )
+                torsional_lines = get_torsional_lines(
+                    template_pdb=self.template_pdb,
+                    system_xml=self.system_xml,
+                    qm_scan_file=self.qm_scan_file,
+                    load_topology=self.load_topology,
+                    method=self.method,
+                    dihedral_text_file=self.dihedral_text_file,
+                )
+                # print(torsional_lines)
+                torsional_parameters_list.append(torsional_lines)
+                file_utilities.remove_mm_files(qm_scan_file=self.qm_scan_file)
+                os.chdir(parent_cwd)
+            else:
+                print("Entering directory" + " : " + os.getcwd())
+                print(
+                    "Torsional Scan file not found, optimization may not \
+                     be complete. Existing!!"
+                )
+                os.chdir(parent_cwd)
+        torsional_parameters = [
+            item for sublist in torsional_parameters_list for item in sublist
+        ]
+        with open(self.reparameterized_torsional_params_file, "w") as f:
+            for i in torsional_parameters:
+                f.write(i + "\n")
+
+    def write_reparams_torsion_lines_charged(self):
+        """
+        Saves a text file containing torsional parameters for a charged ligand
+        obtained through openforcefield.
+        """
+        torsional_parameters_list = []
+        parent_cwd = os.getcwd()
+        target_dir = os.path.join(parent_cwd, self.tor_dir)
+        for i in os.listdir(target_dir):
+            os.chdir(os.path.join(parent_cwd, self.tor_dir, i))
+            if os.path.isfile(self.qm_scan_file):
+                print("Entering directory" + " : " + os.getcwd())
+                torsion_inputs.torsiondrive_input_to_xyz(
+                    psi_input_file=self.psi_input_file, xyz_file=self.xyz_file,
+                )
+                file_modify.xyz_to_pdb(
+                    xyz_file=self.xyz_file,
+                    coords_file=self.coords_file,
+                    template_pdb=self.template_pdb,
+                    system_pdb=self.system_pdb,
+                )
+                file_modify.generate_xml_from_charged_pdb_sdf(
+                    system_pdb=self.system_pdb,
+                    system_init_sdf=self.system_init_sdf,
+                    system_sdf=self.system_sdf,
+                    num_charge_atoms=self.num_charge_atoms,
+                    index_charge_atom_1=self.index_charge_atom_1,
+                    charge_atom_1=self.charge_atom_1,
+                    system_xml=self.system_xml,
+                )
+                torsional_lines = get_torsional_lines(
+                    template_pdb=self.template_pdb,
+                    system_xml=self.system_xml,
+                    qm_scan_file=self.qm_scan_file,
+                    load_topology=self.load_topology,
+                    method=self.method,
+                    dihedral_text_file=self.dihedral_text_file,
+                )
+                # print(torsional_lines)
+                torsional_parameters_list.append(torsional_lines)
+                file_utilities.remove_mm_files(qm_scan_file=self.qm_scan_file)
+                os.chdir(parent_cwd)
+            else:
+                print("Entering directory" + " : " + os.getcwd())
+                print(
+                    "Torsional Scan file not found, optimization may not \
+                     be complete. Existing!!"
+                )
+                os.chdir(parent_cwd)
+        torsional_parameters = [
+            item for sublist in torsional_parameters_list for item in sublist
+        ]
+        with open(self.reparameterized_torsional_params_file, "w") as f:
+            for i in torsional_parameters:
+                f.write(i + "\n")
+
+    def write_torsional_reparams(self):
+        """
+        Generates a XML force field file for the ligand with reparameterized
+        torsional parameters.
+        """
+        with open(self.reparameterized_torsional_params_file, "r") as xml_tor:
+            xml_tor_lines = xml_tor.readlines()
+        non_zero_k_tor = []
+        for i in xml_tor_lines:
+            to_find = "k=" + '"' + "0.0" + '"'
+            if to_find not in i:
+                non_zero_k_tor.append(i)
+        # print(non_zero_k_tor)
+        p1 = []
+        for i in range(len(non_zero_k_tor)):
+            p1.append(int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[2]))
+        # print(p1)
+        p2 = []
+        for i in range(len(non_zero_k_tor)):
+            p2.append(int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[4]))
+        # print(p2)
+        p3 = []
+        for i in range(len(non_zero_k_tor)):
+            p3.append(int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[6]))
+        # print(p3)
+        p4 = []
+        for i in range(len(non_zero_k_tor)):
+            p4.append(int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[8]))
+        # print(p4)
+        periodicity = []
+        for i in range(len(non_zero_k_tor)):
+            periodicity.append(
+                int(re.findall("\d*\.?\d+", non_zero_k_tor[i])[9])
+            )
+        # print(periodicity)
+        # TODO: there may be a way to consolidate the reparametrization of 
+        #  the XML file to obey the DRY principle
+        xml_tor_reparams = open(self.reparameterised_system_xml_file, "r")
+        xml_tor_reparams_lines = xml_tor_reparams.readlines()
+        # A string template and formatting should be used here
+        for j in range(len(xml_tor_reparams_lines)):
+            for i in range(len(non_zero_k_tor)):
+                to_find_tor = (
+                    "p1="
+                    + '"'
+                    + str(p1[i])
+                    + '"'
+                    + " "
+                    + "p2="
+                    + '"'
+                    + str(p2[i])
+                    + '"'
+                    + " "
+                    + "p3="
+                    + '"'
+                    + str(p3[i])
+                    + '"'
+                    + " "
+                    + "p4="
+                    + '"'
+                    + str(p4[i])
+                    + '"'
+                    + " "
+                    + "periodicity="
+                    + '"'
+                    + str(periodicity[i])
+                    + '"'
+                )
+                if to_find_tor in xml_tor_reparams_lines[j]:
+                    # print(xml_tor_reparams_lines[j])
+                    xml_tor_reparams_lines[j] = non_zero_k_tor[i]
+        with open(self.reparameterised_torsional_system_xml_file, "w") as f:
+            for i in xml_tor_reparams_lines:
+                f.write(i)
 
 def get_dihedrals(qm_scan_file):
 
