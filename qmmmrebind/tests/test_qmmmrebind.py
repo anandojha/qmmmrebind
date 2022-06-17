@@ -58,11 +58,6 @@ def test_unit_vector_N():
     assert u_N[0] == -0.6516162898107304
 
 
-def test_reverse_list():
-    """Test if the list is reversed correctly"""
-    lst = [5, 4, 7, 2]
-    rev = qmmmrebind.parameterize.reverse_list(lst)
-    assert rev == [2, 7, 4, 5]
 
 
 def test_uniq():

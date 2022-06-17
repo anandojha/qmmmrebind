@@ -2,6 +2,8 @@
 
 """
 
+# DRY (Don't repeat yourself)
+
 from biopandas.pdb import PandasPdb
 import pandas as pd
 
